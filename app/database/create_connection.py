@@ -13,3 +13,4 @@ connection_dictionary = {'host': env['PostgreSQL_host'],
 #  make connection with PostgreSQL
 postgre_connection = connection_to_db(**connection_dictionary)
 postgre_session = sessionmaker(bind=postgre_connection)
+sqlalchemy_session = postgre_session()

@@ -1,10 +1,8 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Date, Float, Time
-from sqlalchemy.orm import relationship, sessionmaker
+from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
-from app.database.connection_functions import connection_to_db
-from os import environ as env
 from dotenv import load_dotenv
-
+import shortuuid
 load_dotenv()
 
 Base = declarative_base()
@@ -21,7 +19,6 @@ class User(Base):
     access_level = Column(Integer)
     token = Column(String)
     #  many to one
-    delegation_id = Column(String, ForeignKey('Delegation.id'))
     to_delegation = relationship("Delegation", back_populates='to_user')
 
 
@@ -40,22 +37,13 @@ class Delegation(Base):
     approved_by = Column(String)
     advance_payment = Column(Float)
     # one to many
+    user_email = Column(String, ForeignKey('User.email'))
     to_user = relationship("User", back_populates='to_delegation')
 
+    def __str__(self):
+        dicted = self.__dict__
+        print(dicted)
+        if '_sa_instance_state' in dicted:
+            del dicted['_sa_instance_state']
+        return str(dicted)
 
-#  create connection with DB
-# cnx = connection2db(env['PostgreSQL_host'],
-#                     env['PostgreSQL_port'],
-#                     env['PostgreSQL_user'],
-#                     env['PostgreSQL_password'],
-#                     env['PostgreSQL_db_name'])
-#
-# #  create all declared tables inside DB
-# Base.metadata.create_all(cnx)
-# #  create session
-# session = sessionmaker(bind=cnx)
-# session = session()
-# user1 = User()
-# user1.email = 'usr@itechart.com'
-# session.add(user1)
-# session.commit()
