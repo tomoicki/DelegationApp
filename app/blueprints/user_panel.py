@@ -24,11 +24,11 @@ def add_delegation_request():
     delegation_details = {'title': 'jakistitle2',
                           'id': 'asdadad22',
                           'user_email': user.email}
-    delegation_to_add = Delegation(**delegation_details)
-    # print(delegation_to_add)
     try:
+        delegation_to_add = Delegation(**delegation_details)
         sqlalchemy_session.add(delegation_to_add)
         sqlalchemy_session.commit()
         return 'Success'
     except IntegrityError:
-        return 'Fail'
+        sqlalchemy_session.rollback()
+        return 'Delegation with same ID already exists.'

@@ -42,7 +42,6 @@ class Delegation(Base):
 
     def __str__(self):
         dicted = self.__dict__
-        print(dicted)
         if '_sa_instance_state' in dicted:
             del dicted['_sa_instance_state']
         return str(dicted)
