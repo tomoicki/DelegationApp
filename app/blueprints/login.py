@@ -27,8 +27,11 @@ def welcome() -> str:
 @login.route('/login', methods=['POST'])
 def login_users() -> dict:
     # user_credentials = request.get_json()
-    user_credentials = {'email': 'usr@itechart.com', 'password': 'right'}
-    user = sqlalchemy_session.query(User).filter(User.email == user_credentials['email']).first()
+    user_credentials = {'email': 'maker@gmail.com', 'password': 'right'}
+    try:
+        user = sqlalchemy_session.query(User).filter(User.email == user_credentials['email']).first()
+    except TypeError:
+        return {'response': 'bad request'}
     if user is None:
         return {'response': 'cannot find user with provided email'}
     if user_credentials['password'] != user.password:

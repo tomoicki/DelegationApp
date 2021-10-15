@@ -1,5 +1,6 @@
 from sqlalchemy.exc import IntegrityError
 from flask import Blueprint, jsonify, request
+from shortuuid import uuid
 from app.database.create_connection import sqlalchemy_session
 from app.database.tables_declaration import *
 from app.blueprints.login import is_logged_in, get_user_by_token
@@ -11,7 +12,7 @@ user_panel = Blueprint('user_panel', __name__, template_folder='Templates')
 @is_logged_in
 def user_panel_view():
     user = get_user_by_token(request.headers.get('token'))
-    delegations = sqlalchemy_session.query(Delegation).filter(Delegation.user_email == user.email).all()
+    delegations = sqlalchemy_session.query(Delegation).filter(Delegation.worker_id == user.id).all()
     delegations = [str(delegation) for delegation in delegations]
     return jsonify(delegations)
 
@@ -21,9 +22,9 @@ def user_panel_view():
 def add_delegation_request():
     user = get_user_by_token(request.headers.get('token'))
     # delegation_details = request.get_json()
-    delegation_details = {'title': 'jakistitle2',
-                          'id': 'asdadad22',
-                          'user_email': user.email}
+    delegation_details = {'title': 'jakistitle',
+                          'id': uuid(),
+                          'maker_id': user.id}
     try:
         delegation_to_add = Delegation(**delegation_details)
         sqlalchemy_session.add(delegation_to_add)

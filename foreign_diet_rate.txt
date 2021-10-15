@@ -1,0 +1,111 @@
+{'Country': 'Afganistan', 'Currency': 'EUR', 'Diet Rate': 47, 'Accommodation Limit': 140}
+{'Country': 'Albania', 'Currency': 'EUR', 'Diet Rate': 41, 'Accommodation Limit': 120}
+{'Country': 'Algieria', 'Currency': 'EUR', 'Diet Rate': 50, 'Accommodation Limit': 200}
+{'Country': 'Angola', 'Currency': 'USD', 'Diet Rate': 61, 'Accommodation Limit': 180}
+{'Country': 'Arabia Saudyjska', 'Currency': 'EUR', 'Diet Rate': 45, 'Accommodation Limit': 180}
+{'Country': 'Argentyna', 'Currency': 'USD', 'Diet Rate': 50, 'Accommodation Limit': 150}
+{'Country': 'Armenia', 'Currency': 'EUR', 'Diet Rate': 42, 'Accommodation Limit': 145}
+{'Country': 'Australia', 'Currency': 'AUD', 'Diet Rate': 88, 'Accommodation Limit': 250}
+{'Country': 'Austria', 'Currency': 'EUR', 'Diet Rate': 52, 'Accommodation Limit': 130}
+{'Country': 'Azerbejd¿an', 'Currency': 'EUR', 'Diet Rate': 43, 'Accommodation Limit': 150}
+{'Country': 'Bangladesz', 'Currency': 'USD', 'Diet Rate': 50, 'Accommodation Limit': 120}
+{'Country': 'Belgia', 'Currency': 'EUR', 'Diet Rate': 48, 'Accommodation Limit': 160}
+{'Country': 'Bia³oruœ', 'Currency': 'EUR', 'Diet Rate': 42, 'Accommodation Limit': 130}
+{'Country': 'Boœnia i Hercegowina', 'Currency': 'EUR', 'Diet Rate': 41, 'Accommodation Limit': 100}
+{'Country': 'Brazylia', 'Currency': 'EUR', 'Diet Rate': 43, 'Accommodation Limit': 120}
+{'Country': 'Bu³garia', 'Currency': 'EUR', 'Diet Rate': 40, 'Accommodation Limit': 120}
+{'Country': 'Chile', 'Currency': 'USD', 'Diet Rate': 60, 'Accommodation Limit': 120}
+{'Country': 'Chiny', 'Currency': 'EUR', 'Diet Rate': 55, 'Accommodation Limit': 170}
+{'Country': 'Chorwacja', 'Currency': 'EUR', 'Diet Rate': 42, 'Accommodation Limit': 125}
+{'Country': 'Cypr', 'Currency': 'EUR', 'Diet Rate': 43, 'Accommodation Limit': 160}
+{'Country': 'Czechy', 'Currency': 'EUR', 'Diet Rate': 41, 'Accommodation Limit': 120}
+{'Country': 'Dania', 'Currency': 'DKK', 'Diet Rate': 406, 'Accommodation Limit': 1300}
+{'Country': 'Egipt', 'Currency': 'USD', 'Diet Rate': 55, 'Accommodation Limit': 150}
+{'Country': 'Ekwador', 'Currency': 'USD', 'Diet Rate': 44, 'Accommodation Limit': 110}
+{'Country': 'Estonia', 'Currency': 'EUR', 'Diet Rate': 41, 'Accommodation Limit': 100}
+{'Country': 'Etiopia', 'Currency': 'USD', 'Diet Rate': 55, 'Accommodation Limit': 300}
+{'Country': 'Finlandia', 'Currency': 'EUR', 'Diet Rate': 48, 'Accommodation Limit': 160}
+{'Country': 'Francja', 'Currency': 'EUR', 'Diet Rate': 50, 'Accommodation Limit': 180}
+{'Country': 'Grecja', 'Currency': 'EUR', 'Diet Rate': 48, 'Accommodation Limit': 140}
+{'Country': 'Gruzja', 'Currency': 'EUR', 'Diet Rate': 43, 'Accommodation Limit': 140}
+{'Country': 'Hiszpania', 'Currency': 'EUR', 'Diet Rate': 50, 'Accommodation Limit': 160}
+{'Country': 'Holandia', 'Currency': 'EUR', 'Diet Rate': 50, 'Accommodation Limit': 130}
+{'Country': 'Indie', 'Currency': 'EUR', 'Diet Rate': 38, 'Accommodation Limit': 190}
+{'Country': 'Indonezja', 'Currency': 'EUR', 'Diet Rate': 41, 'Accommodation Limit': 110}
+{'Country': 'Irak', 'Currency': 'USD', 'Diet Rate': 60, 'Accommodation Limit': 120}
+{'Country': 'Iran', 'Currency': 'EUR', 'Diet Rate': 41, 'Accommodation Limit': 95}
+{'Country': 'Irlandia', 'Currency': 'EUR', 'Diet Rate': 52, 'Accommodation Limit': 160}
+{'Country': 'Islandia', 'Currency': 'EUR', 'Diet Rate': 56, 'Accommodation Limit': 160}
+{'Country': 'Izrael', 'Currency': 'EUR', 'Diet Rate': 50, 'Accommodation Limit': 150}
+{'Country': 'Japonia', 'Currency': 'JPY', 'Diet Rate': 7532, 'Accommodation Limit': 22000}
+{'Country': 'Jemen', 'Currency': 'USD', 'Diet Rate': 48, 'Accommodation Limit': 160}
+{'Country': 'Jordania', 'Currency': 'EUR', 'Diet Rate': 40, 'Accommodation Limit': 95}
+{'Country': 'Kambod¿a', 'Currency': 'USD', 'Diet Rate': 45, 'Accommodation Limit': 100}
+{'Country': 'Kanada', 'Currency': 'CAD', 'Diet Rate': 71, 'Accommodation Limit': 190}
+{'Country': 'Katar', 'Currency': 'EUR', 'Diet Rate': 41, 'Accommodation Limit': 200}
+{'Country': 'Kazachstan', 'Currency': 'EUR', 'Diet Rate': 41, 'Accommodation Limit': 140}
+{'Country': 'Kenia', 'Currency': 'EUR', 'Diet Rate': 41, 'Accommodation Limit': 150}
+{'Country': 'Kirgistan', 'Currency': 'USD', 'Diet Rate': 41, 'Accommodation Limit': 150}
+{'Country': 'Kolumbia', 'Currency': 'USD', 'Diet Rate': 49, 'Accommodation Limit': 120}
+{'Country': 'Kongo, Demokratyczna Republika Konga', 'Currency': 'USD', 'Diet Rate': 66, 'Accommodation Limit': 220}
+{'Country': 'Korea Po³udniowa', 'Currency': 'EUR', 'Diet Rate': 46, 'Accommodation Limit': 170}
+{'Country': 'Koreañska Republika Ludowo-Demokratyczna', 'Currency': 'EUR', 'Diet Rate': 48, 'Accommodation Limit': 170}
+{'Country': 'Kostaryka', 'Currency': 'USD', 'Diet Rate': 50, 'Accommodation Limit': 140}
+{'Country': 'Kuba', 'Currency': 'EUR', 'Diet Rate': 42, 'Accommodation Limit': 110}
+{'Country': 'Kuwejt', 'Currency': 'EUR', 'Diet Rate': 39, 'Accommodation Limit': 200}
+{'Country': 'Laos', 'Currency': 'USD', 'Diet Rate': 54, 'Accommodation Limit': 100}
+{'Country': 'Liban', 'Currency': 'USD', 'Diet Rate': 57, 'Accommodation Limit': 150}
+{'Country': 'Libia', 'Currency': 'EUR', 'Diet Rate': 52, 'Accommodation Limit': 100}
+{'Country': 'Liechtenstein', 'Currency': 'CHF', 'Diet Rate': 88, 'Accommodation Limit': 200}
+{'Country': 'Litwa', 'Currency': 'EUR', 'Diet Rate': 39, 'Accommodation Limit': 130}
+{'Country': 'Luksemburg', 'Currency': 'EUR', 'Diet Rate': 48, 'Accommodation Limit': 160}
+{'Country': '£otwa', 'Currency': 'EUR', 'Diet Rate': 57, 'Accommodation Limit': 132}
+{'Country': 'Macedonia', 'Currency': 'EUR', 'Diet Rate': 39, 'Accommodation Limit': 125}
+{'Country': 'Malezja', 'Currency': 'EUR', 'Diet Rate': 41, 'Accommodation Limit': 140}
+{'Country': 'Malta', 'Currency': 'EUR', 'Diet Rate': 43, 'Accommodation Limit': 180}
+{'Country': 'Maroko', 'Currency': 'EUR', 'Diet Rate': 41, 'Accommodation Limit': 130}
+{'Country': 'Meksyk', 'Currency': 'USD', 'Diet Rate': 53, 'Accommodation Limit': 140}
+{'Country': 'Mo³dowa', 'Currency': 'EUR', 'Diet Rate': 41, 'Accommodation Limit': 85}
+{'Country': 'Monako', 'Currency': 'EUR', 'Diet Rate': 50, 'Accommodation Limit': 180}
+{'Country': 'Mongolia', 'Currency': 'EUR', 'Diet Rate': 45, 'Accommodation Limit': 140}
+{'Country': 'Niemcy', 'Currency': 'EUR', 'Diet Rate': 49, 'Accommodation Limit': 130}
+{'Country': 'Nigeria', 'Currency': 'EUR', 'Diet Rate': 46, 'Accommodation Limit': 150}
+{'Country': 'Norwegia', 'Currency': 'NOK', 'Diet Rate': 451, 'Accommodation Limit': 1500}
+{'Country': 'Nowa Zelandia', 'Currency': 'USD', 'Diet Rate': 58, 'Accommodation Limit': 180}
+{'Country': 'Oman', 'Currency': 'EUR', 'Diet Rate': 40, 'Accommodation Limit': 240}
+{'Country': 'Polska', 'Currency': 'PLN', 'Diet Rate': 30, 'Accommodation Limit': 240}
+{'Country': 'Pakistan', 'Currency': 'EUR', 'Diet Rate': 38, 'Accommodation Limit': 200}
+{'Country': 'Palestyñska W³adza Narodowa', 'Currency': 'EUR', 'Diet Rate': 50, 'Accommodation Limit': 150}
+{'Country': 'Panama', 'Currency': 'USD', 'Diet Rate': 52, 'Accommodation Limit': 140}
+{'Country': 'Peru', 'Currency': 'USD', 'Diet Rate': 50, 'Accommodation Limit': 150}
+{'Country': 'Portugalia', 'Currency': 'EUR', 'Diet Rate': 49, 'Accommodation Limit': 120}
+{'Country': 'Republika Po³udniowej Afryki', 'Currency': 'USD', 'Diet Rate': 52, 'Accommodation Limit': 275}
+{'Country': 'Rosja', 'Currency': 'EUR', 'Diet Rate': 48, 'Accommodation Limit': 200}
+{'Country': 'Rumunia', 'Currency': 'EUR', 'Diet Rate': 38, 'Accommodation Limit': 100}
+{'Country': 'San Marino', 'Currency': 'EUR', 'Diet Rate': 48, 'Accommodation Limit': 174}
+{'Country': 'Senegal', 'Currency': 'EUR', 'Diet Rate': 44, 'Accommodation Limit': 120}
+{'Country': 'Serbia i Czarnogóra', 'Currency': 'EUR', 'Diet Rate': 40, 'Accommodation Limit': 100}
+{'Country': 'Singapur', 'Currency': 'USD', 'Diet Rate': 56, 'Accommodation Limit': 230}
+{'Country': 'S³owacja', 'Currency': 'EUR', 'Diet Rate': 43, 'Accommodation Limit': 120}
+{'Country': 'S³owenia', 'Currency': 'EUR', 'Diet Rate': 41, 'Accommodation Limit': 130}
+{'Country': 'Stany Zjednoczone Ameryki (USA) - w tym Nowy Jork i Waszyngton ', 'Currency': 'USD', 'Diet Rate': 59, 'Accommodation Limit': 200}
+{'Country': 'Syria', 'Currency': 'USD', 'Diet Rate': 50, 'Accommodation Limit': 150}
+{'Country': 'Szwajcaria', 'Currency': 'CHF', 'Diet Rate': 88, 'Accommodation Limit': 200}
+{'Country': 'Szwecja', 'Currency': 'SEK', 'Diet Rate': 459, 'Accommodation Limit': 1800}
+{'Country': 'Tad¿ykistan', 'Currency': 'EUR', 'Diet Rate': 41, 'Accommodation Limit': 140}
+{'Country': 'Tajlandia', 'Currency': 'USD', 'Diet Rate': 42, 'Accommodation Limit': 110}
+{'Country': 'Tanzania', 'Currency': 'USD', 'Diet Rate': 53, 'Accommodation Limit': 150}
+{'Country': 'Tunezja', 'Currency': 'EUR', 'Diet Rate': 37, 'Accommodation Limit': 100}
+{'Country': 'Turcja', 'Currency': 'USD', 'Diet Rate': 53, 'Accommodation Limit': 173}
+{'Country': 'Turkmenistan', 'Currency': 'EUR', 'Diet Rate': 47, 'Accommodation Limit': 90}
+{'Country': 'Ukraina', 'Currency': 'EUR', 'Diet Rate': 41, 'Accommodation Limit': 180}
+{'Country': 'Urugwaj', 'Currency': 'USD', 'Diet Rate': 50, 'Accommodation Limit': 80}
+{'Country': 'Uzbekistan', 'Currency': 'EUR', 'Diet Rate': 41, 'Accommodation Limit': 140}
+{'Country': 'Wenezuela', 'Currency': 'USD', 'Diet Rate': 60, 'Accommodation Limit': 220}
+{'Country': 'Wêgry', 'Currency': 'EUR', 'Diet Rate': 44, 'Accommodation Limit': 130}
+{'Country': 'Wielka Brytania', 'Currency': 'GBP', 'Diet Rate': 35, 'Accommodation Limit': 200}
+{'Country': 'Wietnam', 'Currency': 'USD', 'Diet Rate': 53, 'Accommodation Limit': 160}
+{'Country': 'W³ochy', 'Currency': 'EUR', 'Diet Rate': 48, 'Accommodation Limit': 174}
+{'Country': 'Wybrze¿e Koœci S³oniowej', 'Currency': 'EUR', 'Diet Rate': 33, 'Accommodation Limit': 100}
+{'Country': 'Zimbabwe', 'Currency': 'EUR', 'Diet Rate': 39, 'Accommodation Limit': 90}
+{'Country': 'Zjednoczone Emiraty Arabskie', 'Currency': 'EUR', 'Diet Rate': 39, 'Accommodation Limit': 200}
