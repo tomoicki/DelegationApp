@@ -26,7 +26,7 @@ user2 = User(**some_user)
 user2.id = uuid()
 user2.first_name = 'Maker'
 user2.email = 'maker@gmail.com'
-user2.role = Role.accountant
+user2.role = Role.manager
 
 some_delegation = {'id': uuid(),
                    'title': 'to wroclaw',

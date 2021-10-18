@@ -1,8 +1,11 @@
 import enum
-from sqlalchemy import Column, Integer, String, ForeignKey, Date, Float, Time, Enum, Boolean, DateTime
+from flask import request
+from functools import wraps
+from sqlalchemy import Column, Integer, String, ForeignKey, Date, Float, Time, Enum, Boolean, DateTime, update, delete
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from dotenv import load_dotenv
+from app.database.create_connection import sqlalchemy_session
 
 load_dotenv()
 
@@ -11,7 +14,8 @@ Base = declarative_base()
 
 class Role(enum.Enum):
     user = 'user'
-    accountant = 'accountant'
+    manager = 'manager'
+    hr = 'hr'
     admin = 'admin'
 
 
@@ -32,11 +36,40 @@ class User(Base):
     # maker_to_delegation = relationship("Delegation", back_populates='to_maker')
     # approver_to_delegation = relationship("Delegation", back_populates='to_approver')
 
+    def get_user_delegations(self):
+        return sqlalchemy_session.query(Delegation).filter(Delegation.worker_id == self.id).all()
+
+    @classmethod
+    def get_user_by_token(cls, provided_token: str):
+        return sqlalchemy_session.query(cls).filter(cls.token == provided_token).first()
+
+    @classmethod
+    def get_user_by_email(cls, provided_email: str):
+        return sqlalchemy_session.query(cls).filter(cls.email == provided_email).first()
+
+    @classmethod
+    def is_logged_in(cls, func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            if cls.get_user_by_token(request.headers.get('token')) is not None:
+                return func(*args, **kwargs)
+            return "You are not logged in."
+        return wrapper
+
+
+class DelegationStatus(enum.Enum):
+    submitted = 'submitted'
+    approved_by_manager = 'approved_by_manager'
+    applied_for_reimbursement = 'applied_for_reimbursement'
+    approved_by_hr = 'approved_by_hr'
+    closed = 'closed'
+
 
 class Delegation(Base):
     __tablename__ = 'Delegation'
     # fields
     id = Column(String, primary_key=True)
+    status = Column(Enum(DelegationStatus))
     title = Column(String)
     submit_date = Column(DateTime)
     departure_date = Column(Date)
@@ -58,6 +91,16 @@ class Delegation(Base):
     # many to one
     # to_expense = relationship('Expense', back_populates='to_delegation')
     # to_advance_payment = relationship('AdvancePayment', back_populates='to_delegation')
+
+    @classmethod
+    def get_delegation_by_id(cls, provided_id: str):
+        return sqlalchemy_session.query(cls).filter(cls.id == provided_id).first()
+
+    @classmethod
+    def modify_delegation(cls, delegation_details: dict, modifications_dict: dict):
+        stmt = update(cls).where(cls.id == delegation_details['id']).values(**modifications_dict)
+        sqlalchemy_session.execute(stmt)
+        sqlalchemy_session.commit()
 
     def __str__(self):
         dicted = self.__dict__
@@ -143,7 +186,3 @@ class Meal(Base):
     id = Column(String, primary_key=True)
     type = Column(Enum(MealType))
     delegation_id = Column(String, ForeignKey('Delegation.id'))
-
-
-
-

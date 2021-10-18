@@ -1,22 +1,7 @@
 from flask import Blueprint, request
-from functools import wraps
-from app.database.create_connection import sqlalchemy_session
 from app.database.tables_declaration import *
 
-login = Blueprint('login', __name__, template_folder='Templates')
-
-
-def is_logged_in(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        if get_user_by_token(request.headers.get('token')) is not None:
-            return func(*args, **kwargs)
-        return "You are not logged in."
-    return wrapper
-
-
-def get_user_by_token(token: str) -> User:
-    return sqlalchemy_session.query(User).filter(User.token == token).first()
+login = Blueprint('login', __name__)
 
 
 @login.route('/')
@@ -26,10 +11,10 @@ def welcome() -> str:
 
 @login.route('/login', methods=['POST'])
 def login_users() -> dict:
-    # user_credentials = request.get_json()
-    user_credentials = {'email': 'maker@gmail.com', 'password': 'right'}
+    user_credentials = request.get_json()
+    # user_credentials = {'email': 'maker@gmail.com', 'password': 'right'}
     try:
-        user = sqlalchemy_session.query(User).filter(User.email == user_credentials['email']).first()
+        user = User.get_user_by_email(user_credentials['email'])
     except TypeError:
         return {'response': 'bad request'}
     if user is None:
