@@ -5,3 +5,6 @@ shortuuid~=1.0
 psycopg2~=2.9
 CurrencyConverter~=0.16
 forex-python~=1.6
+flask-swagger-ui~=3.36
+Flask-Cors~=3.0
+pandas~=1.3

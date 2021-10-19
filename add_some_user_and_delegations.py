@@ -6,15 +6,14 @@ import datetime
 Base.metadata.create_all(postgre_connection)
 session = postgre_session()
 
-currency1 = Currency(id=uuid(),
-                     name='PLN')
-
-country1 = Country(id=uuid(),
-                   name='Poland',
+currency1 = Currency(name='PLN')
+session.add(currency1)
+session.commit()
+country1 = Country(name='Poland',
                    currency_id=currency1.id)
-
-some_user = {'id': uuid(),
-             'first_name': 'First',
+session.add(country1)
+session.commit()
+some_user = {'first_name': 'First',
              'last_name': 'User',
              'email': 'usr@itechart.com',
              'password': 'right',
@@ -22,14 +21,16 @@ some_user = {'id': uuid(),
              'is_active': True,
              'token': uuid()}
 user1 = User(**some_user)
+session.add(user1)
+session.commit()
 user2 = User(**some_user)
-user2.id = uuid()
 user2.first_name = 'Maker'
 user2.email = 'maker@gmail.com'
 user2.role = Role.manager
+session.add(user2)
+session.commit()
 
-some_delegation = {'id': uuid(),
-                   'title': 'to wroclaw',
+some_delegation = {'title': 'to wroclaw',
                    'submit_date': datetime.datetime.now(),
                    'departure_date': datetime.date.fromisocalendar(2021, 5, 3),
                    'departure_time': datetime.time(10, 10, 10),
@@ -39,31 +40,35 @@ some_delegation = {'id': uuid(),
                    'maker_id': user2.id,
                    'country_id': country1.id}
 delegation1 = Delegation(**some_delegation)
+session.add(delegation1)
+session.commit()
 delegation2 = Delegation(**some_delegation)
-delegation2.id = uuid()
 delegation2.title = 'to warsaw'
+session.add(delegation2)
+session.commit()
 
-some_expense = {'id': uuid(),
-                'type': ExpenseType.accommodation,
+some_expense = {'type': ExpenseType.accommodation,
                 'amount': 123.45,
                 'currency_id': currency1.id,
                 'delegation_id': delegation1.id}
 expense1 = Expense(**some_expense)
+session.add(expense1)
+session.commit()
 expense2 = Expense(**some_expense)
-expense2.id = uuid()
 expense2.type = ExpenseType.transit
 expense2.amount = 99
-expense2.delegation_id = delegation2.id
+expense2.delegation_id = delegation1.id
+session.add(expense2)
+session.commit()
 
-meal1 = Meal(id=uuid(),
-             type=MealType.breakfast,
+meal1 = Meal(type=MealType.breakfast,
              delegation_id=delegation1.id)
+session.add(meal1)
+session.commit()
 
-advance_payment1 = AdvancePayment(id=uuid(),
-                                  amount=121.1,
+advance_payment1 = AdvancePayment(amount=121.1,
                                   delegation_id=delegation1.id,
                                   currency_id=currency1.id)
-
-session.bulk_save_objects([currency1, country1, user1, user2, delegation1, delegation2,
-                           expense1, expense2,meal1, advance_payment1])
+session.add(advance_payment1)
 session.commit()
+

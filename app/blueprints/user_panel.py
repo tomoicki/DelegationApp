@@ -29,7 +29,6 @@ def user_panel_view():
 def add_delegation_request():
     user = User.get_user_by_token(request.headers.get('token'))
     delegation_details = request.get_json()
-    delegation_details['id'] = uuid()
     delegation_details['maker_id'] = user.id
     try:
         delegation_to_add = Delegation(**delegation_details)

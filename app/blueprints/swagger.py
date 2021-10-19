@@ -17,6 +17,40 @@ def swagger_details_provider():
             }
         ],
         "paths": {
+            "/register": {
+                "post": {
+                    "tags": ["User"],
+                    "summary": "Creates new user.",
+                    "requestBody": {
+                        "description": "Takes new user details.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/User"
+                                },
+                                "example": {
+                                    'first_name': 'First',
+                                    'last_name': 'User',
+                                    "email": "maker@gmail.com",
+                                    "password": "right",
+                                    'retype_password': 'right',
+                                }
+                            }
+                        }
+                    },
+                    "produces": [
+                        "application/json"
+                    ],
+                    "responses": {
+                        "201": {
+                            "description": "OK",
+                            "schema": {
+                                "$ref": "#/components/schemas/User"
+                            },
+                        },
+                    }
+                }
+            },
             "/login": {
                 "post": {
                     "tags": ["User"],
@@ -123,7 +157,7 @@ def swagger_details_provider():
                             "in": "header",
                             "description": "Token of logged user.",
                             "type": "string",
-                            "example": "WuupcYvsqnLNoFGtvp64TW"
+                            "example": "2T7y2x29rpxQJT4474RPWv"
                         },
                         {
                             "name": "id",
@@ -154,7 +188,7 @@ def swagger_details_provider():
                             "in": "header",
                             "description": "Token of logged user.",
                             "type": "string",
-                            "example": "WuupcYvsqnLNoFGtvp64TW"
+                            "example": "2T7y2x29rpxQJT4474RPWv"
                         }
                     ],
                     "requestBody": {
@@ -165,7 +199,7 @@ def swagger_details_provider():
                                     "$ref": "#/components/schemas/Delegation"
                                 },
                                 "example": {
-                                    "id": 'MCZq7ugPkVNireoYPdHxBV',
+                                    "id": '1',
                                     "title": "new_title",
                                 }
                             }
@@ -184,13 +218,27 @@ def swagger_details_provider():
                     }
                 }
             },
+            "/countries": {
+                "get": {
+                    "tags": ["Countries"],
+                    "summary": "Shows list of countries.",
+                    "produces": [
+                        "application/json"
+                    ],
+                    "responses": {
+                        "201": {
+                            "description": "OK",
+                        },
+                    }
+                },
+            },
 
         },
         "components": {
             "schemas": {
                 "User": {
                     "properties": {
-                        "id": {"type": "string", "format": 'primary key'},
+                        "id": {"type": "integer", "format": 'primary key'},
                         "first_name": {"type": "string"},
                         "last_name": {"type": "string"},
                         "email": {"type": "string"},
@@ -202,7 +250,7 @@ def swagger_details_provider():
                 },
                 "Delegation": {
                     "properties": {
-                        "id": {"type": "string", "format": 'primary key'},
+                        "id": {"type": "integer", "format": 'primary key'},
                         "status": {"type": "DelegationStatus", "format": "string"},
                         "title": {"type": "string"},
                         "submit_date": {"type": "string"},
@@ -213,56 +261,63 @@ def swagger_details_provider():
                         "reason": {"type": "string"},
                         "remarks": {"type": "string"},
                         "diet": {"type": "float"},
-                        "worker_id": {"type": "string", "format": "foreign key"},
-                        "maker_id": {"type": "string", "format": "foreign key"},
-                        "approved_by_id": {"type": "string", "format": "foreign key"},
-                        "country_id": {"type": "string", "format": "foreign key"}
+                        "worker_id": {"type": "integer", "format": "foreign key"},
+                        "maker_id": {"type": "integer", "format": "foreign key"},
+                        "approved_by_id": {"type": "integer", "format": "foreign key"},
+                        "country_id": {"type": "integer", "format": "foreign key"}
                     }
                 },
                 "AdvancePayment": {
                     "properties": {
-                        "id": {"type": "string", "format": 'primary key'},
+                        "id": {"type": "integer", "format": 'primary key'},
                         "amount": {"type": "float"},
-                        "delegation_id": {"type": "string", "format": "foreign key"},
-                        "currency_id": {"type": "string", "format": "foreign key"},
+                        "delegation_id": {"type": "integer", "format": "foreign key"},
+                        "currency_id": {"type": "integer", "format": "foreign key"},
                     }
                 },
                 "Currency": {
                     "properties": {
-                        "id": {"type": "string", "format": 'primary key'},
+                        "id": {"type": "integer", "format": 'primary key'},
                         "name": {"type": "string"},
                     }
                 },
                 "Expense": {
                     "properties": {
-                        "id": {"type": "string", "format": 'primary key'},
+                        "id": {"type": "integer", "format": 'primary key'},
                         "type": {"type": "ExpenseType", "format": "string"},
                         "amount": {"type": "float"},
                         "description": {"type": "string"},
-                        "delegation_id": {"type": "string", "format": 'foreign key'},
-                        "currency_id": {"type": "string", "format": 'foreign key'},
+                        "delegation_id": {"type": "integer", "format": 'foreign key'},
+                        "currency_id": {"type": "integer", "format": 'foreign key'},
                     }
                 },
                 "Country": {
                     "properties": {
-                        "id": {"type": "string", "format": 'primary key'},
+                        "id": {"type": "integer", "format": 'primary key'},
                         "name": {"type": "string"},
-                        "currency_id": {"type": "string", "format": "foreign key"},
+                        "currency_id": {"type": "integer", "format": "foreign key"},
                     }
                 },
                 "Settlement": {
                     "properties": {
-                        "id": {"type": "string", "format": 'primary key'},
+                        "id": {"type": "integer", "format": 'primary key'},
                         "date": {"type": "string"},
-                        "delegation_id": {"type": "string", "format": "foreign key"},
-                        "approver_id": {"type": "string", "format": "foreign key"},
+                        "delegation_id": {"type": "integer", "format": "foreign key"},
+                        "approver_id": {"type": "integer", "format": "foreign key"},
                     }
                 },
                 "Meal": {
                     "properties": {
-                        "id": {"type": "string", "format": 'primary key'},
+                        "id": {"type": "integer", "format": 'primary key'},
                         "type": {"type": "MealType", "format": "string"},
-                        "delegation_id": {"type": "string", "format": "foreign key"},
+                        "delegation_id": {"type": "integer", "format": "foreign key"},
+                    }
+                },
+                "Attachment": {
+                    "properties": {
+                        "id": {"type": "integer", "format": 'primary key'},
+                        "file": {"type": "LargeBinary"},
+                        "settlement_id": {"type": "integer", "format": "foreign key"},
                     }
                 },
             }
