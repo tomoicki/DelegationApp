@@ -97,8 +97,8 @@ class Delegation(Base):
         return sqlalchemy_session.query(cls).filter(cls.id == provided_id).first()
 
     @classmethod
-    def modify_delegation(cls, delegation_details: dict, modifications_dict: dict):
-        stmt = update(cls).where(cls.id == delegation_details['id']).values(**modifications_dict)
+    def modify_delegation(cls, delegation_id: str, modifications_dict: dict):
+        stmt = update(cls).where(cls.id == delegation_id).values(**modifications_dict)
         sqlalchemy_session.execute(stmt)
         sqlalchemy_session.commit()
 

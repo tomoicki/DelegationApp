@@ -21,6 +21,20 @@ def swagger_details_provider():
                 "post": {
                     "tags": ["User"],
                     "summary": "Returns users token",
+                    "requestBody": {
+                        "description": "takes user email and password",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/User"
+                                },
+                                "example": {
+                                    "email": "maker@gmail.com",
+                                    "password": "right"
+                                }
+                            }
+                        }
+                    },
                     "produces": [
                         "application/json"
                     ],
@@ -29,14 +43,148 @@ def swagger_details_provider():
                             "description": "OK",
                             "schema": {
                                 "$ref": "#/components/schemas/User"
-                            }
+                            },
                         },
-                        "400": {
-                            "description": "Failed. Bad post data."
-                        }
                     }
                 }
-            }
+            },
+            "/delegations": {
+                "get": {
+                    "tags": ["User"],
+                    "summary": "Returns list of user delegations.",
+                    "parameters": [
+                        {
+                            "name": "token",
+                            "in": "header",
+                            "description": "Token of logged user.",
+                            "type": "string",
+                            "example": "WuupcYvsqnLNoFGtvp64TW"
+                        }
+                    ],
+                    "produces": [
+                        "application/json"
+                    ],
+                    "responses": {
+                        "201": {
+                            "description": "OK",
+                            "schema": {
+                                "$ref": "#/components/schemas/User"
+                            },
+                        },
+                    }
+                }
+            },
+            "/add_delegation": {
+                "post": {
+                    "tags": ["Delegation"],
+                    "summary": "Adds new delegation.",
+                    "parameters": [
+                        {
+                            "name": "token",
+                            "in": "header",
+                            "description": "Token of logged user.",
+                            "type": "string",
+                            "example": "WuupcYvsqnLNoFGtvp64TW"
+                        }
+                    ],
+                    "requestBody": {
+                        "description": "Takes delegation details.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Delegation"
+                                },
+                                "example": {
+                                    "title": "some_title"
+                                }
+                            }
+                        }
+                    },
+                    "produces": [
+                        "application/json"
+                    ],
+                    "responses": {
+                        "201": {
+                            "description": "OK",
+                            "schema": {
+                                "$ref": "#/components/schemas/Delegation"
+                            },
+                        },
+                    }
+                }
+            },
+            "/modify_delegation": {
+                "get": {
+                    "tags": ["Delegation"],
+                    "summary": "Shows delegation details.",
+                    "parameters": [
+                        {
+                            "name": "token",
+                            "in": "header",
+                            "description": "Token of logged user.",
+                            "type": "string",
+                            "example": "WuupcYvsqnLNoFGtvp64TW"
+                        },
+                        {
+                            "name": "id",
+                            "in": "header",
+                            "description": "ID of delegation.",
+                            "type": "string",
+                            "example": "MCZq7ugPkVNireoYPdHxBV"
+                        }
+                    ],
+                    "produces": [
+                        "application/json"
+                    ],
+                    "responses": {
+                        "201": {
+                            "description": "OK",
+                            "schema": {
+                                "$ref": "#/components/schemas/User"
+                            },
+                        },
+                    }
+                },
+                "put": {
+                    "tags": ["Delegation"],
+                    "summary": "Adds new delegation.",
+                    "parameters": [
+                        {
+                            "name": "token",
+                            "in": "header",
+                            "description": "Token of logged user.",
+                            "type": "string",
+                            "example": "WuupcYvsqnLNoFGtvp64TW"
+                        }
+                    ],
+                    "requestBody": {
+                        "description": "Changes existing delegation.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Delegation"
+                                },
+                                "example": {
+                                    "id": 'MCZq7ugPkVNireoYPdHxBV',
+                                    "title": "new_title",
+                                }
+                            }
+                        }
+                    },
+                    "produces": [
+                        "application/json"
+                    ],
+                    "responses": {
+                        "201": {
+                            "description": "OK",
+                            "schema": {
+                                "$ref": "#/components/schemas/Delegation"
+                            },
+                        },
+                    }
+                }
+            },
+
         },
         "components": {
             "schemas": {

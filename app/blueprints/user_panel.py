@@ -15,7 +15,7 @@ def get_countries_list():
     return jsonify(countries_list)
 
 
-@user_panel.route('/user_panel', methods=['GET'])
+@user_panel.route('/delegations', methods=['GET'])
 @User.is_logged_in
 def user_panel_view():
     user = User.get_user_by_token(request.headers.get('token'))
@@ -24,50 +24,41 @@ def user_panel_view():
     return jsonify(delegations)
 
 
-@user_panel.route('/user_panel', methods=['POST'])
+@user_panel.route('/add_delegation', methods=['POST'])
 @User.is_logged_in
 def add_delegation_request():
     user = User.get_user_by_token(request.headers.get('token'))
-    # delegation_details = request.get_json()
-    delegation_details = {'title': 'jakistitle',
-                          'id': uuid(),
-                          'maker_id': user.id}
+    delegation_details = request.get_json()
+    delegation_details['id'] = uuid()
+    delegation_details['maker_id'] = user.id
     try:
         delegation_to_add = Delegation(**delegation_details)
         sqlalchemy_session.add(delegation_to_add)
         sqlalchemy_session.commit()
-        return 'Success'
+        return 'Success.'
     except IntegrityError:
         sqlalchemy_session.rollback()
-        return 'Delegation with same ID already exists.'
+        return 'Fail.'
 
 
 @user_panel.route('/modify_delegation', methods=['GET'])
 @User.is_logged_in
 def show_delegation():
-    # delegation_details = request.get_json()
-    delegation_details = {'id': '3VCL9nvJfedn7n3RegBPVE'}
-    delegation_to_show = Delegation.get_delegation_by_id(delegation_details['id'])
+    delegation_to_show = Delegation.get_delegation_by_id(request.headers.get('id'))
+    if delegation_to_show is None:
+        return {'response': "Cannot find delegation with provided ID."}
     return str(delegation_to_show)
 
 
 @user_panel.route('/modify_delegation', methods=['PUT'])
 @User.is_logged_in
 def modify_delegation():
-    # delegation_details = request.get_json()
-    delegation_details = {'id': '3VCL9nvJfedn7n3RegBPVE'}
-    # modifications_dict = request.get_json()
-    modifications_dict = {'title': 'changed again',
-                          'worker_id': '63fBoF58UX2CaV7XusfaAf'}
+    body = request.get_json()
+    delegation_id = body['id']
+    del body['id']
     try:
-        Delegation.modify_delegation(delegation_details, modifications_dict)
+        Delegation.modify_delegation(delegation_id, body)
         return 'success'
     except InvalidRequestError:
         return 'fail'
 
-
-@user_panel.route('/x')
-def get_delegation():
-    user_token = request.args.get("token")
-    user = User.get_user_by_token(user_token)
-    return jsonify(user)
