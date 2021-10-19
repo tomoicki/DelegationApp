@@ -12,6 +12,12 @@ load_dotenv()
 Base = declarative_base()
 
 
+class GetByID:
+    @classmethod
+    def get_by_id(cls, provided_id: int):
+        return sqlalchemy_session.get(cls, provided_id)
+
+
 class Role(enum.Enum):
     user = 'user'
     manager = 'manager'
@@ -30,21 +36,29 @@ class User(Base):
     password = Column(String)
     role = Column(Enum(Role))
     is_active = Column(Boolean)
-    token = Column(String)
+    token = Column(String, unique=True)
     # many to one
     # worker_to_delegation = relationship("Delegation", back_populates='to_worker')
     # maker_to_delegation = relationship("Delegation", back_populates='to_maker')
     # approver_to_delegation = relationship("Delegation", back_populates='to_approver')
+    # def __init__(self, *args):
+    #     super(Base).__init__(*args)
+    def __str__(self):
+        return self.first_name + ' ' + self.last_name
 
     def get_user_delegations(self):
         return sqlalchemy_session.query(Delegation).filter(Delegation.worker_id == self.id).all()
 
     @classmethod
-    def get_user_by_token(cls, provided_token: str):
+    def get_by_id(cls, provided_id: int):
+        return sqlalchemy_session.get(cls, provided_id)
+
+    @classmethod
+    def get_by_token(cls, provided_token: str):
         return sqlalchemy_session.query(cls).filter(cls.token == provided_token).first()
 
     @classmethod
-    def get_user_by_email(cls, provided_email: str):
+    def get_by_email(cls, provided_email: str):
         return sqlalchemy_session.query(cls).filter(cls.email == provided_email).first()
 
     @classmethod
@@ -157,7 +171,7 @@ class Country(Base):
     __tablename__ = 'Country'
     # fields
     id = Column(Integer, primary_key=True)
-    name = Column(String)
+    name = Column(String, unique=True)
     # one to many
     currency_id = Column(Integer, ForeignKey('Currency.id'))
     # to_currency = relationship("Currency", back_populates='to_country')
@@ -192,4 +206,4 @@ class Attachment(Base):
     __tablename__ = 'Attachment'
     id = Column(Integer, primary_key=True)
     file = Column(LargeBinary)
-    settlement_id = Column(Integer, ForeignKey('Settlement.id'))
+    delegation_id = Column(Integer, ForeignKey('Delegation.id'))

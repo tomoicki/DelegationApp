@@ -92,7 +92,7 @@ def swagger_details_provider():
                             "in": "header",
                             "description": "Token of logged user.",
                             "type": "string",
-                            "example": "WuupcYvsqnLNoFGtvp64TW"
+                            "example": "e5k9ih78cEDjpqV5YQdxmf"
                         }
                     ],
                     "produces": [
@@ -118,7 +118,7 @@ def swagger_details_provider():
                             "in": "header",
                             "description": "Token of logged user.",
                             "type": "string",
-                            "example": "WuupcYvsqnLNoFGtvp64TW"
+                            "example": "e5k9ih78cEDjpqV5YQdxmf"
                         }
                     ],
                     "requestBody": {

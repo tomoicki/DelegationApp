@@ -27,6 +27,7 @@ user2 = User(**some_user)
 user2.first_name = 'Maker'
 user2.email = 'maker@gmail.com'
 user2.role = Role.manager
+user2.token = uuid()
 session.add(user2)
 session.commit()
 

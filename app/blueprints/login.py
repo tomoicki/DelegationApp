@@ -8,7 +8,7 @@ login = Blueprint('login', __name__)
 
 @login.route('/')
 def welcome():
-    return 'hiya'
+    return str(User.get_by_id(1))
 
 
 @login.route('/register', methods=['POST'])
