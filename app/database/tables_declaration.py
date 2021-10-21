@@ -68,7 +68,7 @@ class User(Base):
         def wrapper(*args, **kwargs):
             if cls.get_user_by_token(request.headers.get('token')) is not None:
                 return func(*args, **kwargs)
-            return "You are not logged in."
+            return "You are not logged in.", 401
         return wrapper
 
 
@@ -108,7 +108,7 @@ class Delegation(Base):
     # to_advance_payment = relationship('AdvancePayment', back_populates='to_delegation')
 
     @classmethod
-    def get_delegation_by_id(cls, provided_id: int):
+    def get_by_id(cls, provided_id: int):
         return sqlalchemy_session.query(cls).filter(cls.id == provided_id).first()
 
     @classmethod
