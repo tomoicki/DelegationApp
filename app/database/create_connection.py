@@ -4,11 +4,11 @@ from dotenv import load_dotenv
 from app.database.connection_functions import connection_to_db
 
 load_dotenv()
-connection_dictionary = {'host': env['PostgreSQL_host'],
-                         'port': env['PostgreSQL_port'],
-                         'user': env['PostgreSQL_user'],
-                         'password': env['PostgreSQL_password'],
-                         'db_name': env['PostgreSQL_db_name']}
+connection_dictionary = {'host': env['POSTGRE_SQL_HOST'],
+                         'port': env['POSTGRE_SQL_PORT'],
+                         'user': env['POSTGRE_SQL_USER'],
+                         'password': env['POSTGRE_SQL_PASSWORD'],
+                         'db_name': env['POSTGRE_SQL_DB_NAME']}
 
 #  make connection with PostgreSQL
 postgre_connection = connection_to_db(**connection_dictionary)

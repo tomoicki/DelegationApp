@@ -43,6 +43,7 @@ class User(Base):
     # approver_to_delegation = relationship("Delegation", back_populates='to_approver')
     # def __init__(self, *args):
     #     super(Base).__init__(*args)
+
     def __str__(self):
         return self.first_name + ' ' + self.last_name
 
