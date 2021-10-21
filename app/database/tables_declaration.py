@@ -47,7 +47,7 @@ class User(Base):
     def __str__(self):
         return self.first_name + ' ' + self.last_name
 
-    def get_user_delegations(self):
+    def get_delegations(self):
         return sqlalchemy_session.query(Delegation).filter(Delegation.worker_id == self.id).all()
 
     @classmethod
@@ -66,7 +66,7 @@ class User(Base):
     def is_logged_in(cls, func):
         @wraps(func)
         def wrapper(*args, **kwargs):
-            if cls.get_user_by_token(request.headers.get('token')) is not None:
+            if cls.get_by_token(request.headers.get('token')) is not None:
                 return func(*args, **kwargs)
             return "You are not logged in.", 401
         return wrapper
@@ -104,15 +104,25 @@ class Delegation(Base):
     country_id = Column(Integer, ForeignKey('Country.id'))
     # to_country = relationship('Country', back_populates='to_delegation')
     # many to one
-    # to_expense = relationship('Expense', back_populates='to_delegation')
-    # to_advance_payment = relationship('AdvancePayment', back_populates='to_delegation')
+    # to_expense = relationship('Expense', cascade="all, delete-orphan")
+    # to_advance_payment = relationship('AdvancePayment')
+
+    def delete(self):
+        sqlalchemy_session.delete(self)
+        sqlalchemy_session.commit()
 
     @classmethod
     def get_by_id(cls, provided_id: int):
         return sqlalchemy_session.query(cls).filter(cls.id == provided_id).first()
 
     @classmethod
-    def modify_delegation(cls, delegation_id: int, modifications_dict: dict):
+    def add(cls, delegation_details: dict):
+        delegation_to_add = Delegation(**delegation_details)
+        sqlalchemy_session.add(delegation_to_add)
+        sqlalchemy_session.commit()
+
+    @classmethod
+    def modify(cls, delegation_id: int, modifications_dict: dict):
         stmt = update(cls).where(cls.id == delegation_id).values(**modifications_dict)
         sqlalchemy_session.execute(stmt)
         sqlalchemy_session.commit()
@@ -130,8 +140,8 @@ class AdvancePayment(Base):
     id = Column(Integer, primary_key=True)
     amount = Column(Float)
     # one to many
-    delegation_id = Column(Integer, ForeignKey('Delegation.id'))
-    # to_delegation = relationship("Delegation", back_populates='to_advance_payment')
+    delegation_id = Column(Integer, ForeignKey('Delegation.id', ondelete="CASCADE"))
+    # to_delegation = relationship("Delegation", cascade="all, delete-orphan", single_parent=True)
     currency_id = Column(Integer, ForeignKey('Currency.id'))
     # to_currency = relationship("Currency", back_populates='to_advance_payment')
 
@@ -162,7 +172,7 @@ class Expense(Base):
     amount = Column(Float)
     description = Column(String)
     # one to many
-    delegation_id = Column(Integer, ForeignKey('Delegation.id'))
+    delegation_id = Column(Integer, ForeignKey('Delegation.id', ondelete="CASCADE"))
     # to_delegation = relationship("Delegation", back_populates='to_expense')
     currency_id = Column(Integer, ForeignKey('Currency.id'))
     # to_currency = relationship("Currency", back_populates='to_expense')
@@ -180,13 +190,13 @@ class Country(Base):
     # to_delegation = relationship("Delegation", back_populates='to_country')
 
 
-class Settlement(Base):
-    __tablename__ = 'Settlement'
-    # fields
-    id = Column(Integer, primary_key=True)
-    delegation_id = Column(Integer, ForeignKey('Delegation.id'))
-    approver_id = Column(Integer, ForeignKey('User.id'))
-    date = Column(DateTime)
+# class Settlement(Base):
+#     __tablename__ = 'Settlement'
+#     # fields
+#     id = Column(Integer, primary_key=True)
+#     delegation_id = Column(Integer, ForeignKey('Delegation.id'))
+#     approver_id = Column(Integer, ForeignKey('User.id'))
+#     date = Column(DateTime)
 
 
 class MealType(enum.Enum):
@@ -200,11 +210,11 @@ class Meal(Base):
     # fields
     id = Column(Integer, primary_key=True)
     type = Column(Enum(MealType))
-    delegation_id = Column(Integer, ForeignKey('Delegation.id'))
+    delegation_id = Column(Integer, ForeignKey('Delegation.id', ondelete="CASCADE"))
 
 
 class Attachment(Base):
     __tablename__ = 'Attachment'
     id = Column(Integer, primary_key=True)
     file = Column(LargeBinary)
-    delegation_id = Column(Integer, ForeignKey('Delegation.id'))
+    expense_id = Column(Integer, ForeignKey('Expense.id', ondelete="CASCADE"))

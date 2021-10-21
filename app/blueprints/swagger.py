@@ -43,10 +43,13 @@ def swagger_details_provider():
                     ],
                     "responses": {
                         "201": {
-                            "description": "OK",
-                            "schema": {
-                                "$ref": "#/components/schemas/User"
-                            },
+                            "description": "Success.",
+                        },
+                        "401": {
+                            "description": "Passwords do not match.",
+                        },
+                        "409": {
+                            "description": "User with provided email already registered.",
                         },
                     }
                 }
@@ -73,18 +76,18 @@ def swagger_details_provider():
                         "application/json"
                     ],
                     "responses": {
-                        "201": {
-                            "description": "OK",
-                            "schema": {
-                                "$ref": "#/components/schemas/User"
-                            },
+                        "20": {
+                            "description": "Ok",
+                        },
+                        "400": {
+                            "description": "Bad request.",
                         },
                     }
                 }
             },
             "/delegations": {
                 "get": {
-                    "tags": ["User"],
+                    "tags": ["Delegation"],
                     "summary": "Returns list of user delegations.",
                     "parameters": [
                         {
@@ -92,23 +95,18 @@ def swagger_details_provider():
                             "in": "header",
                             "description": "Token of logged user.",
                             "type": "string",
-                            "example": "e5k9ih78cEDjpqV5YQdxmf"
+                            "example": "ieZJQPebstKXutENPiQNmh"
                         }
                     ],
                     "produces": [
                         "application/json"
                     ],
                     "responses": {
-                        "201": {
+                        "200": {
                             "description": "OK",
-                            "schema": {
-                                "$ref": "#/components/schemas/User"
-                            },
-                        },
+                        }
                     }
-                }
-            },
-            "/add_delegation": {
+                },
                 "post": {
                     "tags": ["Delegation"],
                     "summary": "Adds new delegation.",
@@ -139,15 +137,15 @@ def swagger_details_provider():
                     ],
                     "responses": {
                         "201": {
-                            "description": "OK",
-                            "schema": {
-                                "$ref": "#/components/schemas/Delegation"
-                            },
+                            "description": "Success.",
+                        },
+                        "404": {
+                            "description": "Fail.",
                         },
                     }
                 }
             },
-            "/modify_delegation": {
+            "/delegations/{delegation_id}": {
                 "get": {
                     "tags": ["Delegation"],
                     "summary": "Shows delegation details.",
@@ -160,28 +158,30 @@ def swagger_details_provider():
                             "example": "2T7y2x29rpxQJT4474RPWv"
                         },
                         {
-                            "name": "id",
-                            "in": "header",
-                            "description": "ID of delegation.",
-                            "type": "string",
-                            "example": "MCZq7ugPkVNireoYPdHxBV"
+                            "name": "delegation_id",
+                            "in": "path",
+                            "description": "ID of the delegation to show.",
+                            "type": "int"
                         }
                     ],
                     "produces": [
                         "application/json"
                     ],
                     "responses": {
-                        "201": {
+                        "200": {
                             "description": "OK",
-                            "schema": {
-                                "$ref": "#/components/schemas/User"
-                            },
+                        },
+                        "403": {
+                            "description": "You dont have the rights to see this delegation.",
+                        },
+                        "404": {
+                            "description": "Cannot find delegation with provided ID.",
                         },
                     }
                 },
                 "put": {
                     "tags": ["Delegation"],
-                    "summary": "Adds new delegation.",
+                    "summary": "Modifies existing delegation.",
                     "parameters": [
                         {
                             "name": "token",
@@ -189,6 +189,12 @@ def swagger_details_provider():
                             "description": "Token of logged user.",
                             "type": "string",
                             "example": "2T7y2x29rpxQJT4474RPWv"
+                        },
+                        {
+                            "name": "delegation_id",
+                            "in": "path",
+                            "description": "ID of the delegation to modify.",
+                            "type": "int"
                         }
                     ],
                     "requestBody": {
@@ -210,10 +216,52 @@ def swagger_details_provider():
                     ],
                     "responses": {
                         "201": {
-                            "description": "OK",
-                            "schema": {
-                                "$ref": "#/components/schemas/Delegation"
-                            },
+                            "description": "Success.",
+                        },
+                        "400": {
+                            "description": "Fail."
+                        },
+                        "403": {
+                            "description": "You dont have the rights to modify this delegation.",
+                        },
+                        "404": {
+                            "description": "Cannot find delegation with provided ID.",
+                        }
+                    }
+                },
+                "delete": {
+                    "tags": ["Delegation"],
+                    "summary": "Deletes delegation.",
+                    "parameters": [
+                        {
+                            "name": "token",
+                            "in": "header",
+                            "description": "Token of logged user.",
+                            "type": "string",
+                            "example": "LFvxPVWyetuPyKo8ZrLm5F"
+                        },
+                        {
+                            "name": "delegation id",
+                            "in": "path",
+                            "description": "ID of the delegation to delete.",
+                            "type": "int"
+                        }
+                    ],
+                    "produces": [
+                        "application/json"
+                    ],
+                    "responses": {
+                        "201": {
+                            "description": "Success.",
+                        },
+                        "400": {
+                            "description": "Fail."
+                        },
+                        "403": {
+                            "description": "You dont have the rights to delete this delegation.",
+                        },
+                        "404": {
+                            "description": "Cannot find delegation with provided ID.",
                         },
                     }
                 }
@@ -226,7 +274,7 @@ def swagger_details_provider():
                         "application/json"
                     ],
                     "responses": {
-                        "201": {
+                        "200": {
                             "description": "OK",
                         },
                     }

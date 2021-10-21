@@ -15,7 +15,7 @@ def welcome():
 def register_new_user():
     user_credentials = request.get_json()
     if user_credentials['password'] != user_credentials['retype_password']:
-        return {'response': 'Passwords do not match.'}, 404
+        return {'response': 'Passwords do not match.'}, 401
     user_credentials.update({'role': Role.user, 'is_active': True, 'token': uuid()})
     del user_credentials['retype_password']
     try:
@@ -25,7 +25,7 @@ def register_new_user():
         return 'Success.', 201
     except IntegrityError:
         sqlalchemy_session.rollback()
-        return {'response': 'User with provided email already registered.'}, 404
+        return {'response': 'User with provided email already registered.'}, 409
 
 
 @login.route('/login', methods=['POST'])

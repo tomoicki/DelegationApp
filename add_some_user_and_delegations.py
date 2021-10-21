@@ -30,6 +30,11 @@ some_user = {'first_name': 'First',
              'token': uuid()}
 user1 = User(**some_user)
 session.add(user1)
+user11 = User(**some_user)
+user11.first_name = 'User2'
+user11.email = 'user2@gmail.com'
+user11.token = uuid()
+session.add(user11)
 user2 = User(**some_user)
 user2.first_name = 'Maker'
 user2.email = 'maker@gmail.com'
