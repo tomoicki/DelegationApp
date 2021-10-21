@@ -8,24 +8,24 @@ login = Blueprint('login', __name__)
 
 @login.route('/')
 def welcome():
-    return str(User.get_by_id(1))
+    return str(User.get_by_id(1)), 200
 
 
 @login.route('/register', methods=['POST'])
 def register_new_user():
     user_credentials = request.get_json()
     if user_credentials['password'] != user_credentials['retype_password']:
-        return {'response': 'Passwords do not match.'}
+        return {'response': 'Passwords do not match.'}, 404
     user_credentials.update({'role': Role.user, 'is_active': True, 'token': uuid()})
     del user_credentials['retype_password']
     try:
         user = User(**user_credentials)
         sqlalchemy_session.add(user)
         sqlalchemy_session.commit()
-        return 'success'
+        return 'Success.', 201
     except IntegrityError:
         sqlalchemy_session.rollback()
-        return {'response': 'User with provided email already registered.'}
+        return {'response': 'User with provided email already registered.'}, 404
 
 
 @login.route('/login', methods=['POST'])
@@ -33,14 +33,14 @@ def login_users():
     user_credentials = request.get_json()
     if 'email' in user_credentials.keys():
         try:
-            user = User.get_user_by_email(user_credentials['email'])
+            user = User.get_by_email(user_credentials['email'])
         except TypeError or KeyError:
-            return {'response': 'bad request'}
+            return {'response': 'Bad request.'}, 400
         if user is None:
-            return {'response': 'cannot find user with provided email'}
+            return {'response': 'Cannot find user with provided email.'}
         if user_credentials['password'] != user.password:
-            return {'response': 'bad password'}
-        return {'token': user.token}
+            return {'response': 'Bad password.'}
+        return {'token': user.token}, 200
     else:
-        return {'response': "wrong input, need 'email' key"}
+        return {'response': "Wrong input, need 'email' key."}, 400
 
