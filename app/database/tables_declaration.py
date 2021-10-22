@@ -1,21 +1,24 @@
 import enum
 from flask import request
 from functools import wraps
-from sqlalchemy import Column, LargeBinary, Integer, String, ForeignKey, Date, Float, Time, Enum, Boolean, DateTime, update, delete
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, LargeBinary, Integer, String, ForeignKey, Date, Float, Time, Enum, Boolean, DateTime, \
+    update, delete
+from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
 from dotenv import load_dotenv
 from app.database.create_connection import sqlalchemy_session
 
 load_dotenv()
 
-Base = declarative_base()
 
-
-class GetByID:
+class Base:
     @classmethod
     def get_by_id(cls, provided_id: int):
-        return sqlalchemy_session.get(cls, provided_id)
+        if provided_id is not None and provided_id != 'None':
+            return sqlalchemy_session.get(cls, provided_id)
+
+
+Base = declarative_base(cls=Base)
 
 
 class Role(enum.Enum):
@@ -25,7 +28,6 @@ class Role(enum.Enum):
     admin = 'admin'
 
 
-# main Tables
 class User(Base):
     __tablename__ = 'User'
     # fields
@@ -38,21 +40,13 @@ class User(Base):
     is_active = Column(Boolean)
     token = Column(String, unique=True)
     # many to one
-    # worker_to_delegation = relationship("Delegation", back_populates='to_worker')
-    # maker_to_delegation = relationship("Delegation", back_populates='to_maker')
-    # approver_to_delegation = relationship("Delegation", back_populates='to_approver')
-    # def __init__(self, *args):
-    #     super(Base).__init__(*args)
+    settlement = relationship("Settlement", backref='approver')
 
     def __str__(self):
         return self.first_name + ' ' + self.last_name
 
     def get_delegations(self):
         return sqlalchemy_session.query(Delegation).filter(Delegation.worker_id == self.id).all()
-
-    @classmethod
-    def get_by_id(cls, provided_id: int):
-        return sqlalchemy_session.get(cls, provided_id)
 
     @classmethod
     def get_by_token(cls, provided_token: str):
@@ -69,15 +63,14 @@ class User(Base):
             if cls.get_by_token(request.headers.get('token')) is not None:
                 return func(*args, **kwargs)
             return "You are not logged in.", 401
+
         return wrapper
 
 
 class DelegationStatus(enum.Enum):
     submitted = 'submitted'
     approved_by_manager = 'approved_by_manager'
-    applied_for_reimbursement = 'applied_for_reimbursement'
-    approved_by_hr = 'approved_by_hr'
-    closed = 'closed'
+    settled = 'settled'
 
 
 class Delegation(Base):
@@ -88,32 +81,41 @@ class Delegation(Base):
     title = Column(String)
     submit_date = Column(DateTime)
     departure_date = Column(Date)
-    departure_time = Column(Time)
     arrival_date = Column(Date)
-    arrival_time = Column(Time)
     reason = Column(String)
     remarks = Column(String)
-    diet = Column(Float)
     # one to many
-    worker_id = Column(Integer, ForeignKey('User.id'))
-    # to_worker = relationship("User", foreign_keys=[worker_id])
-    maker_id = Column(Integer, ForeignKey('User.id'))
-    # to_maker = relationship("User", foreign_keys=[maker_id])
-    approved_by_id = Column(Integer, ForeignKey('User.id'))
-    # to_approver = relationship("User", foreign_keys=[approved_by_id])
+    delegate_id = Column(Integer, ForeignKey('User.id'))
+    delegate = relationship('User',
+                            backref=backref('delegation_his'),
+                            primaryjoin='foreign(Delegation.delegate_id) == remote(User.id)')
+    creator_id = Column(Integer, ForeignKey('User.id'))
+    creator = relationship('User',
+                           backref=backref('delegation_created'),
+                           primaryjoin='foreign(Delegation.creator_id) == remote(User.id)')
+    approver_id = Column(Integer, ForeignKey('User.id'))
+    approver = relationship('User',
+                            backref=backref('delegation_approved'),
+                            primaryjoin='foreign(Delegation.approver_id) == remote(User.id)')
     country_id = Column(Integer, ForeignKey('Country.id'))
-    # to_country = relationship('Country', back_populates='to_delegation')
     # many to one
-    # to_expense = relationship('Expense', cascade="all, delete-orphan")
-    # to_advance_payment = relationship('AdvancePayment')
+    advance_payment = relationship('AdvancePayment', backref='delegation')
+    settlement = relationship('Settlement', backref='delegation')
 
     def delete(self):
         sqlalchemy_session.delete(self)
         sqlalchemy_session.commit()
 
-    @classmethod
-    def get_by_id(cls, provided_id: int):
-        return sqlalchemy_session.query(cls).filter(cls.id == provided_id).first()
+    def show(self):
+        dicted = self.__dict__
+        if '_sa_instance_state' in dicted:
+            del dicted['_sa_instance_state']
+        dicted = {key.replace('country_id', 'country'): (Country.get_by_id(value).name if 'country' in key else value)
+                  for key, value in dicted.items()}
+        dicted = {key: (str(User.get_by_id(value)) if '_id' in key else value)
+                  for key, value in dicted.items()}
+        dicted = {(key.replace('_id', '') if '_id' in key else key): value for key, value in dicted.items()}
+        return dicted
 
     @classmethod
     def add(cls, delegation_details: dict):
@@ -127,12 +129,6 @@ class Delegation(Base):
         sqlalchemy_session.execute(stmt)
         sqlalchemy_session.commit()
 
-    def __str__(self):
-        dicted = self.__dict__
-        if '_sa_instance_state' in dicted:
-            del dicted['_sa_instance_state']
-        return str(dicted)
-
 
 class AdvancePayment(Base):
     __tablename__ = 'AdvancePayment'
@@ -141,20 +137,104 @@ class AdvancePayment(Base):
     amount = Column(Float)
     # one to many
     delegation_id = Column(Integer, ForeignKey('Delegation.id', ondelete="CASCADE"))
-    # to_delegation = relationship("Delegation", cascade="all, delete-orphan", single_parent=True)
     currency_id = Column(Integer, ForeignKey('Currency.id'))
-    # to_currency = relationship("Currency", back_populates='to_advance_payment')
+
+
+class Country(Base):
+    __tablename__ = 'Country'
+    # fields
+    id = Column(Integer, primary_key=True)
+    name = Column(String, unique=True)
+    diet = Column(Float)
+    accommodation_limit = Column(Float)
+    # one to many
+    currency_id = Column(Integer, ForeignKey('Currency.id'))
+    # many to one
+    delegation = relationship("Delegation", backref='country')
 
 
 class Currency(Base):
     __tablename__ = 'Currency'
     # fields
     id = Column(Integer, primary_key=True)
-    name = Column(String)
+    name = Column(String, unique=True)
     # many to one
-    # to_advance_payment = relationship("AdvancePayment", back_populates='to_currency')
-    # to_expense = relationship("Expense", back_populates='to_currency')
-    # to_country = relationship("Country", back_populates='to_currency')
+    country = relationship("Country", backref='currency')
+    advance_payment = relationship("AdvancePayment", backref='currency')
+    expense = relationship("Expense", backref='currency')
+
+
+class SettlementStatusOptions(enum.Enum):
+    submitted = 'submitted'
+    approved_by_manager = 'approved_by_manager'
+    denied_by_manager = 'denied_by_manager'
+    approved_by_hr = 'approved_by_hr'
+    denied_by_hr = 'denied_by_hr'
+    closed = 'closed'
+
+
+class SettlementStatus(Base):
+    __tablename__ = 'SettlementStatus'
+    # fields
+    id = Column(Integer, primary_key=True)
+    status = Column(Enum(SettlementStatusOptions))
+    reason = Column(String)
+    # one to many
+    settlement_id = Column(Integer, ForeignKey('Settlement.id'))
+
+
+class Settlement(Base):
+    __tablename__ = 'Settlement'
+    # fields
+    id = Column(Integer, primary_key=True)
+    departure_date = Column(Date)
+    departure_time = Column(Time)
+    arrival_date = Column(Date)
+    arrival_time = Column(Time)
+    diet = Column(Float)
+    # one to many
+    delegation_id = Column(Integer, ForeignKey('Delegation.id'))
+    approver_id = Column(Integer, ForeignKey('User.id'))
+    # many to one
+    expense = relationship('Expense', backref='settlement')
+    meal = relationship('Meal', backref='settlement')
+    status = relationship('SettlementStatus', backref='settlement')
+
+    def current_status(self):
+        return self.status[-1].status.value
+
+    def change_status(self, changed_status: str):
+        if changed_status in [enum_option.value for enum_option in SettlementStatusOptions]:
+            if self.current_status() != changed_status:
+                new_status = SettlementStatus(settlement_id=self.id,
+                                              status=changed_status)
+                sqlalchemy_session.add(new_status)
+                sqlalchemy_session.commit()
+
+    @classmethod
+    def create(cls, settlement_details: dict):
+        settlement = Settlement(**settlement_details)
+        sqlalchemy_session.add(settlement)
+        sqlalchemy_session.commit()
+        entry_status = SettlementStatus(settlement_id=settlement.id,
+                                        status=SettlementStatusOptions.submitted)
+        sqlalchemy_session.add(entry_status)
+        sqlalchemy_session.commit()
+
+
+class MealType(enum.Enum):
+    breakfast = 'breakfast'
+    lunch = 'lunch'
+    supper = 'supper'
+
+
+class Meal(Base):
+    __tablename__ = 'Meal'
+    # fields
+    id = Column(Integer, primary_key=True)
+    type = Column(Enum(MealType))
+    # one to many
+    settlement_id = Column(Integer, ForeignKey('Settlement.id', ondelete="CASCADE"))
 
 
 class ExpenseType(enum.Enum):
@@ -172,49 +252,16 @@ class Expense(Base):
     amount = Column(Float)
     description = Column(String)
     # one to many
-    delegation_id = Column(Integer, ForeignKey('Delegation.id', ondelete="CASCADE"))
-    # to_delegation = relationship("Delegation", back_populates='to_expense')
+    settlement_id = Column(Integer, ForeignKey('Settlement.id', ondelete="CASCADE"))
     currency_id = Column(Integer, ForeignKey('Currency.id'))
-    # to_currency = relationship("Currency", back_populates='to_expense')
-
-
-class Country(Base):
-    __tablename__ = 'Country'
-    # fields
-    id = Column(Integer, primary_key=True)
-    name = Column(String, unique=True)
-    # one to many
-    currency_id = Column(Integer, ForeignKey('Currency.id'))
-    # to_currency = relationship("Currency", back_populates='to_country')
     # many to one
-    # to_delegation = relationship("Delegation", back_populates='to_country')
-
-
-# class Settlement(Base):
-#     __tablename__ = 'Settlement'
-#     # fields
-#     id = Column(Integer, primary_key=True)
-#     delegation_id = Column(Integer, ForeignKey('Delegation.id'))
-#     approver_id = Column(Integer, ForeignKey('User.id'))
-#     date = Column(DateTime)
-
-
-class MealType(enum.Enum):
-    breakfast = 'breakfast'
-    lunch = 'lunch'
-    supper = 'supper'
-
-
-class Meal(Base):
-    __tablename__ = 'Meal'
-    # fields
-    id = Column(Integer, primary_key=True)
-    type = Column(Enum(MealType))
-    delegation_id = Column(Integer, ForeignKey('Delegation.id', ondelete="CASCADE"))
+    attachment = relationship('Attachment', backref='expense')
 
 
 class Attachment(Base):
     __tablename__ = 'Attachment'
+    # fields
     id = Column(Integer, primary_key=True)
     file = Column(LargeBinary)
+    # one to many
     expense_id = Column(Integer, ForeignKey('Expense.id', ondelete="CASCADE"))

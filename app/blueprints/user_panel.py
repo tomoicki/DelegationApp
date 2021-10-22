@@ -19,8 +19,8 @@ def get_countries_list():
 @User.is_logged_in
 def user_panel_view():
     user = User.get_by_token(request.headers.get('token'))
-    delegations = user.get_delegations()
-    delegations = [str(delegation) for delegation in delegations]
+    delegations = user.delegation_his
+    delegations = [delegation.show() for delegation in delegations]
     return jsonify(delegations), 200
 
 

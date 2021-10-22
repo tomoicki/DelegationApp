@@ -58,48 +58,17 @@ session.commit()
 some_delegation = {'title': 'to wroclaw',
                    'submit_date': datetime.datetime.now(),
                    'departure_date': datetime.date.fromisocalendar(2021, 5, 3),
-                   'departure_time': datetime.time(10, 10, 10),
                    'arrival_date': datetime.date.fromisocalendar(2021, 5, 4),
-                   'arrival_time': datetime.time(20, 20, 20),
-                   'worker_id': user1.id,
-                   'maker_id': user2.id,
+                   'delegate_id': user1.id,
+                   'creator_id': user1.id,
                    'country_id': country1.id}
 delegation1 = Delegation(**some_delegation)
 session.add(delegation1)
 delegation2 = Delegation(**some_delegation)
 delegation2.title = 'to warsaw'
-delegation2.maker_id = user1.id
+delegation2.creator_id = user2.id
 delegation2.country_id = country2.id
 session.add(delegation2)
-session.commit()
-
-some_expense = {'type': ExpenseType.accommodation,
-                'amount': 123.45,
-                'currency_id': currency1.id,
-                'delegation_id': delegation1.id}
-expense1 = Expense(**some_expense)
-session.add(expense1)
-expense2 = Expense(**some_expense)
-expense2.type = ExpenseType.transit
-expense2.amount = 99
-expense2.delegation_id = delegation1.id
-session.add(expense2)
-expense3 = Expense(**some_expense)
-expense3.type = ExpenseType.other
-expense3.amount = 11
-expense3.delegation_id = delegation2.id
-session.add(expense3)
-session.commit()
-
-meal1 = Meal(type=MealType.breakfast,
-             delegation_id=delegation1.id)
-session.add(meal1)
-meal2 = Meal(type=MealType.supper,
-             delegation_id=delegation1.id)
-session.add(meal2)
-meal3 = Meal(type=MealType.lunch,
-             delegation_id=delegation2.id)
-session.add(meal3)
 session.commit()
 
 advance_payment1 = AdvancePayment(amount=121.1,
@@ -110,5 +79,51 @@ advance_payment2 = AdvancePayment(amount=10,
                                   delegation_id=delegation2.id,
                                   currency_id=currency2.id)
 session.add(advance_payment2)
+session.commit()
+
+some_settlement = {'departure_date': delegation1.departure_date,
+                   'departure_time': datetime.time(10, 10, 10),
+                   'delegation_id': delegation1.id}
+settlement1 = Settlement(**some_settlement)
+session.add(settlement1)
+session.commit()
+
+status1 = SettlementStatus(settlement_id=settlement1.id,
+                           status=SettlementStatusOptions.submitted)
+session.add(status1)
+session.commit()
+status2 = SettlementStatus(settlement_id=settlement1.id,
+                           status=SettlementStatusOptions.denied_by_hr,
+                           reason='bo nie')
+session.add(status2)
+session.commit()
+
+some_expense = {'type': ExpenseType.accommodation,
+                'amount': 123.45,
+                'currency_id': currency1.id,
+                'settlement_id': settlement1.id}
+expense1 = Expense(**some_expense)
+session.add(expense1)
+expense2 = Expense(**some_expense)
+expense2.type = ExpenseType.transit
+expense2.amount = 99
+expense2.settlement_id = settlement1.id
+session.add(expense2)
+expense3 = Expense(**some_expense)
+expense3.type = ExpenseType.other
+expense3.amount = 11
+expense3.settlement_id = settlement1.id
+session.add(expense3)
+session.commit()
+
+meal1 = Meal(type=MealType.breakfast,
+             settlement_id=settlement1.id)
+session.add(meal1)
+meal2 = Meal(type=MealType.supper,
+             settlement_id=settlement1.id)
+session.add(meal2)
+meal3 = Meal(type=MealType.lunch,
+             settlement_id=settlement1.id)
+session.add(meal3)
 session.commit()
 

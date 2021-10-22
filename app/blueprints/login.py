@@ -8,6 +8,12 @@ login = Blueprint('login', __name__)
 
 @login.route('/')
 def welcome():
+    set1 = Settlement.get_by_id(1)
+    recent_status = set1.status[-1].status.value
+    set1.change_status('denied_by_manager')
+    recent_status = set1.status[-1]
+    delle = Delegation.get_by_id(1)
+    print(delle.show())
     return str(User.get_by_id(1)), 200
 
 
