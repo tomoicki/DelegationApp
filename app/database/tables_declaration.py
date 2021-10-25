@@ -12,6 +12,10 @@ load_dotenv()
 
 
 class Base:
+    def delete(self):
+        sqlalchemy_session.delete(self)
+        sqlalchemy_session.commit()
+
     @classmethod
     def get_by_id(cls, provided_id: int):
         if provided_id is not None and provided_id != 'None':
@@ -39,14 +43,9 @@ class User(Base):
     role = Column(Enum(Role))
     is_active = Column(Boolean)
     token = Column(String, unique=True)
-    # many to one
-    settlement = relationship("Settlement", backref='approver')
 
     def __str__(self):
         return self.first_name + ' ' + self.last_name
-
-    def get_delegations(self):
-        return sqlalchemy_session.query(Delegation).filter(Delegation.worker_id == self.id).all()
 
     @classmethod
     def get_by_token(cls, provided_token: str):
@@ -63,21 +62,30 @@ class User(Base):
             if cls.get_by_token(request.headers.get('token')) is not None:
                 return func(*args, **kwargs)
             return "You are not logged in.", 401
-
         return wrapper
 
 
-class DelegationStatus(enum.Enum):
+class DelegationStatusOptions(enum.Enum):
     submitted = 'submitted'
     approved_by_manager = 'approved_by_manager'
     settled = 'settled'
+    rejected = 'rejected'
+
+
+class DelegationStatus(Base):
+    __tablename__ = 'DelegationStatus'
+    # fields
+    id = Column(Integer, primary_key=True)
+    status = Column(Enum(DelegationStatusOptions))
+    reason = Column(String)
+    # one to many
+    delegation_id = Column(Integer, ForeignKey('Delegation.id', ondelete="CASCADE"))
 
 
 class Delegation(Base):
     __tablename__ = 'Delegation'
     # fields
     id = Column(Integer, primary_key=True)
-    status = Column(Enum(DelegationStatus))
     title = Column(String)
     submit_date = Column(DateTime)
     departure_date = Column(Date)
@@ -91,22 +99,41 @@ class Delegation(Base):
                             primaryjoin='foreign(Delegation.delegate_id) == remote(User.id)')
     creator_id = Column(Integer, ForeignKey('User.id'))
     creator = relationship('User',
-                           backref=backref('delegation_created'),
+                           backref=backref('delegation_creator'),
                            primaryjoin='foreign(Delegation.creator_id) == remote(User.id)')
     approver_id = Column(Integer, ForeignKey('User.id'))
     approver = relationship('User',
-                            backref=backref('delegation_approved'),
+                            backref=backref('delegation_approver'),
                             primaryjoin='foreign(Delegation.approver_id) == remote(User.id)')
     country_id = Column(Integer, ForeignKey('Country.id'))
     # many to one
     advance_payment = relationship('AdvancePayment', backref='delegation')
     settlement = relationship('Settlement', backref='delegation')
+    status = relationship('DelegationStatus', backref='delegation')
 
-    def delete(self):
-        sqlalchemy_session.delete(self)
-        sqlalchemy_session.commit()
+    def current_status(self):
+        return self.status[-1].status.value
+
+    def change_status(self, changed_status: str, reason: str):
+        if changed_status in [enum_option.value for enum_option in DelegationStatusOptions]:
+            if self.current_status() != changed_status:
+                new_status = DelegationStatus(delegation_id=self.id,
+                                              status=changed_status,
+                                              reason=reason)
+                sqlalchemy_session.add(new_status)
+                sqlalchemy_session.commit()
 
     def show(self):
+        delegation_to_show = {"id": self.id,
+                              "title": self.title,
+                              "reason": self.reason,
+                              "departure date": self.departure_date,
+                              "arrival date": self.arrival_date,
+                              "departure point": Country.get_by_id(self.country_id).name,
+                              "status": self.current_status()}
+        return delegation_to_show
+
+    def details(self):
         dicted = self.__dict__
         if '_sa_instance_state' in dicted:
             del dicted['_sa_instance_state']
@@ -117,17 +144,22 @@ class Delegation(Base):
         dicted = {(key.replace('_id', '') if '_id' in key else key): value for key, value in dicted.items()}
         return dicted
 
-    @classmethod
-    def add(cls, delegation_details: dict):
-        delegation_to_add = Delegation(**delegation_details)
-        sqlalchemy_session.add(delegation_to_add)
+    def modify(self, modifications_dict: dict):
+        stmt = update(Delegation).where(Delegation.id == self.id).values(**modifications_dict)
+        sqlalchemy_session.execute(stmt)
         sqlalchemy_session.commit()
 
     @classmethod
-    def modify(cls, delegation_id: int, modifications_dict: dict):
-        stmt = update(cls).where(cls.id == delegation_id).values(**modifications_dict)
-        sqlalchemy_session.execute(stmt)
+    def create(cls, delegation_details: dict):
+        delegation = Delegation(**delegation_details)
+        sqlalchemy_session.add(delegation)
         sqlalchemy_session.commit()
+        entry_status = DelegationStatus(delegation_id=delegation.id,
+                                        status=DelegationStatusOptions.submitted.value,
+                                        reason='Delegation creation.')
+        sqlalchemy_session.add(entry_status)
+        sqlalchemy_session.commit()
+        return delegation
 
 
 class AdvancePayment(Base):
@@ -180,13 +212,14 @@ class SettlementStatus(Base):
     status = Column(Enum(SettlementStatusOptions))
     reason = Column(String)
     # one to many
-    settlement_id = Column(Integer, ForeignKey('Settlement.id'))
+    settlement_id = Column(Integer, ForeignKey('Settlement.id', ondelete="CASCADE"))
 
 
 class Settlement(Base):
     __tablename__ = 'Settlement'
     # fields
     id = Column(Integer, primary_key=True)
+    submit_date = Column(DateTime)
     departure_date = Column(Date)
     departure_time = Column(Time)
     arrival_date = Column(Date)
@@ -195,6 +228,9 @@ class Settlement(Base):
     # one to many
     delegation_id = Column(Integer, ForeignKey('Delegation.id'))
     approver_id = Column(Integer, ForeignKey('User.id'))
+    approver = relationship('User',
+                            backref=backref('settlement_approver'),
+                            primaryjoin='foreign(Settlement.approver_id) == remote(User.id)')
     # many to one
     expense = relationship('Expense', backref='settlement')
     meal = relationship('Meal', backref='settlement')
@@ -203,13 +239,25 @@ class Settlement(Base):
     def current_status(self):
         return self.status[-1].status.value
 
-    def change_status(self, changed_status: str):
+    def change_status(self, changed_status: str, reason: str):
         if changed_status in [enum_option.value for enum_option in SettlementStatusOptions]:
             if self.current_status() != changed_status:
                 new_status = SettlementStatus(settlement_id=self.id,
-                                              status=changed_status)
+                                              status=changed_status,
+                                              reason=reason)
                 sqlalchemy_session.add(new_status)
                 sqlalchemy_session.commit()
+
+    def details(self):
+        dicted = self.__dict__
+        if '_sa_instance_state' in dicted:
+            del dicted['_sa_instance_state']
+        return dicted
+
+    def modify(self, modifications_dict: dict):
+        stmt = update(Settlement).where(Settlement.id == self.id).values(**modifications_dict)
+        sqlalchemy_session.execute(stmt)
+        sqlalchemy_session.commit()
 
     @classmethod
     def create(cls, settlement_details: dict):
@@ -217,9 +265,11 @@ class Settlement(Base):
         sqlalchemy_session.add(settlement)
         sqlalchemy_session.commit()
         entry_status = SettlementStatus(settlement_id=settlement.id,
-                                        status=SettlementStatusOptions.submitted)
+                                        status=SettlementStatusOptions.submitted.value,
+                                        reason='Settlement creation.')
         sqlalchemy_session.add(entry_status)
         sqlalchemy_session.commit()
+        return settlement
 
 
 class MealType(enum.Enum):

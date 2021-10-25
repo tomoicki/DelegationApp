@@ -127,7 +127,14 @@ def swagger_details_provider():
                                     "$ref": "#/components/schemas/Delegation"
                                 },
                                 "example": {
-                                    "title": "some_title"
+                                    "title": "some title",
+                                    "country_id": "gimme integer = id from /countries_dictionary",
+                                    "approver_id": "gimme integer = id from /managers_dictionary",
+                                    "arrival_date": "date",
+                                    "delegate_id": "gimme integer = id from /users_dictionary",
+                                    "departure_date": "date",
+                                    "reason": "some reason",
+                                    "remarks": "some remarks",
                                 }
                             }
                         }
@@ -205,7 +212,6 @@ def swagger_details_provider():
                                     "$ref": "#/components/schemas/Delegation"
                                 },
                                 "example": {
-                                    "id": '1',
                                     "title": "new_title",
                                 }
                             }
@@ -266,10 +272,123 @@ def swagger_details_provider():
                     }
                 }
             },
-            "/countries": {
+            "/delegations/{delegation_id}/settlements": {
                 "get": {
-                    "tags": ["Countries"],
+                    "tags": ["Settlement"],
+                    "summary": "Shows settlements for delegation.",
+                    "parameters": [
+                        {
+                            "name": "token",
+                            "in": "header",
+                            "description": "Token of logged user.",
+                            "type": "string",
+                            "example": "2T7y2x29rpxQJT4474RPWv"
+                        },
+                        {
+                            "name": "delegation_id",
+                            "in": "path",
+                            "description": "ID of the delegation to show.",
+                            "type": "int"
+                        }
+                    ],
+                    "produces": [
+                        "application/json"
+                    ],
+                    "responses": {
+                        "200": {
+                            "description": "OK",
+                        },
+                        "403": {
+                            "description": "You dont have the rights to see this delegation.",
+                        },
+                        "404": {
+                            "description": "Cannot find delegation with provided ID.",
+                        },
+                    }
+                },
+                "post": {
+                    "tags": ["Settlement"],
+                    "summary": "Adds new settlement.",
+                    "parameters": [
+                        {
+                            "name": "token",
+                            "in": "header",
+                            "description": "Token of logged user.",
+                            "type": "string",
+                            "example": "e5k9ih78cEDjpqV5YQdxmf"
+                        },
+                        {
+                            "name": "delegation_id",
+                            "in": "path",
+                            "description": "ID of the delegation to show.",
+                            "type": "int"
+                        }
+                    ],
+                    "requestBody": {
+                        "description": "Takes settlement details.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Delegation"
+                                },
+                                "example": {
+                                    "title": "some title",
+                                    "country_id": "gimme integer = id from /countries_dictionary",
+                                    "approver_id": "gimme integer = id from /managers_dictionary",
+                                    "arrival_date": "date",
+                                    "delegate_id": "gimme integer = id from /users_dictionary",
+                                    "departure_date": "date",
+                                    "reason": "some reason",
+                                    "remarks": "some remarks",
+                                }
+                            }
+                        }
+                    },
+                    "produces": [
+                        "application/json"
+                    ],
+                    "responses": {
+                        "201": {
+                            "description": "Success.",
+                        },
+                        "404": {
+                            "description": "Fail.",
+                        },
+                    }
+                },
+            },
+            "/countries_dictionary": {
+                "get": {
+                    "tags": ["Useful lists"],
                     "summary": "Shows list of countries.",
+                    "produces": [
+                        "application/json"
+                    ],
+                    "responses": {
+                        "200": {
+                            "description": "OK",
+                        },
+                    }
+                },
+            },
+            "/users_dictionary": {
+                "get": {
+                    "tags": ["Useful lists"],
+                    "summary": "Shows dictionary of all users with their id as key.",
+                    "produces": [
+                        "application/json"
+                    ],
+                    "responses": {
+                        "200": {
+                            "description": "OK",
+                        },
+                    }
+                },
+            },
+            "/managers_dictionary": {
+                "get": {
+                    "tags": ["Useful lists"],
+                    "summary": "Shows dictionary of all privileged users with their id as key.",
                     "produces": [
                         "application/json"
                     ],
@@ -296,6 +415,14 @@ def swagger_details_provider():
                         "token": {"type": "string"}
                     }
                 },
+                "DelegationStatus": {
+                    "properties": {
+                        "id": {"type": "integer", "format": 'primary key'},
+                        "status": {"type": "string"},
+                        "reason": {"type": "string"},
+                        "delegation_id": {"type": "integer", "format": "foreign key"},
+                    }
+                },
                 "Delegation": {
                     "properties": {
                         "id": {"type": "integer", "format": 'primary key'},
@@ -303,15 +430,12 @@ def swagger_details_provider():
                         "title": {"type": "string"},
                         "submit_date": {"type": "string"},
                         "departure_date": {"type": "string"},
-                        "departure_time": {"type": "Role", "format": "string"},
-                        "arrival_date": {"type": "boolean"},
-                        "arrival_time": {"type": "string"},
+                        "arrival_date": {"type": "string"},
                         "reason": {"type": "string"},
                         "remarks": {"type": "string"},
-                        "diet": {"type": "float"},
-                        "worker_id": {"type": "integer", "format": "foreign key"},
-                        "maker_id": {"type": "integer", "format": "foreign key"},
-                        "approved_by_id": {"type": "integer", "format": "foreign key"},
+                        "delegate_id": {"type": "integer", "format": "foreign key"},
+                        "creator_id": {"type": "integer", "format": "foreign key"},
+                        "approver_id": {"type": "integer", "format": "foreign key"},
                         "country_id": {"type": "integer", "format": "foreign key"}
                     }
                 },
@@ -323,22 +447,6 @@ def swagger_details_provider():
                         "currency_id": {"type": "integer", "format": "foreign key"},
                     }
                 },
-                "Currency": {
-                    "properties": {
-                        "id": {"type": "integer", "format": 'primary key'},
-                        "name": {"type": "string"},
-                    }
-                },
-                "Expense": {
-                    "properties": {
-                        "id": {"type": "integer", "format": 'primary key'},
-                        "type": {"type": "ExpenseType", "format": "string"},
-                        "amount": {"type": "float"},
-                        "description": {"type": "string"},
-                        "delegation_id": {"type": "integer", "format": 'foreign key'},
-                        "currency_id": {"type": "integer", "format": 'foreign key'},
-                    }
-                },
                 "Country": {
                     "properties": {
                         "id": {"type": "integer", "format": 'primary key'},
@@ -346,10 +454,29 @@ def swagger_details_provider():
                         "currency_id": {"type": "integer", "format": "foreign key"},
                     }
                 },
+                "Currency": {
+                    "properties": {
+                        "id": {"type": "integer", "format": 'primary key'},
+                        "name": {"type": "string"},
+                    }
+                },
+                "SettlementStatus": {
+                    "properties": {
+                        "id": {"type": "integer", "format": 'primary key'},
+                        "status": {"type": "string"},
+                        "reason": {"type": "string"},
+                        "settlement_id": {"type": "integer", "format": "foreign key"},
+                    }
+                },
                 "Settlement": {
                     "properties": {
                         "id": {"type": "integer", "format": 'primary key'},
-                        "date": {"type": "string"},
+                        "submit_date": {"type": "string"},
+                        "departure_date": {"type": "string"},
+                        "departure_time": {"type": "string"},
+                        "arrival_date": {"type": "string"},
+                        "arrival_time": {"type": "string"},
+                        "diet": {"type": "float"},
                         "delegation_id": {"type": "integer", "format": "foreign key"},
                         "approver_id": {"type": "integer", "format": "foreign key"},
                     }
@@ -358,14 +485,24 @@ def swagger_details_provider():
                     "properties": {
                         "id": {"type": "integer", "format": 'primary key'},
                         "type": {"type": "MealType", "format": "string"},
-                        "delegation_id": {"type": "integer", "format": "foreign key"},
+                        "settlement_id": {"type": "integer", "format": "foreign key"},
+                    }
+                },
+                "Expense": {
+                    "properties": {
+                        "id": {"type": "integer", "format": 'primary key'},
+                        "type": {"type": "ExpenseType", "format": "string"},
+                        "amount": {"type": "float"},
+                        "description": {"type": "string"},
+                        "settlement_id": {"type": "integer", "format": 'foreign key'},
+                        "currency_id": {"type": "integer", "format": 'foreign key'},
                     }
                 },
                 "Attachment": {
                     "properties": {
                         "id": {"type": "integer", "format": 'primary key'},
                         "file": {"type": "LargeBinary"},
-                        "settlement_id": {"type": "integer", "format": "foreign key"},
+                        "expense_id": {"type": "integer", "format": "foreign key"},
                     }
                 },
             }

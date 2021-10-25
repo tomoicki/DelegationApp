@@ -1,112 +1,112 @@
-﻿Country;Currency;Diet Rate;Accommodation Limit
-Afganistan;EUR;47;140
-Albania;EUR;41;120
-Algieria;EUR;50;200
-Angola;USD;61;180
-Arabia Saudyjska;EUR;45;180
-Argentyna;USD;50;150
-Armenia;EUR;42;145
-Australia;AUD;88;250
-Austria;EUR;52;130
-Azerbejdżan;EUR;43;150
-Bangladesz;USD;50;120
-Belgia;EUR;48;160
-Białoruś;EUR;42;130
-Bośnia i Hercegowina;EUR;41;100
-Brazylia;EUR;43;120
-Bułgaria;EUR;40;120
-Chile;USD;60;120
-Chiny;EUR;55;170
-Chorwacja;EUR;42;125
-Cypr;EUR;43;160
-Czechy;EUR;41;120
-Dania;DKK;406;1300
-Egipt;USD;55;150
-Ekwador;USD;44;110
-Estonia;EUR;41;100
-Etiopia;USD;55;300
-Finlandia;EUR;48;160
-Francja;EUR;50;180
-Grecja;EUR;48;140
-Gruzja;EUR;43;140
-Hiszpania;EUR;50;160
-Holandia;EUR;50;130
-Indie;EUR;38;190
-Indonezja;EUR;41;110
-Irak;USD;60;120
-Iran;EUR;41;95
-Irlandia;EUR;52;160
-Islandia;EUR;56;160
-Izrael;EUR;50;150
-Japonia;JPY;7532;22000
-Jemen;USD;48;160
-Jordania;EUR;40;95
-Kambodża;USD;45;100
-Kanada;CAD;71;190
-Katar;EUR;41;200
-Kazachstan;EUR;41;140
-Kenia;EUR;41;150
-Kirgistan;USD;41;150
-Kolumbia;USD;49;120
-Kongo, Demokratyczna Republika Konga;USD;66;220
-Korea Południowa;EUR;46;170
-Koreańska Republika Ludowo-Demokratyczna;EUR;48;170
-Kostaryka;USD;50;140
-Kuba;EUR;42;110
-Kuwejt;EUR;39;200
-Laos;USD;54;100
-Liban;USD;57;150
-Libia;EUR;52;100
-Liechtenstein;CHF;88;200
-Litwa;EUR;39;130
-Luksemburg;EUR;48;160
-Łotwa;EUR;57;132
-Macedonia;EUR;39;125
-Malezja;EUR;41;140
-Malta;EUR;43;180
-Maroko;EUR;41;130
-Meksyk;USD;53;140
-Mołdowa;EUR;41;85
-Monako;EUR;50;180
-Mongolia;EUR;45;140
-Niemcy;EUR;49;130
-Nigeria;EUR;46;150
-Norwegia;NOK;451;1500
-Nowa Zelandia;USD;58;180
-Oman;EUR;40;240
-Polska;PLN;30;240
-Pakistan;EUR;38;200
-Palestyńska Władza Narodowa;EUR;50;150
-Panama;USD;52;140
-Peru;USD;50;150
-Portugalia;EUR;49;120
-Republika Południowej Afryki;USD;52;275
-Rosja;EUR;48;200
-Rumunia;EUR;38;100
-San Marino;EUR;48;174
-Senegal;EUR;44;120
-Serbia i Czarnogóra;EUR;40;100
-Singapur;USD;56;230
-Słowacja;EUR;43;120
-Słowenia;EUR;41;130
-Stany Zjednoczone Ameryki (USA) - w tym Nowy Jork i Waszyngton ;USD;59;200
-Syria;USD;50;150
-Szwajcaria;CHF;88;200
-Szwecja;SEK;459;1800
-Tadżykistan;EUR;41;140
-Tajlandia;USD;42;110
-Tanzania;USD;53;150
-Tunezja;EUR;37;100
-Turcja;USD;53;173
-Turkmenistan;EUR;47;90
-Ukraina;EUR;41;180
-Urugwaj;USD;50;80
-Uzbekistan;EUR;41;140
-Wenezuela;USD;60;220
-Węgry;EUR;44;130
-Wielka Brytania;GBP;35;200
-Wietnam;USD;53;160
-Włochy;EUR;48;174
-Wybrzeże Kości Słoniowej;EUR;33;100
-Zimbabwe;EUR;39;90
-Zjednoczone Emiraty Arabskie;EUR;39;200
+﻿Country,Currency,Diet Rate,Accommodation Limit
+Afganistan,EUR,47,140
+Albania,EUR,41,120
+Algieria,EUR,50,200
+Angola,USD,61,180
+Saudi Arabia,EUR,45,180
+Argentina,USD,50,150
+Armenia,EUR,42,145
+Australia,AUD,88,250
+Austria,EUR,52,130
+Azerbaijan,EUR,43,150
+Bangladesh,USD,50,120
+Belgium,EUR,48,160
+Belarus,EUR,42,130
+Bosnia and Herzegovina,EUR,41,100
+Brazil,EUR,43,120
+Bulgaria,EUR,40,120
+Chile,USD,60,120
+China,EUR,55,170
+Croatia,EUR,42,125
+Cyprus,EUR,43,160
+Czech Republic,EUR,41,120
+Denmark,DKK,406,1300
+Egypt,USD,55,150
+Ecuador,USD,44,110
+Estonia,EUR,41,100
+Ethiopia,USD,55,300
+Finland,EUR,48,160
+France,EUR,50,180
+Greece,EUR,48,140
+Georgia,EUR,43,140
+Spain,EUR,50,160
+Netherlands,EUR,50,130
+India,EUR,38,190
+Indonesia,EUR,41,110
+Iraq,USD,60,120
+Iran,EUR,41,95
+Ireland,EUR,52,160
+Iceland,EUR,56,160
+Israel,EUR,50,150
+Japan,JPY,7532,22000
+Yemen,USD,48,160
+Jordan,EUR,40,95
+Cambodia,USD,45,100
+Canada,CAD,71,190
+Qatar,EUR,41,200
+Kazakhstan,EUR,41,140
+Kenya,EUR,41,150
+Kyrgyzstan,USD,41,150
+Columbia,USD,49,120
+Congo,USD,66,220
+South Korea,EUR,46,170
+North Korea,EUR,48,170
+Costa Rica,USD,50,140
+Cuba,EUR,42,110
+Kuwait,EUR,39,200
+Laos,USD,54,100
+Lebanon,USD,57,150
+Libya,EUR,52,100
+Liechtenstein,CHF,88,200
+Lithuania,EUR,39,130
+Luxembourg,EUR,48,160
+Latvia,EUR,57,132
+Macedonia,EUR,39,125
+Malaysia,EUR,41,140
+Malta,EUR,43,180
+Morocco,EUR,41,130
+Mexico,USD,53,140
+Moldova,EUR,41,85
+Monaco,EUR,50,180
+Mongolia,EUR,45,140
+Germany,EUR,49,130
+Nigeria,EUR,46,150
+Norway,NOK,451,1500
+New Zealand,USD,58,180
+Oman,EUR,40,240
+Poland,PLN,30,240
+Pakistan,EUR,38,200
+Palestine,EUR,50,150
+Panama,USD,52,140
+Peru,USD,50,150
+Portugal,EUR,49,120
+South Africa,USD,52,275
+Russia,EUR,48,200
+Romania,EUR,38,100
+San Marino,EUR,48,174
+Senegal,EUR,44,120
+Serbia and Montenegro,EUR,40,100
+Singapore,USD,56,230
+Slovakia,EUR,43,120
+Slovenia,EUR,41,130
+USA,USD,59,200
+Syria,USD,50,150
+Switzerland,CHF,88,200
+Sweden,SEK,459,1800
+Tajikistan,EUR,41,140
+Thailand,USD,42,110
+Tanzania,USD,53,150
+Tunisia,EUR,37,100
+Turkey,USD,53,173
+Turkmenistan,EUR,47,90
+Ukraine,EUR,41,180
+Uruguay,USD,50,80
+Uzbekistan,EUR,41,140
+Venezuela,USD,60,220
+Hungary,EUR,44,130
+UK,GBP,35,200
+Vietnam,USD,53,160
+Italy,EUR,48,174
+Ivory Coast,EUR,33,100
+Zimbabwe,EUR,39,90
+United Arab Emirates,EUR,39,200
