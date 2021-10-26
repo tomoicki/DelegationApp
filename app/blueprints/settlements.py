@@ -1,4 +1,3 @@
-import datetime
 from sqlalchemy.exc import IntegrityError, InvalidRequestError
 from flask import Blueprint, jsonify, request
 from app.database.tables_declaration import *
@@ -8,74 +7,84 @@ settlements_bp = Blueprint('settlements', __name__)
 
 @settlements_bp.route('/delegations/<delegation_id>/settlements', methods=['GET'])
 @User.is_logged_in
-def user_panel_view(delegation_id):
+@Delegation.if_exists
+def settlement_list_view(delegation_id):
     delegation = Delegation.get_by_id(delegation_id)
     user = User.get_by_token(request.headers.get('token'))
-    if delegation is None:
-        return {'response': "Cannot find delegation with provided ID."}, 404
-    if user.id == delegation.delegate_id or user.role.value in ['manager', 'hr', 'admin']:
+    if user.is_authorized(delegation):
         settlements_list = delegation.settlement
-        settlements_list = [settlement.details() for settlement in settlements_list]
-        return {'response': settlements_list}, 200
+        settlements_list = [settlement.submit_date for settlement in settlements_list]
+        return jsonify(settlements_list), 200
     return {'response': 'You dont have the rights to see this delegation.'}, 403
 
 
-@settlements_bp.route('/delegations', methods=['POST'])
+@settlements_bp.route('/delegations/<delegation_id>/settlements', methods=['POST'])
 @User.is_logged_in
-def add_delegation():
-    creator = User.get_by_token(request.headers.get('token'))
-    delegation_details = request.get_json()
-    delegation_details['creator_id'] = creator.id
-    delegation_details['submit_date'] = datetime.datetime.now()
-    try:
-        Delegation.create(delegation_details)
-        return 'Success.', 201
-    except IntegrityError:
-        sqlalchemy_session.rollback()
-        return 'Fail.', 404
-
-
-@settlements_bp.route('/delegations/<delegation_id>', methods=['GET'])
-@User.is_logged_in
-def show_delegation(delegation_id):
+@Delegation.if_exists
+def add_settlement(delegation_id):
     delegation = Delegation.get_by_id(delegation_id)
     user = User.get_by_token(request.headers.get('token'))
-    if delegation is None:
-        return {'response': "Cannot find delegation with provided ID."}, 404
-    if user.id == delegation.delegate_id or user.role.value in ['manager', 'hr', 'admin']:
-        return jsonify(delegation.details()), 200
-    return {'response': 'You dont have the rights to see this delegation.'}, 403
-
-
-@settlements_bp.route('/delegations/<delegation_id>', methods=['PUT'])
-@User.is_logged_in
-def modify_delegation(delegation_id):
-    user = User.get_by_token(request.headers.get('token'))
-    delegation = Delegation.get_by_id(delegation_id)
-    body = request.get_json()
-    if delegation is None:
-        return {'response': "Cannot find delegation with provided ID."}, 404
-    if user.id == delegation.delegate_id or user.role.value in ['manager', 'hr', 'admin']:
+    settlement_details = request.get_json()
+    settlement_details['submit_date'] = datetime.datetime.now()
+    settlement_details['delegation_id'] = delegation.id
+    if user.is_authorized(delegation):
+        if User.get_by_id(settlement_details['approver_id']) is None:
+            return 'Cannot find user with provided "approver_id".', 404
         try:
-            delegation.modify(body)
+            Settlement.create(settlement_details)
+            return 'Success.', 201
+        except IntegrityError:
+            sqlalchemy_session.rollback()
+            return 'Fail.', 404
+    return {'response': 'You dont have the rights to see this delegation.'}, 403
+
+
+@settlements_bp.route('/delegations/<delegation_id>/settlements/<settlement_id>', methods=['GET'])
+@User.is_logged_in
+@Delegation.if_exists
+@Settlement.if_exists
+@Settlement.is_correct_child
+def show_settlement(delegation_id, settlement_id):
+    delegation = Delegation.get_by_id(delegation_id)
+    settlement = Settlement.get_by_id(settlement_id)
+    user = User.get_by_token(request.headers.get('token'))
+    if user.is_authorized(delegation):
+        return jsonify(settlement.details()), 200
+    return {'response': 'You dont have the rights to see this delegation.'}, 403
+
+
+@settlements_bp.route('/delegations/<delegation_id>/settlements/<settlement_id>', methods=['PUT'])
+@User.is_logged_in
+@Delegation.if_exists
+@Settlement.if_exists
+@Settlement.is_correct_child
+def modify_settlement(delegation_id, settlement_id):
+    delegation = Delegation.get_by_id(delegation_id)
+    settlement = Settlement.get_by_id(settlement_id)
+    body = request.get_json()
+    user = User.get_by_token(request.headers.get('token'))
+    if user.is_authorized(delegation):
+        try:
+            settlement.modify(body)
             return 'Success.', 201
         except InvalidRequestError:
             return 'Fail.', 400
-    return {'response': 'You dont have the rights to modify this delegation.'}, 403
+    return {'response': 'You dont have the rights to see this delegation.'}, 403
 
 
-@settlements_bp.route('/delegations/<delegation_id>', methods=['DELETE'])
+@settlements_bp.route('/delegations/<delegation_id>/settlements/<settlement_id>', methods=['DELETE'])
 @User.is_logged_in
-def delete_delegation(delegation_id):
-    user = User.get_by_token(request.headers.get('token'))
+@Delegation.if_exists
+@Settlement.if_exists
+@Settlement.is_correct_child
+def delete_settlement(delegation_id, settlement_id):
     delegation = Delegation.get_by_id(delegation_id)
-    if delegation is None:
-        return {'response': "Cannot find delegation with provided ID."}, 404
-    if user.id == delegation.worker_id or user.role.value in ['manager', 'hr', 'admin']:
+    settlement = Settlement.get_by_id(settlement_id)
+    user = User.get_by_token(request.headers.get('token'))
+    if user.is_authorized(delegation):
         try:
-            delegation.delete()
+            settlement.delete()
             return 'Success.', 201
-        except IntegrityError as e:
-            sqlalchemy_session.rollback()
+        except InvalidRequestError:
             return 'Fail.', 400
-    return {'response': 'You dont have the rights to delete this delegation.'}, 403
+    return {'response': 'You dont have the rights to see this delegation.'}, 403

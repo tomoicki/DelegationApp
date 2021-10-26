@@ -18,7 +18,8 @@ with open('foreign_diet_rate.csv', mode='r', encoding='utf-8-sig') as f:
     countries = [Country(name=line['Country'],
                          diet=line['Diet Rate'],
                          accommodation_limit=line['Accommodation Limit'],
-                         currency_id=sqlalchemy_session.query(Currency).where(Currency.name == line['Currency']).first().id)
+                         currency_id=sqlalchemy_session.query(Currency).where(
+                             Currency.name == line['Currency']).first().id)
                  for line in reader]
     sqlalchemy_session.bulk_save_objects(countries)
     sqlalchemy_session.commit()
@@ -91,6 +92,7 @@ sqlalchemy_session.commit()
 
 some_settlement = {'departure_date': delegation1.departure_date,
                    'departure_time': datetime.time(10, 10, 10),
+                   'arrival_time': datetime.time(10, 10, 10),
                    'delegation_id': delegation1.id}
 settlement1 = Settlement.create(some_settlement)
 sqlalchemy_session.add(settlement1)
@@ -124,4 +126,3 @@ meal3 = Meal(type=MealType.lunch,
              settlement_id=settlement1.id)
 sqlalchemy_session.add(meal3)
 sqlalchemy_session.commit()
-

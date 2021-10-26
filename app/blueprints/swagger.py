@@ -83,7 +83,74 @@ def swagger_details_provider():
                             "description": "Bad request.",
                         },
                     }
-                }
+                },
+            },
+            "/user": {
+                "get": {
+                    "tags": ["User"],
+                    "summary": "Returns user details..",
+                    "parameters": [
+                        {
+                            "name": "token",
+                            "in": "header",
+                            "description": "Token of logged user.",
+                            "type": "string",
+                            "example": "ieZJQPebstKXutENPiQNmh"
+                        }
+                    ],
+                    "produces": [
+                        "application/json"
+                    ],
+                    "responses": {
+                        "200": {
+                            "description": "OK",
+                        }
+                    }
+                },
+                "put": {
+                    "tags": ["User"],
+                    "summary": "Modifies existing user.",
+                    "parameters": [
+                        {
+                            "name": "token",
+                            "in": "header",
+                            "description": "Token of logged user.",
+                            "type": "string",
+                            "example": "2T7y2x29rpxQJT4474RPWv"
+                        }
+                    ],
+                    "requestBody": {
+                        "description": "Changes existing user.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/User"
+                                },
+                                "example": {
+                                    "first_name": "changed name",
+                                }
+                            }
+                        }
+                    },
+                    "produces": [
+                        "application/json"
+                    ],
+                    "responses": {
+                        "201": {
+                            "description": "Success.",
+                        },
+                        "400": {
+                            "description": "Fail."
+                        },
+                        "403": {
+                            "description": "You dont have the rights to modify this delegation.",
+                        },
+                        "404": {
+                            "description": "Cannot find delegation with provided ID.",
+                        }
+                    }
+                },
+
             },
             "/delegations": {
                 "get": {
@@ -247,7 +314,7 @@ def swagger_details_provider():
                             "example": "LFvxPVWyetuPyKo8ZrLm5F"
                         },
                         {
-                            "name": "delegation id",
+                            "name": "delegation_id",
                             "in": "path",
                             "description": "ID of the delegation to delete.",
                             "type": "int"
@@ -329,17 +396,240 @@ def swagger_details_provider():
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/Delegation"
+                                    "$ref": "#/components/schemas/Settlement"
                                 },
                                 "example": {
-                                    "title": "some title",
-                                    "country_id": "gimme integer = id from /countries_dictionary",
-                                    "approver_id": "gimme integer = id from /managers_dictionary",
-                                    "arrival_date": "date",
-                                    "delegate_id": "gimme integer = id from /users_dictionary",
-                                    "departure_date": "date",
-                                    "reason": "some reason",
-                                    "remarks": "some remarks",
+                                    "approver_id": 6,
+                                }
+                            }
+                        }
+                    },
+                    "produces": [
+                        "application/json"
+                    ],
+                    "responses": {
+                        "201": {
+                            "description": "Success.",
+                        },
+                        "404": {
+                            "description": "Fail.",
+                        },
+                    }
+                },
+            },
+            "/delegations/{delegation_id}/settlements/{settlement_id}": {
+                "get": {
+                    "tags": ["Settlement"],
+                    "summary": "Shows settlement details.",
+                    "parameters": [
+                        {
+                            "name": "token",
+                            "in": "header",
+                            "description": "Token of logged user.",
+                            "type": "string",
+                            "example": "2T7y2x29rpxQJT4474RPWv"
+                        },
+                        {
+                            "name": "delegation_id",
+                            "in": "path",
+                            "description": "ID of the delegation that is a parent of settlement.",
+                            "type": "int"
+                        },
+                        {
+                            "name": "settlement_id",
+                            "in": "path",
+                            "description": "ID of the settlement to show.",
+                            "type": "int"
+                        }
+                    ],
+                    "produces": [
+                        "application/json"
+                    ],
+                    "responses": {
+                        "200": {
+                            "description": "OK",
+                        },
+                        "403": {
+                            "description": "You dont have the rights to see this delegation.",
+                        },
+                        "404": {
+                            "description": "Cannot find delegation with provided ID.",
+                        },
+                    }
+                },
+                "put": {
+                    "tags": ["Settlement"],
+                    "summary": "Modifies existing settlement.",
+                    "parameters": [
+                        {
+                            "name": "token",
+                            "in": "header",
+                            "description": "Token of logged user.",
+                            "type": "string",
+                            "example": "2T7y2x29rpxQJT4474RPWv"
+                        },
+                        {
+                            "name": "delegation_id",
+                            "in": "path",
+                            "description": "ID of the delegation that is a parent of settlement.",
+                            "type": "int"
+                        },
+                        {
+                            "name": "settlement_id",
+                            "in": "path",
+                            "description": "ID of the settlement to show.",
+                            "type": "int"
+                        }
+                    ],
+                    "requestBody": {
+                        "description": "Changes existing settlement.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Settlement"
+                                },
+                                "example": {
+                                    "diet": 11,
+                                }
+                            }
+                        }
+                    },
+                    "produces": [
+                        "application/json"
+                    ],
+                    "responses": {
+                        "201": {
+                            "description": "Success.",
+                        },
+                        "400": {
+                            "description": "Fail."
+                        },
+                        "403": {
+                            "description": "You dont have the rights to modify this delegation.",
+                        },
+                        "404": {
+                            "description": "Cannot find delegation with provided ID.",
+                        }
+                    }
+                },
+                "delete": {
+                    "tags": ["Settlement"],
+                    "summary": "Deletes settlement.",
+                    "parameters": [
+                        {
+                            "name": "token",
+                            "in": "header",
+                            "description": "Token of logged user.",
+                            "type": "string",
+                            "example": "LFvxPVWyetuPyKo8ZrLm5F"
+                        },
+                        {
+                            "name": "delegation_id",
+                            "in": "path",
+                            "description": "ID of the delegation that is a parent of settlement.",
+                            "type": "int"
+                        },
+                        {
+                            "name": "settlement_id",
+                            "in": "path",
+                            "description": "ID of the settlement to show.",
+                            "type": "int"
+                        }
+                    ],
+                    "produces": [
+                        "application/json"
+                    ],
+                    "responses": {
+                        "201": {
+                            "description": "Success.",
+                        },
+                        "400": {
+                            "description": "Fail."
+                        },
+                        "403": {
+                            "description": "You dont have the rights to delete this delegation.",
+                        },
+                        "404": {
+                            "description": "Cannot find delegation with provided ID.",
+                        },
+                    }
+                }
+            },
+            "/delegations/{delegation_id}/settlements/{settlement_id}/expenses": {
+                "get": {
+                    "tags": ["Expense"],
+                    "summary": "Shows expenses for settlement.",
+                    "parameters": [
+                        {
+                            "name": "token",
+                            "in": "header",
+                            "description": "Token of logged user.",
+                            "type": "string",
+                            "example": "2T7y2x29rpxQJT4474RPWv"
+                        },
+                        {
+                            "name": "delegation_id",
+                            "in": "path",
+                            "description": "ID of the delegation that is a parent of settlement.",
+                            "type": "int"
+                        },
+                        {
+                            "name": "settlement_id",
+                            "in": "path",
+                            "description": "ID of the settlement to show.",
+                            "type": "int"
+                        }
+                    ],
+                    "produces": [
+                        "application/json"
+                    ],
+                    "responses": {
+                        "200": {
+                            "description": "OK",
+                        },
+                        "403": {
+                            "description": "You dont have the rights to see this delegation.",
+                        },
+                        "404": {
+                            "description": "Cannot find delegation with provided ID.",
+                        },
+                    }
+                },
+                "post": {
+                    "tags": ["Expense"],
+                    "summary": "Adds new expense.",
+                    "parameters": [
+                        {
+                            "name": "token",
+                            "in": "header",
+                            "description": "Token of logged user.",
+                            "type": "string",
+                            "example": "e5k9ih78cEDjpqV5YQdxmf"
+                        },
+                        {
+                            "name": "delegation_id",
+                            "in": "path",
+                            "description": "ID of the delegation that is a parent of settlement.",
+                            "type": "int"
+                        },
+                        {
+                            "name": "settlement_id",
+                            "in": "path",
+                            "description": "ID of the settlement to show.",
+                            "type": "int"
+                        }
+                    ],
+                    "requestBody": {
+                        "description": "Takes settlement details.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Expense"
+                                },
+                                "example": {
+                                    "currency_id": 6,
+                                    "type": 'accommodation',
+                                    'amount': 12.21
                                 }
                             }
                         }
