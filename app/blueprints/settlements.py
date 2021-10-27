@@ -13,7 +13,7 @@ def settlement_list_view(delegation_id):
     user = User.get_by_token(request.headers.get('token'))
     if user.is_authorized(delegation):
         settlements_list = delegation.settlement
-        settlements_list = [settlement.submit_date for settlement in settlements_list]
+        settlements_list = [settlement.show() for settlement in settlements_list]
         return jsonify(settlements_list), 200
     return {'response': 'You dont have the rights to see this delegation.'}, 403
 
@@ -25,7 +25,6 @@ def add_settlement(delegation_id):
     delegation = Delegation.get_by_id(delegation_id)
     user = User.get_by_token(request.headers.get('token'))
     settlement_details = request.get_json()
-    settlement_details['submit_date'] = datetime.datetime.now()
     settlement_details['delegation_id'] = delegation.id
     if user.is_authorized(delegation):
         if User.get_by_id(settlement_details['approver_id']) is None:

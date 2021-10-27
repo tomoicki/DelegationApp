@@ -65,8 +65,8 @@ sqlalchemy_session.commit()
 
 some_delegation = {'title': 'to wroclaw',
                    'submit_date': datetime.datetime.now(),
-                   'departure_date': datetime.date.fromisocalendar(2021, 5, 3),
-                   'arrival_date': datetime.date.fromisocalendar(2021, 5, 4),
+                   "departure_date": "2020-01-15",
+                   "arrival_date": "2020-01-20",
                    'delegate_id': user1.id,
                    'creator_id': user1.id,
                    'approver_id': user3.id,
@@ -90,9 +90,10 @@ advance_payment2 = AdvancePayment(amount=10,
 sqlalchemy_session.add(advance_payment2)
 sqlalchemy_session.commit()
 
-some_settlement = {'departure_date': delegation1.departure_date,
-                   'departure_time': datetime.time(10, 10, 10),
-                   'arrival_time': datetime.time(10, 10, 10),
+some_settlement = {"departure_date": "2020-01-15",
+                   "departure_time": "10:10:10",
+                   "arrival_date": "2020-01-20",
+                   "arrival_time": "20:10:10",
                    'delegation_id': delegation1.id}
 settlement1 = Settlement.create(some_settlement)
 sqlalchemy_session.add(settlement1)

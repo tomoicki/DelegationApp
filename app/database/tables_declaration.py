@@ -3,13 +3,10 @@ import datetime
 from flask import request
 from functools import wraps
 from sqlalchemy import Column, LargeBinary, Integer, String, ForeignKey, Date, Float, Time, Enum, Boolean, DateTime, \
-    update, delete
+    update
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
-from dotenv import load_dotenv
 from app.database.create_connection import sqlalchemy_session
-
-load_dotenv()
 
 
 class Base:
@@ -112,6 +109,11 @@ class Delegation(Base):
 
     @classmethod
     def create(cls, delegation_details: dict):
+        delegation_details['departure_date'] = datetime.date.fromisoformat(delegation_details['departure_date'])
+        delegation_details['arrival_date'] = datetime.date.fromisoformat(delegation_details['arrival_date'])
+        delegation_details['submit_date'] = datetime.datetime.now()
+        advance_payments = delegation_details['advance_payments']
+        del delegation_details['advance_payments']
         delegation = Delegation(**delegation_details)
         sqlalchemy_session.add(delegation)
         sqlalchemy_session.commit()
@@ -120,6 +122,9 @@ class Delegation(Base):
                                         reason='Delegation creation.')
         sqlalchemy_session.add(entry_status)
         sqlalchemy_session.commit()
+        for advance_payment in advance_payments:
+            advance_payment['delegation_id'] = delegation.id
+            AdvancePayment.create(advance_payment)
         return delegation
 
     @classmethod
@@ -200,6 +205,12 @@ class AdvancePayment(Base):
     delegation_id = Column(Integer, ForeignKey('Delegation.id', ondelete="CASCADE"))
     currency_id = Column(Integer, ForeignKey('Currency.id'))
 
+    @classmethod
+    def create(cls, advance_payment_details: dict):
+        advance_payment = Attachment(**advance_payment_details)
+        sqlalchemy_session.add(advance_payment)
+        sqlalchemy_session.commit()
+
 
 class Country(Base):
     __tablename__ = 'Country'
@@ -277,6 +288,11 @@ class Settlement(Base):
                 sqlalchemy_session.add(new_status)
                 sqlalchemy_session.commit()
 
+    def show(self):
+        settlement_to_show = {'id': self.id,
+                              'submit_date': self.submit_date}
+        return settlement_to_show
+
     def details(self):
         dicted = self.__dict__
         dicted = {key: (value.isoformat() if '_time' in key else value) for key, value in dicted.items()}
@@ -293,6 +309,11 @@ class Settlement(Base):
 
     @classmethod
     def create(cls, settlement_details: dict):
+        settlement_details['submit_date'] = datetime.datetime.now()
+        expenses = settlement_details['expenses']
+        del settlement_details['expenses']
+        meals = settlement_details['meals']
+        del settlement_details['meals']
         settlement = Settlement(**settlement_details)
         sqlalchemy_session.add(settlement)
         sqlalchemy_session.commit()
@@ -301,6 +322,12 @@ class Settlement(Base):
                                         reason='Settlement creation.')
         sqlalchemy_session.add(entry_status)
         sqlalchemy_session.commit()
+        for meal in meals:
+            meal['settlement_id'] = settlement.id
+            Expense.create(meal)
+        for expense in expenses:
+            expense['settlement_id'] = settlement.id
+            Expense.create(expense)
         return settlement
 
     @classmethod
@@ -310,7 +337,6 @@ class Settlement(Base):
             if cls.get_by_id(kwargs['settlement_id']) is not None:
                 return func(*args, **kwargs)
             return {'response': "Cannot find settlement with provided ID."}, 404
-
         return wrapper
 
     @classmethod
@@ -322,7 +348,6 @@ class Settlement(Base):
             if settlement in delegation.settlement:
                 return func(*args, **kwargs)
             return {'response': 'Provided settlement is not a child of provided delegation.'}, 404
-
         return wrapper
 
 
@@ -339,6 +364,12 @@ class Meal(Base):
     type = Column(Enum(MealType))
     # one to many
     settlement_id = Column(Integer, ForeignKey('Settlement.id', ondelete="CASCADE"))
+
+    @classmethod
+    def create(cls, meal_details: dict):
+        meal = Meal(**meal_details)
+        sqlalchemy_session.add(meal)
+        sqlalchemy_session.commit()
 
 
 class ExpenseType(enum.Enum):
@@ -373,15 +404,47 @@ class Expense(Base):
 
     @classmethod
     def create(cls, expense_details: dict):
+        attachments = expense_details['attachments']
+        del expense_details['attachments']
         expense = Expense(**expense_details)
         sqlalchemy_session.add(expense)
         sqlalchemy_session.commit()
+        for attachment in attachments:
+            attachment['expense_id'] = expense.id
+            Attachment.create(attachment)
+
+    @classmethod
+    def if_exists(cls, func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            if cls.get_by_id(kwargs['expense_id']) is not None:
+                return func(*args, **kwargs)
+            return {'response': "Cannot find expense with provided ID."}, 404
+        return wrapper
+
+    @classmethod
+    def is_correct_child(cls, func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            expense = cls.get_by_id(kwargs['expense_id'])
+            settlement = Settlement.get_by_id(kwargs['settlement_id'])
+            if expense in settlement.expense:
+                return func(*args, **kwargs)
+            return {'response': 'Provided settlement is not a child of provided delegation.'}, 404
+        return wrapper
 
 
 class Attachment(Base):
     __tablename__ = 'Attachment'
     # fields
     id = Column(Integer, primary_key=True)
-    file = Column(LargeBinary)
+    file = Column(String)
     # one to many
     expense_id = Column(Integer, ForeignKey('Expense.id', ondelete="CASCADE"))
+
+    @classmethod
+    def create(cls, attachment_details: dict):
+        attachment = Attachment(**attachment_details)
+        sqlalchemy_session.add(attachment)
+        sqlalchemy_session.commit()
+

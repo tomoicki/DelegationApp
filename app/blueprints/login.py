@@ -45,14 +45,14 @@ def login_users():
         return {'response': "Wrong input, need 'email' key."}, 400
 
 
-@login.route('/login', methods=['GET'])
+@login.route('/user', methods=['GET'])
 @User.is_logged_in
 def get_user_details():
     user = User.get_by_token(request.headers.get('token'))
     return {'response': user.show()}
 
 
-@login.route('/login', methods=['PUT'])
+@login.route('/user', methods=['PUT'])
 @User.is_logged_in
 def change_user_details():
     user = User.get_by_token(request.headers.get('token'))
