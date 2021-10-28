@@ -588,7 +588,28 @@ def swagger_details_provider():
                                     "$ref": "#/components/schemas/Settlement"
                                 },
                                 "example": {
-                                    "diet": 11,
+                                    "arrival_date": "Mon, 20 Jan 2020 00:00:00 GMT",
+                                    "arrival_time": "20:10:10",
+                                    "delegation_id": 1,
+                                    "departure_date": "Wed, 15 Jan 2020 00:00:00 GMT",
+                                    "departure_time": "10:10:10",
+                                    "expenses": [
+                                        {
+                                            "amount": 999,
+                                            "currency": "PLN",
+                                            "description": "some description",
+                                            "id": 1,
+                                            "settlement_id": 1,
+                                            "type": "other"
+                                        },
+                                    ],
+                                    "id": 1,
+                                    "meals": [
+                                        {
+                                            "id": 1,
+                                            "type": "supper"
+                                        },
+                                    ],
                                 }
                             }
                         }

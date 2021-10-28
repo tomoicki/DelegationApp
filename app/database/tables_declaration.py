@@ -119,11 +119,11 @@ class Delegation(Base):
         sqlalchemy_session.execute(stmt)
         sqlalchemy_session.commit()
         for advance_payment in advance_payments:
-            payment = AdvancePayment.get_by_id(advance_payment['id'])
-            if payment is None:
+            payment_existing = AdvancePayment.get_by_id(advance_payment['id'])
+            if payment_existing is None:
                 AdvancePayment.create(advance_payment)
             else:
-                payment.modify(advance_payment)
+                payment_existing.modify(advance_payment)
 
     @classmethod
     def create(cls, delegation_details: dict):
@@ -322,6 +322,10 @@ class Settlement(Base):
         return settlement_to_show
 
     def details(self):
+        expense_list = self.expense
+        expense_list = [expense.show() for expense in expense_list]
+        meal_list = self.meal
+        meal_list = [meal.show() for meal in meal_list]
         settlement_with_details = {'id': self.id,
                                    'approver': str(User.get_by_id(self.approver_id)),
                                    'submit_date': self.submit_date,
@@ -330,13 +334,32 @@ class Settlement(Base):
                                    'arrival_date': self.arrival_date,
                                    'arrival_time': self.arrival_time.isoformat(),
                                    'delegation_id': self.delegation_id,
-                                   'diet': self.diet}
+                                   'diet': self.diet,
+                                   'expenses': expense_list,
+                                   'meals': meal_list}
         return settlement_with_details
 
     def modify(self, modifications_dict: dict):
+        modifications_dict['submit_date'] = datetime.datetime.now()
+        expenses = modifications_dict['expenses']
+        del modifications_dict['expenses']
+        meals = modifications_dict['meals']
+        del modifications_dict['meals']
         stmt = update(Settlement).where(Settlement.id == self.id).values(**modifications_dict)
         sqlalchemy_session.execute(stmt)
         sqlalchemy_session.commit()
+        for meal in meals:
+            try:
+                meal_existing = Meal.get_by_id(meal['id'])
+                meal_existing.modify(meal)
+            except KeyError:
+                Meal.create(meal)
+        for expense in expenses:
+            try:
+                expense_existing = Expense.get_by_id(expense['id'])
+                expense_existing.modify(expense)
+            except KeyError:
+                Expense.create(expense)
 
     @classmethod
     def create(cls, settlement_details: dict):
@@ -359,7 +382,6 @@ class Settlement(Base):
         for expense in expenses:
             expense['settlement_id'] = settlement.id
             Expense.create(expense)
-        return settlement
 
     @classmethod
     def if_exists(cls, func):
@@ -395,6 +417,11 @@ class Meal(Base):
     type = Column(Enum(MealType))
     # one to many
     settlement_id = Column(Integer, ForeignKey('Settlement.id', ondelete="CASCADE"))
+
+    def show(self):
+        meal_to_show = {'id': self.id,
+                        'type': self.type.value}
+        return meal_to_show
 
     def modify(self, modifications_dict: dict):
         stmt = update(Meal).where(Meal.id == self.id).values(**modifications_dict)
@@ -481,6 +508,11 @@ class Attachment(Base):
     file = Column(String)
     # one to many
     expense_id = Column(Integer, ForeignKey('Expense.id', ondelete="CASCADE"))
+
+    def modify(self, modifications_dict: dict):
+        stmt = update(Attachment).where(Attachment.id == self.id).values(**modifications_dict)
+        sqlalchemy_session.execute(stmt)
+        sqlalchemy_session.commit()
 
     @classmethod
     def create(cls, attachment_details: dict):
