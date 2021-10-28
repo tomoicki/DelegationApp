@@ -28,17 +28,17 @@ def add_settlement(delegation_id):
     settlement_details['delegation_id'] = delegation.id
     if user.is_authorized(delegation):
         if User.get_by_id(settlement_details['approver_id']) is None:
-            return 'Cannot find user with provided "approver_id".', 404
+            return {'response': 'Cannot find user with provided "approver_id".'}, 404
         try:
             Settlement.create(settlement_details)
-            return 'Success.', 201
+            return {'response': 'Success.'}, 201
         except IntegrityError:
             sqlalchemy_session.rollback()
-            return 'Fail.', 404
+            return {'response': 'Fail.'}, 404
     return {'response': 'You dont have the rights to see this delegation.'}, 403
 
 
-@settlements_bp.route('/delegations/<delegation_id>/settlements/<settlement_id>', methods=['GET'])
+@settlements_bp.route('/settlements/<settlement_id>', methods=['GET'])
 @User.is_logged_in
 @Delegation.if_exists
 @Settlement.if_exists
@@ -52,7 +52,7 @@ def show_settlement(delegation_id, settlement_id):
     return {'response': 'You dont have the rights to see this delegation.'}, 403
 
 
-@settlements_bp.route('/delegations/<delegation_id>/settlements/<settlement_id>', methods=['PUT'])
+@settlements_bp.route('/settlements/<settlement_id>', methods=['PUT'])
 @User.is_logged_in
 @Delegation.if_exists
 @Settlement.if_exists
@@ -65,13 +65,13 @@ def modify_settlement(delegation_id, settlement_id):
     if user.is_authorized(delegation):
         try:
             settlement.modify(body)
-            return 'Success.', 201
+            return {'response': 'Success.'}, 201
         except InvalidRequestError:
-            return 'Fail.', 400
+            return {'response': 'Fail.'}, 400
     return {'response': 'You dont have the rights to see this delegation.'}, 403
 
 
-@settlements_bp.route('/delegations/<delegation_id>/settlements/<settlement_id>', methods=['DELETE'])
+@settlements_bp.route('/settlements/<settlement_id>', methods=['DELETE'])
 @User.is_logged_in
 @Delegation.if_exists
 @Settlement.if_exists
@@ -83,7 +83,7 @@ def delete_settlement(delegation_id, settlement_id):
     if user.is_authorized(delegation):
         try:
             settlement.delete()
-            return 'Success.', 201
+            return {'response': 'Success.'}, 201
         except InvalidRequestError:
-            return 'Fail.', 400
+            return {'response': 'Fail.'}, 400
     return {'response': 'You dont have the rights to see this delegation.'}, 403

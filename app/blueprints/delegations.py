@@ -21,13 +21,15 @@ def add_delegation():
     delegation_details = request.get_json()
     if not creator.id == delegation_details['delegate_id'] and creator.role.value not in ['manager', 'hr', 'admin']:
         return {'response': 'You dont have the rights to create this delegation.'}, 403
+    if User.get_by_id(delegation_details['approver_id']) is None:
+        return {'response': 'Cannot find user with provided "approver_id".'}, 404
     delegation_details['creator_id'] = creator.id
     try:
         Delegation.create(delegation_details)
-        return 'Success.', 201
+        return {'response': 'Success.'}, 201
     except IntegrityError:
         sqlalchemy_session.rollback()
-        return 'Fail.', 404
+        return {'response': 'Fail.'}, 404
 
 
 @delegations_bp.route('/delegations/<delegation_id>', methods=['GET'])
@@ -37,7 +39,8 @@ def show_delegation(delegation_id):
     delegation = Delegation.get_by_id(delegation_id)
     user = User.get_by_token(request.headers.get('token'))
     if user.is_authorized(delegation):
-        return jsonify(delegation.details()), 200
+        delegation_details = delegation.details()
+        return delegation_details, 200
     return {'response': 'You dont have the rights to see this delegation.'}, 403
 
 
@@ -51,9 +54,9 @@ def modify_delegation(delegation_id):
     if user.is_authorized(delegation):
         try:
             delegation.modify(body)
-            return 'Success.', 201
+            return {'response': 'Success.'}, 201
         except InvalidRequestError:
-            return 'Fail.', 400
+            return {'response': 'Fail.'}, 400
     return {'response': 'You dont have the rights to see this delegation.'}, 403
 
 
@@ -66,8 +69,8 @@ def delete_delegation(delegation_id):
     if user.is_authorized(delegation):
         try:
             delegation.delete()
-            return 'Success.', 201
+            return {'response': 'Success.'}, 201
         except IntegrityError as e:
             sqlalchemy_session.rollback()
-            return 'Fail.', 400
+            return {'response': 'Fail.'}, 400
     return {'response': 'You dont have the rights to see this delegation.'}, 403

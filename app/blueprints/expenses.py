@@ -5,7 +5,7 @@ from app.database.tables_declaration import *
 expenses_bp = Blueprint('expenses', __name__)
 
 
-@expenses_bp.route('/delegations/<delegation_id>/settlements/<settlement_id>/expenses', methods=['GET'])
+@expenses_bp.route('/settlements/<settlement_id>/expenses', methods=['GET'])
 @User.is_logged_in
 @Delegation.if_exists
 @Settlement.if_exists
@@ -21,7 +21,7 @@ def expenses_list_view(delegation_id, settlement_id):
     return {'response': 'You dont have the rights to see this delegation.'}, 403
 
 
-@expenses_bp.route('/delegations/<delegation_id>/settlements/<settlement_id>/expenses', methods=['POST'])
+@expenses_bp.route('/settlements/<settlement_id>/expenses', methods=['POST'])
 @User.is_logged_in
 @Delegation.if_exists
 @Settlement.if_exists
@@ -35,14 +35,14 @@ def add_expense(delegation_id, settlement_id):
     if user.is_authorized(delegation):
         try:
             Expense.create(expense_details)
-            return 'Success.', 201
+            return {'response': 'Success.'}, 201
         except IntegrityError:
             sqlalchemy_session.rollback()
-            return 'Fail.', 404
+            return {'response': 'Fail.'}, 404
     return {'response': 'You dont have the rights to see this delegation.'}, 403
 
 
-@expenses_bp.route('/delegations/<delegation_id>/settlements/<settlement_id>/expenses/<expense_id>', methods=['GET'])
+@expenses_bp.route('/expenses/<expense_id>', methods=['GET'])
 @User.is_logged_in
 @Delegation.if_exists
 @Settlement.if_exists

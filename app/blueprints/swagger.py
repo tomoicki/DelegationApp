@@ -205,6 +205,16 @@ def swagger_details_provider():
                                     "departure_date": "2020-01-15",
                                     "reason": "some reason",
                                     "remarks": "some remarks",
+                                    "advance_payments": [
+                                        {
+                                            "amount": 124,
+                                            "currency_id": 5
+                                        },
+                                        {
+                                            "amount": 11,
+                                            "currency_id": 1
+                                        }
+                                    ]
                                 }
                             }
                         }
@@ -288,7 +298,18 @@ def swagger_details_provider():
                                     "$ref": "#/components/schemas/Delegation"
                                 },
                                 "example": {
-                                    "title": "new_title",
+                                    "advance_payment": [
+                                        {
+                                            "amount": 999,
+                                            "currency_id": 4,
+                                            "id": 1
+                                        },
+                                    ],
+                                    "arrival_date": "Mon, 22 Jan 2020 00:00:00 GMT",
+                                    "departure_date": "Wed, 15 Jan 2020 00:00:00 GMT",
+                                    "id": 1,
+                                    "reason": "xxx",
+                                    "title": "xxx"
                                 }
                             }
                         }
@@ -418,7 +439,6 @@ def swagger_details_provider():
                                 },
                                 "example": {
                                     "approver_id": 6,
-                                    "delegation_id": 2,
                                     "departure_date": "2020-01-15",
                                     "departure_time": "10:10:10",
                                     "arrival_date": "2020-01-20",
@@ -487,7 +507,7 @@ def swagger_details_provider():
                     }
                 },
             },
-            "/delegations/{delegation_id}/settlements/{settlement_id}": {
+            "/settlements/{settlement_id}": {
                 "get": {
                     "tags": ["Settlement"],
                     "summary": "Shows settlement details.",
@@ -568,7 +588,30 @@ def swagger_details_provider():
                                     "$ref": "#/components/schemas/Settlement"
                                 },
                                 "example": {
-                                    "diet": 11,
+                                    "arrival_date": "Mon, 20 Jan 2020 00:00:00 GMT",
+                                    "arrival_time": "20:10:10",
+                                    "delegation_id": 1,
+                                    "departure_date": "Wed, 15 Jan 2020 00:00:00 GMT",
+                                    "departure_time": "10:10:10",
+                                    "expenses": [
+                                        {
+                                            "amount": 999,
+                                            "currency_id": 2,
+                                            "description": "some description",
+                                            "id": 1,
+                                            "settlement_id": 1,
+                                            "type": "other",
+                                            "attachments": [
+                                            ]
+                                        },
+                                    ],
+                                    "id": 1,
+                                    "meals": [
+                                        {
+                                            "id": 1,
+                                            "type": "supper"
+                                        },
+                                    ],
                                 }
                             }
                         }
@@ -652,7 +695,7 @@ def swagger_details_provider():
                     }
                 }
             },
-            "/delegations/{delegation_id}/settlements/{settlement_id}/expenses": {
+            "/settlements/{settlement_id}/expenses": {
                 "get": {
                     "tags": ["Expense"],
                     "summary": "Shows expenses for settlement.",
@@ -744,7 +787,7 @@ def swagger_details_provider():
                     }
                 },
             },
-            "/delegations/{delegation_id}/settlements/{settlement_id}/expenses/{expense_id}": {
+            "/expenses/{expense_id}": {
                 "get": {
                     "tags": ["Expense"],
                     "summary": "Shows expense details.",
@@ -915,6 +958,20 @@ def swagger_details_provider():
                 #     }
                 # }
             },
+            "/dictionary/currency": {
+                "get": {
+                    "tags": ["Dictionary"],
+                    "summary": "Shows list of currencies.",
+                    "produces": [
+                        "application/json"
+                    ],
+                    "responses": {
+                        "200": {
+                            "description": "OK",
+                        },
+                    }
+                },
+            },
             "/dictionary/countries": {
                 "get": {
                     "tags": ["Dictionary"],
@@ -933,6 +990,15 @@ def swagger_details_provider():
                 "get": {
                     "tags": ["Dictionary"],
                     "summary": "Shows dictionary of all users with their id as key.",
+                    "parameters": [
+                        {
+                            "name": "search",
+                            "in": "query",
+                            "description": "Letters to filter by.",
+                            "type": "string",
+                            "example": "xx"
+                        },
+                    ],
                     "produces": [
                         "application/json"
                     ],
@@ -947,6 +1013,15 @@ def swagger_details_provider():
                 "get": {
                     "tags": ["Dictionary"],
                     "summary": "Shows dictionary of all privileged users with their id as key.",
+                    "parameters": [
+                        {
+                            "name": "search",
+                            "in": "query",
+                            "description": "Letters to filter by.",
+                            "type": "string",
+                            "example": "xx"
+                        },
+                    ],
                     "produces": [
                         "application/json"
                     ],

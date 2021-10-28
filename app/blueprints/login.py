@@ -6,8 +6,12 @@ from sqlalchemy.exc import IntegrityError, InvalidRequestError
 login = Blueprint('login', __name__)
 
 
-@login.route('/')
+@login.route('/', methods=['POST'])
 def welcome():
+    r = request.data
+    print(r)
+    j = request.get_json()
+    print(j)
     return str(User.get_by_id(1)), 200
 
 
@@ -22,7 +26,7 @@ def register_new_user():
         user = User(**user_credentials)
         sqlalchemy_session.add(user)
         sqlalchemy_session.commit()
-        return 'Success.', 201
+        return {'response': 'Success.'}, 201
     except IntegrityError:
         sqlalchemy_session.rollback()
         return {'response': 'User with provided email already registered.'}, 409
@@ -59,7 +63,7 @@ def change_user_details():
     body = request.get_json()
     try:
         user.modify(body)
-        return 'Success.', 201
+        return {'response': 'Success.'}, 201
     except InvalidRequestError:
-        return 'Fail.', 400
+        return {'response': 'Fail.'}, 400
 
