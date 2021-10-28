@@ -2,8 +2,7 @@ import enum
 import datetime
 from flask import request
 from functools import wraps
-from sqlalchemy import Column, LargeBinary, Integer, String, ForeignKey, Date, Float, Time, Enum, Boolean, DateTime, \
-    update
+from sqlalchemy import Column, Integer, String, ForeignKey, Date, Float, Time, Enum, Boolean, DateTime, update
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
 from app.database.create_connection import sqlalchemy_session
@@ -85,27 +84,46 @@ class Delegation(Base):
         delegation_to_show = {"id": self.id,
                               "title": self.title,
                               "reason": self.reason,
-                              "departure date": self.departure_date,
-                              "arrival date": self.arrival_date,
-                              "departure point": Country.get_by_id(self.country_id).name,
+                              "departure_date": self.departure_date,
+                              "arrival_date": self.arrival_date,
+                              "departure_point": Country.get_by_id(self.country_id).name,
                               "status": self.current_status()}
         return delegation_to_show
 
     def details(self):
-        dicted = self.__dict__
-        if '_sa_instance_state' in dicted:
-            del dicted['_sa_instance_state']
-        dicted = {key.replace('country_id', 'country'): (Country.get_by_id(value).name if 'country' in key else value)
-                  for key, value in dicted.items()}
-        dicted = {key: (str(User.get_by_id(value)) if '_id' in key else value)
-                  for key, value in dicted.items()}
-        dicted = {(key.replace('_id', '') if '_id' in key else key): value for key, value in dicted.items()}
-        return dicted
+        country = Country.get_by_id(self.country_id)
+        settlements_list = self.settlement
+        settlements_list = [settlement.show() for settlement in settlements_list]
+        advance_payment_list = self.advance_payment
+        advance_payment_list = [advance_payment.show() for advance_payment in advance_payment_list]
+        delegation_with_details = {"id": self.id,
+                                   "title": self.title,
+                                   "reason": self.reason,
+                                   "departure_date": self.departure_date,
+                                   "arrival_date": self.arrival_date,
+                                   "departure_point": country.name,
+                                   'diet_rate': country.diet,
+                                   'diet_currency': Currency.get_by_id(country.currency_id).name,
+                                   "status": self.current_status(),
+                                   'settlements_list': settlements_list,
+                                   'advance_payment': advance_payment_list,
+                                   'delegate': str(User.get_by_id(self.delegate_id)),
+                                   'creator': str(User.get_by_id(self.creator_id)),
+                                   'approver': str(User.get_by_id(self.approver_id))}
+        return delegation_with_details
 
     def modify(self, modifications_dict: dict):
+        advance_payments = modifications_dict['advance_payment']
+        del modifications_dict['advance_payment']
         stmt = update(Delegation).where(Delegation.id == self.id).values(**modifications_dict)
         sqlalchemy_session.execute(stmt)
         sqlalchemy_session.commit()
+        for advance_payment in advance_payments:
+            payment = AdvancePayment.get_by_id(advance_payment['id'])
+            if payment is None:
+                AdvancePayment.create(advance_payment)
+            else:
+                payment.modify(advance_payment)
 
     @classmethod
     def create(cls, delegation_details: dict):
@@ -125,7 +143,6 @@ class Delegation(Base):
         for advance_payment in advance_payments:
             advance_payment['delegation_id'] = delegation.id
             AdvancePayment.create(advance_payment)
-        return delegation
 
     @classmethod
     def if_exists(cls, func):
@@ -134,7 +151,6 @@ class Delegation(Base):
             if cls.get_by_id(kwargs['delegation_id']) is not None:
                 return func(*args, **kwargs)
             return {'response': "Cannot find delegation with provided ID."}, 404
-
         return wrapper
 
 
@@ -158,7 +174,7 @@ class User(Base):
     token = Column(String, unique=True)
 
     def __str__(self):
-        return self.first_name + ' ' + self.last_name
+        return f'{self.first_name} {self.last_name}'
 
     def modify(self, modifications_dict: dict):
         stmt = update(User).where(User.id == self.id).values(**modifications_dict)
@@ -166,11 +182,13 @@ class User(Base):
         sqlalchemy_session.commit()
 
     def show(self):
-        user_dicted = self.__dict__
-        user_dicted = {key: value for key, value in user_dicted.items()
-                       if key not in ['_sa_instance_state', 'token', 'password', 'role']}
-        user_dicted['role'] = self.role.value
-        return user_dicted
+        user_to_show = {'id': self.id,
+                        'first_name': self.first_name,
+                        'last_name': self.last_name,
+                        'email': self.email,
+                        'role': self.role.value,
+                        'is_active': self.is_active}
+        return user_to_show
 
     def is_authorized(self, delegation: Delegation):
         if self.id == delegation.delegate_id or self.role.value in ['manager', 'hr', 'admin']:
@@ -192,7 +210,6 @@ class User(Base):
             if cls.get_by_token(request.headers.get('token')) is not None:
                 return func(*args, **kwargs)
             return "You are not logged in.", 401
-
         return wrapper
 
 
@@ -205,9 +222,20 @@ class AdvancePayment(Base):
     delegation_id = Column(Integer, ForeignKey('Delegation.id', ondelete="CASCADE"))
     currency_id = Column(Integer, ForeignKey('Currency.id'))
 
+    def show(self):
+        advance_payment_to_show = {'id': self.id,
+                                   'amount': self.amount,
+                                   'currency_id': self.currency_id}
+        return advance_payment_to_show
+
+    def modify(self, modifications_dict: dict):
+        stmt = update(AdvancePayment).where(AdvancePayment.id == self.id).values(**modifications_dict)
+        sqlalchemy_session.execute(stmt)
+        sqlalchemy_session.commit()
+
     @classmethod
     def create(cls, advance_payment_details: dict):
-        advance_payment = Attachment(**advance_payment_details)
+        advance_payment = AdvancePayment(**advance_payment_details)
         sqlalchemy_session.add(advance_payment)
         sqlalchemy_session.commit()
 
@@ -294,13 +322,16 @@ class Settlement(Base):
         return settlement_to_show
 
     def details(self):
-        dicted = self.__dict__
-        dicted = {key: (value.isoformat() if '_time' in key else value) for key, value in dicted.items()}
-        dicted2 = dicted.copy()
-        for key in dicted.keys():
-            if '_sa_instance_state' in key:
-                del dicted2[key]
-        return dicted2
+        settlement_with_details = {'id': self.id,
+                                   'approver': str(User.get_by_id(self.approver_id)),
+                                   'submit_date': self.submit_date,
+                                   'departure_date': self.departure_date,
+                                   'departure_time': self.departure_time.isoformat(),
+                                   'arrival_date': self.arrival_date,
+                                   'arrival_time': self.arrival_time.isoformat(),
+                                   'delegation_id': self.delegation_id,
+                                   'diet': self.diet}
+        return settlement_with_details
 
     def modify(self, modifications_dict: dict):
         stmt = update(Settlement).where(Settlement.id == self.id).values(**modifications_dict)
@@ -324,7 +355,7 @@ class Settlement(Base):
         sqlalchemy_session.commit()
         for meal in meals:
             meal['settlement_id'] = settlement.id
-            Expense.create(meal)
+            Meal.create(meal)
         for expense in expenses:
             expense['settlement_id'] = settlement.id
             Expense.create(expense)
@@ -365,6 +396,11 @@ class Meal(Base):
     # one to many
     settlement_id = Column(Integer, ForeignKey('Settlement.id', ondelete="CASCADE"))
 
+    def modify(self, modifications_dict: dict):
+        stmt = update(Meal).where(Meal.id == self.id).values(**modifications_dict)
+        sqlalchemy_session.execute(stmt)
+        sqlalchemy_session.commit()
+
     @classmethod
     def create(cls, meal_details: dict):
         meal = Meal(**meal_details)
@@ -393,14 +429,18 @@ class Expense(Base):
     attachment = relationship('Attachment', backref='expense', cascade="all,delete")
 
     def show(self):
-        expense_dicted = self.__dict__
-        expense_dicted = {key: value for key, value in expense_dicted.items()
-                          if key not in ['_sa_instance_state', 'token', 'password', 'type']}
-        expense_dicted['type'] = self.type.value
-        expense_dicted = {
-            key.replace('currency_id', 'currency'): (Currency.get_by_id(value).name if 'currency' in key else value)
-            for key, value in expense_dicted.items()}
-        return expense_dicted
+        expense_to_show = {'id': self.id,
+                           'settlement_id': self.settlement_id,
+                           'amount': self.amount,
+                           'currency': Currency.get_by_id(self.currency_id).name,
+                           'type': self.type.value,
+                           'description': self.description}
+        return expense_to_show
+
+    def modify(self, modifications_dict: dict):
+        stmt = update(Expense).where(Expense.id == self.id).values(**modifications_dict)
+        sqlalchemy_session.execute(stmt)
+        sqlalchemy_session.commit()
 
     @classmethod
     def create(cls, expense_details: dict):
@@ -447,4 +487,3 @@ class Attachment(Base):
         attachment = Attachment(**attachment_details)
         sqlalchemy_session.add(attachment)
         sqlalchemy_session.commit()
-
