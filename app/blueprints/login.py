@@ -1,4 +1,4 @@
-from flask import Blueprint, request
+from flask import Blueprint
 from app.database.tables_declaration import *
 from shortuuid import uuid
 from sqlalchemy.exc import IntegrityError, InvalidRequestError

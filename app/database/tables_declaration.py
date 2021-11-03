@@ -87,6 +87,7 @@ class Delegation(Base):
                               "departure_date": self.departure_date,
                               "arrival_date": self.arrival_date,
                               "departure_point": Country.get_by_id(self.country_id).name,
+                              "departure_point_id": self.country_id,
                               "status": self.current_status()}
         return delegation_to_show
 
@@ -113,30 +114,15 @@ class Delegation(Base):
         return delegation_with_details
 
     def modify(self, modifications_dict: dict):
-        advance_payments = modifications_dict['advance_payment']
-        del modifications_dict['advance_payment']
         stmt = update(Delegation).where(Delegation.id == self.id).values(**modifications_dict)
         sqlalchemy_session.execute(stmt)
         sqlalchemy_session.commit()
-        for advance_payment_details in advance_payments:
-            if 'id' in advance_payment_details.keys():
-                payment_existing = AdvancePayment.get_by_id(advance_payment_details['id'])
-                if payment_existing is not None:
-                    payment_existing.modify(advance_payment_details)
-                else:
-                    advance_payment_details['delegation_id'] = self.id
-                    AdvancePayment.create(advance_payment_details)
-            else:
-                advance_payment_details['delegation_id'] = self.id
-                AdvancePayment.create(advance_payment_details)
 
     @classmethod
     def create(cls, delegation_details: dict):
         delegation_details['departure_date'] = datetime.date.fromisoformat(delegation_details['departure_date'])
         delegation_details['arrival_date'] = datetime.date.fromisoformat(delegation_details['arrival_date'])
         delegation_details['submit_date'] = datetime.datetime.now()
-        advance_payments = delegation_details['advance_payments']
-        del delegation_details['advance_payments']
         delegation = Delegation(**delegation_details)
         sqlalchemy_session.add(delegation)
         sqlalchemy_session.commit()
@@ -145,9 +131,7 @@ class Delegation(Base):
                                         reason='Delegation creation.')
         sqlalchemy_session.add(entry_status)
         sqlalchemy_session.commit()
-        for advance_payment in advance_payments:
-            advance_payment['delegation_id'] = delegation.id
-            AdvancePayment.create(advance_payment)
+        return delegation
 
     @classmethod
     def if_exists(cls, func):
@@ -156,6 +140,7 @@ class Delegation(Base):
             if cls.get_by_id(kwargs['delegation_id']) is not None:
                 return func(*args, **kwargs)
             return {'response': "Cannot find delegation with provided ID."}, 404
+
         return wrapper
 
 
@@ -215,6 +200,7 @@ class User(Base):
             if cls.get_by_token(request.headers.get('token')) is not None:
                 return func(*args, **kwargs)
             return {'response': "You are not logged in."}, 401
+
         return wrapper
 
 
@@ -243,6 +229,16 @@ class AdvancePayment(Base):
         advance_payment = AdvancePayment(**advance_payment_details)
         sqlalchemy_session.add(advance_payment)
         sqlalchemy_session.commit()
+        return advance_payment
+
+    @classmethod
+    def if_exists(cls, func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            if cls.get_by_id(kwargs['advance_payment_id']) is not None:
+                return func(*args, **kwargs)
+            return {'response': "Cannot find advance payment with provided ID."}, 404
+        return wrapper
 
 
 class Country(Base):
@@ -293,9 +289,7 @@ class Settlement(Base):
     # fields
     id = Column(Integer, primary_key=True)
     submit_date = Column(DateTime)
-    departure_date = Column(Date)
     departure_time = Column(Time)
-    arrival_date = Column(Date)
     arrival_time = Column(Time)
     diet = Column(Float)
     # one to many
@@ -327,62 +321,27 @@ class Settlement(Base):
         return settlement_to_show
 
     def details(self):
-        expense_list = self.expense
-        expense_list = [expense.show() for expense in expense_list]
-        meal_list = self.meal
-        meal_list = [meal.show() for meal in meal_list]
+        parent_delegation = Delegation.get_by_id(self.delegation_id)
         settlement_with_details = {'id': self.id,
                                    'approver': str(User.get_by_id(self.approver_id)),
                                    'submit_date': self.submit_date,
-                                   'departure_date': self.departure_date,
+                                   'departure_date': parent_delegation.departure_date,
                                    'departure_time': self.departure_time.isoformat(),
-                                   'arrival_date': self.arrival_date,
+                                   'arrival_date': parent_delegation.arrival_date,
                                    'arrival_time': self.arrival_time.isoformat(),
                                    'delegation_id': self.delegation_id,
-                                   'diet': self.diet,
-                                   'expenses': expense_list,
-                                   'meals': meal_list}
+                                   'diet': self.diet}
         return settlement_with_details
 
     def modify(self, modifications_dict: dict):
         modifications_dict['submit_date'] = datetime.datetime.now()
-        expenses = modifications_dict['expenses']
-        del modifications_dict['expenses']
-        meals = modifications_dict['meals']
-        del modifications_dict['meals']
         stmt = update(Settlement).where(Settlement.id == self.id).values(**modifications_dict)
         sqlalchemy_session.execute(stmt)
         sqlalchemy_session.commit()
-        for meal_details in meals:
-            if 'id' in meal_details.keys():
-                meal_existing = Meal.get_by_id(meal_details['id'])
-                if meal_existing is not None:
-                    meal_existing.modify(meal_details)
-                else:
-                    meal_details['settlement_id'] = self.id
-                    Meal.create(meal_details)
-            else:
-                meal_details['settlement_id'] = self.id
-                Meal.create(meal_details)
-        for expense_details in expenses:
-            if 'id' in expense_details.keys():
-                expense_existing = Expense.get_by_id(expense_details['id'])
-                if expense_existing is not None:
-                    expense_existing.modify(expense_details)
-                else:
-                    expense_details['settlement_id'] = self.id
-                    Expense.create(expense_details)
-            else:
-                expense_details['settlement_id'] = self.id
-                Expense.create(expense_details)
 
     @classmethod
     def create(cls, settlement_details: dict):
         settlement_details['submit_date'] = datetime.datetime.now()
-        expenses = settlement_details['expenses']
-        del settlement_details['expenses']
-        meals = settlement_details['meals']
-        del settlement_details['meals']
         settlement = Settlement(**settlement_details)
         sqlalchemy_session.add(settlement)
         sqlalchemy_session.commit()
@@ -391,14 +350,7 @@ class Settlement(Base):
                                         reason='Settlement creation.')
         sqlalchemy_session.add(entry_status)
         sqlalchemy_session.commit()
-        for meal in meals:
-            meal['settlement_id'] = settlement.id
-            Meal.create(meal)
-        for expense in expenses:
-            expense['settlement_id'] = settlement.id
-            Expense.create(expense)
-
-
+        return settlement
 
     @classmethod
     def if_exists(cls, func):
@@ -407,6 +359,7 @@ class Settlement(Base):
             if cls.get_by_id(kwargs['settlement_id']) is not None:
                 return func(*args, **kwargs)
             return {'response': "Cannot find settlement with provided ID."}, 404
+
         return wrapper
 
     @classmethod
@@ -450,6 +403,16 @@ class Meal(Base):
         meal = Meal(**meal_details)
         sqlalchemy_session.add(meal)
         sqlalchemy_session.commit()
+        return meal
+
+    @classmethod
+    def if_exists(cls, func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            if cls.get_by_id(kwargs['meal_id']) is not None:
+                return func(*args, **kwargs)
+            return {'response': "Cannot find meal with provided ID."}, 404
+        return wrapper
 
 
 class ExpenseType(enum.Enum):
@@ -482,33 +445,16 @@ class Expense(Base):
         return expense_to_show
 
     def modify(self, modifications_dict: dict):
-        attachments = modifications_dict['attachments']
-        del modifications_dict['attachments']
         stmt = update(Expense).where(Expense.id == self.id).values(**modifications_dict)
         sqlalchemy_session.execute(stmt)
         sqlalchemy_session.commit()
-        for attachment_details in attachments:
-            if 'id' in attachment_details.keys():
-                attachment_existing = Attachment.get_by_id(attachment_details['id'])
-                if attachment_existing is not None:
-                    attachment_existing.modify(attachment_details)
-                else:
-                    attachment_details['expense_id'] = self.id
-                    Attachment.create(attachment_details)
-            else:
-                attachment_details['expense_id'] = self.id
-                Attachment.create(attachment_details)
 
     @classmethod
     def create(cls, expense_details: dict):
-        attachments = expense_details['attachments']
-        del expense_details['attachments']
         expense = Expense(**expense_details)
         sqlalchemy_session.add(expense)
         sqlalchemy_session.commit()
-        for attachment in attachments:
-            attachment['expense_id'] = expense.id
-            Attachment.create(attachment)
+        return expense
 
     @classmethod
     def if_exists(cls, func):
@@ -539,6 +485,11 @@ class Attachment(Base):
     # one to many
     expense_id = Column(Integer, ForeignKey('Expense.id', ondelete="CASCADE"))
 
+    def show(self):
+        attachment_to_show = {'id': self.id,
+                              'file': self.file}
+        return attachment_to_show
+
     def modify(self, modifications_dict: dict):
         stmt = update(Attachment).where(Attachment.id == self.id).values(**modifications_dict)
         sqlalchemy_session.execute(stmt)
@@ -549,3 +500,13 @@ class Attachment(Base):
         attachment = Attachment(**attachment_details)
         sqlalchemy_session.add(attachment)
         sqlalchemy_session.commit()
+        return attachment
+
+    @classmethod
+    def if_exists(cls, func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            if cls.get_by_id(kwargs['attachment_id']) is not None:
+                return func(*args, **kwargs)
+            return {'response': "Cannot find attachment with provided ID."}, 404
+        return wrapper

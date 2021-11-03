@@ -1,7 +1,6 @@
 from app.database.create_connection import postgre_connection, sqlalchemy_session
 from app.database.tables_declaration import *
 from shortuuid import uuid
-import datetime
 import csv
 
 Base.metadata.create_all(postgre_connection)

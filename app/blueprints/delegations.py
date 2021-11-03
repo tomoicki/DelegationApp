@@ -1,5 +1,5 @@
 from sqlalchemy.exc import IntegrityError, InvalidRequestError
-from flask import Blueprint, jsonify, request
+from flask import Blueprint
 from app.database.tables_declaration import *
 
 delegations_bp = Blueprint('delegations', __name__)
@@ -11,7 +11,7 @@ def delegations_list_view():
     user = User.get_by_token(request.headers.get('token'))
     delegations_list = user.delegation_his
     delegations_list = [delegation.show() for delegation in delegations_list]
-    return jsonify(delegations_list), 200
+    return {'response': delegations_list}, 200
 
 
 @delegations_bp.route('/delegations', methods=['POST'])
@@ -25,8 +25,8 @@ def add_delegation():
         return {'response': 'Cannot find user with provided "approver_id".'}, 404
     delegation_details['creator_id'] = creator.id
     try:
-        Delegation.create(delegation_details)
-        return {'response': 'Success.'}, 201
+        new_delegation = Delegation.create(delegation_details)
+        return {'response': new_delegation.show()}, 201
     except IntegrityError:
         sqlalchemy_session.rollback()
         return {'response': 'Fail.'}, 404
@@ -39,8 +39,8 @@ def show_delegation(delegation_id):
     delegation = Delegation.get_by_id(delegation_id)
     user = User.get_by_token(request.headers.get('token'))
     if user.is_authorized(delegation):
-        delegation_details = delegation.details()
-        return delegation_details, 200
+        delegation_details = delegation.show()
+        return {'response': delegation_details}, 200
     return {'response': 'You dont have the rights to see this delegation.'}, 403
 
 
@@ -70,7 +70,7 @@ def delete_delegation(delegation_id):
         try:
             delegation.delete()
             return {'response': 'Success.'}, 201
-        except IntegrityError as e:
+        except IntegrityError:
             sqlalchemy_session.rollback()
             return {'response': 'Fail.'}, 400
     return {'response': 'You dont have the rights to see this delegation.'}, 403
