@@ -1674,9 +1674,9 @@ def swagger_details_provider():
                         "id": {"type": "integer", "format": 'primary key'},
                         "first_name": {"type": "string"},
                         "last_name": {"type": "string"},
-                        "email": {"type": "string"},
-                        "password": {"type": "string"},
-                        "role": {"type": "Role", "format": "string"},
+                        "email": {"type": "string", "nullable": 'false'},
+                        "password": {"type": "string", "nullable": 'false'},
+                        "role": {"type": "Role", "format": "dictionary/user_roles", "nullable": 'false'},
                         "is_active": {"type": "boolean"},
                         "token": {"type": "string"}
                     }

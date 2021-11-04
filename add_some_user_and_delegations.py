@@ -28,35 +28,44 @@ currency1 = sqlalchemy_session.query(Currency).where(Currency.id == country1.cur
 country2 = sqlalchemy_session.query(Country).where(Country.name == 'Germany').first()
 currency2 = sqlalchemy_session.query(Currency).where(Currency.id == country2.currency_id).first()
 
+some_user = {'first_name': 'Admin',
+             'last_name': 'Adminovitch',
+             'email': 'adm@itechart.com',
+             'password': 'right',
+             'role': Role.admin,
+             'token': uuid()}
+admin_user = User.create(some_user)
+some_user = {'first_name': 'HR',
+             'last_name': 'hrovitcz',
+             'email': 'hr@itechart.com',
+             'password': 'right',
+             'role': Role.hr,
+             'token': uuid()}
+hr_user = User.create(some_user)
+some_user = {'first_name': 'Manager',
+             'last_name': 'Managerowicz',
+             'email': 'manager@itechart.com',
+             'password': 'right',
+             'role': Role.manager,
+             'token': uuid()}
+manager_user = User.create(some_user)
 some_user = {'first_name': 'First',
              'last_name': 'User',
-             'email': 'usr@itechart.com',
+             'email': 'user1@itechart.com',
              'password': 'right',
              'role': Role.user,
-             'is_active': True,
-             'token': uuid()}
-user1 = User(**some_user)
-user11 = User(**some_user)
-user11.first_name = 'User2'
-user11.email = 'user2@gmail.com'
-user11.token = uuid()
-user2 = User(**some_user)
-user2.first_name = 'Maker'
-user2.email = 'maker@gmail.com'
-user2.role = Role.manager
-user2.token = uuid()
-user3 = User(**some_user)
-user3.first_name = 'Hr'
-user3.email = 'hr@gmail.com'
-user3.role = Role.hr
-user3.token = uuid()
-user4 = User(**some_user)
-user4.first_name = 'admin'
-user4.email = 'admin@gmail.com'
-user4.role = Role.admin
-user4.token = uuid()
-sqlalchemy_session.bulk_save_objects([user1, user11, user2, user3, user4])
-sqlalchemy_session.commit()
+             'token': uuid(),
+             'supervisor_id': hr_user.id}
+user1 = User.create(some_user)
+some_user = {'first_name': 'Second',
+             'last_name': 'User',
+             'email': 'user2@itechart.com',
+             'password': 'right',
+             'role': Role.user,
+             'token': uuid(),
+             'supervisor_id': manager_user.id}
+user2 = User.create(some_user)
+
 #
 # some_delegation = {'title': 'to wroclaw',
 #                    "departure_date": "2020-01-15",

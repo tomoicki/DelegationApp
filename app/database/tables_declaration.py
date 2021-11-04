@@ -125,12 +125,12 @@ class Delegation(Base):
         delegation_details['submit_date'] = datetime.datetime.now()
         delegation = Delegation(**delegation_details)
         sqlalchemy_session.add(delegation)
-        sqlalchemy_session.commit()
+        sqlalchemy_session.flush()
         entry_status = DelegationStatus(delegation_id=delegation.id,
                                         status=DelegationStatusOptions.submitted.value,
                                         reason='Delegation creation.')
         sqlalchemy_session.add(entry_status)
-        sqlalchemy_session.commit()
+        sqlalchemy_session.flush()
         return delegation
 
     @classmethod
@@ -157,19 +157,15 @@ class User(Base):
     id = Column(Integer, primary_key=True)
     first_name = Column(String)
     last_name = Column(String)
-    email = Column(String, unique=True)
-    password = Column(String)
-    role = Column(Enum(Role))
+    email = Column(String, unique=True, nullable=False)
+    password = Column(String, nullable=False)
+    role = Column(Enum(Role), nullable=False)
     is_active = Column(Boolean)
+    supervisor_id = Column(Integer)
     token = Column(String, unique=True)
 
     def __str__(self):
         return f'{self.first_name} {self.last_name}'
-
-    def modify(self, modifications_dict: dict):
-        stmt = update(User).where(User.id == self.id).values(**modifications_dict)
-        sqlalchemy_session.execute(stmt)
-        sqlalchemy_session.commit()
 
     def show(self):
         user_to_show = {'id': self.id,
@@ -184,6 +180,19 @@ class User(Base):
         if self.id == delegation.delegate_id or self.role.value in ['manager', 'hr', 'admin']:
             return True
         return False
+
+    def modify(self, modifications_dict: dict):
+        stmt = update(User).where(User.id == self.id).values(**modifications_dict)
+        sqlalchemy_session.execute(stmt)
+        sqlalchemy_session.commit()
+
+    @classmethod
+    def create(cls, user_details: dict):
+        user = User(**user_details)
+        user.is_active = True
+        sqlalchemy_session.add(user)
+        sqlalchemy_session.commit()
+        return user
 
     @classmethod
     def get_by_token(cls, provided_token: str):
@@ -200,7 +209,6 @@ class User(Base):
             if cls.get_by_token(request.headers.get('token')) is not None:
                 return func(*args, **kwargs)
             return {'response': "You are not logged in."}, 401
-
         return wrapper
 
 
@@ -344,12 +352,12 @@ class Settlement(Base):
         settlement_details['submit_date'] = datetime.datetime.now()
         settlement = Settlement(**settlement_details)
         sqlalchemy_session.add(settlement)
-        sqlalchemy_session.commit()
+        sqlalchemy_session.flush()
         entry_status = SettlementStatus(settlement_id=settlement.id,
                                         status=SettlementStatusOptions.submitted.value,
                                         reason='Settlement creation.')
         sqlalchemy_session.add(entry_status)
-        sqlalchemy_session.commit()
+        sqlalchemy_session.flush()
         return settlement
 
     @classmethod
@@ -359,7 +367,6 @@ class Settlement(Base):
             if cls.get_by_id(kwargs['settlement_id']) is not None:
                 return func(*args, **kwargs)
             return {'response': "Cannot find settlement with provided ID."}, 404
-
         return wrapper
 
     @classmethod
@@ -453,7 +460,7 @@ class Expense(Base):
     def create(cls, expense_details: dict):
         expense = Expense(**expense_details)
         sqlalchemy_session.add(expense)
-        sqlalchemy_session.commit()
+        sqlalchemy_session.flush()
         return expense
 
     @classmethod
