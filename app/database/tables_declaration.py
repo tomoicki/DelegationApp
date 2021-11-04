@@ -125,12 +125,12 @@ class Delegation(Base):
         delegation_details['submit_date'] = datetime.datetime.now()
         delegation = Delegation(**delegation_details)
         sqlalchemy_session.add(delegation)
-        sqlalchemy_session.flush()
+        sqlalchemy_session.commit()
         entry_status = DelegationStatus(delegation_id=delegation.id,
                                         status=DelegationStatusOptions.submitted.value,
                                         reason='Delegation creation.')
         sqlalchemy_session.add(entry_status)
-        sqlalchemy_session.flush()
+        sqlalchemy_session.commit()
         return delegation
 
     @classmethod
@@ -351,12 +351,12 @@ class Settlement(Base):
         settlement_details['submit_date'] = datetime.datetime.now()
         settlement = Settlement(**settlement_details)
         sqlalchemy_session.add(settlement)
-        sqlalchemy_session.flush()
+        sqlalchemy_session.commit()
         entry_status = SettlementStatus(settlement_id=settlement.id,
                                         status=SettlementStatusOptions.submitted.value,
                                         reason='Settlement creation.')
         sqlalchemy_session.add(entry_status)
-        sqlalchemy_session.flush()
+        sqlalchemy_session.commit()
         return settlement
 
     @classmethod
@@ -459,7 +459,7 @@ class Expense(Base):
     def create(cls, expense_details: dict):
         expense = Expense(**expense_details)
         sqlalchemy_session.add(expense)
-        sqlalchemy_session.flush()
+        sqlalchemy_session.commit()
         return expense
 
     @classmethod
