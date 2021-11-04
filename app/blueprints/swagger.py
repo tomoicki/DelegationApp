@@ -1695,22 +1695,22 @@ def swagger_details_provider():
                         "status": {"type": "DelegationStatus", "format": "string"},
                         "title": {"type": "string"},
                         "submit_date": {"type": "string"},
-                        "departure_date": {"type": "string"},
-                        "arrival_date": {"type": "string"},
+                        "departure_date": {"type": "string", "nullable": 'false'},
+                        "arrival_date": {"type": "string", "nullable": 'false'},
                         "reason": {"type": "string"},
                         "remarks": {"type": "string"},
-                        "delegate_id": {"type": "integer", "format": "foreign key"},
-                        "creator_id": {"type": "integer", "format": "foreign key"},
-                        "approver_id": {"type": "integer", "format": "foreign key"},
-                        "country_id": {"type": "integer", "format": "foreign key"}
+                        "delegate_id": {"type": "integer", "format": "dictionary/users", "nullable": 'false'},
+                        "creator_id": {"type": "integer", "format": "dictionary/users", "nullable": 'false'},
+                        "approver_id": {"type": "integer", "format": "dictionary/managers", "nullable": 'false'},
+                        "country_id": {"type": "integer", "format": "dictionary/countries", "nullable": 'false'}
                     }
                 },
                 "AdvancePayment": {
                     "properties": {
                         "id": {"type": "integer", "format": 'primary key'},
-                        "amount": {"type": "float"},
-                        "delegation_id": {"type": "integer", "format": "foreign key"},
-                        "currency_id": {"type": "integer", "format": "foreign key"},
+                        "amount": {"type": "float", "nullable": 'false'},
+                        "delegation_id": {"type": "integer", "format": "foreign key", "nullable": 'false'},
+                        "currency_id": {"type": "integer", "format": "dictionary/currency", "nullable": 'false'},
                     }
                 },
                 "Country": {
@@ -1738,37 +1738,35 @@ def swagger_details_provider():
                     "properties": {
                         "id": {"type": "integer", "format": 'primary key'},
                         "submit_date": {"type": "string"},
-                        "departure_date": {"type": "string"},
                         "departure_time": {"type": "string"},
-                        "arrival_date": {"type": "string"},
                         "arrival_time": {"type": "string"},
                         "diet": {"type": "float"},
-                        "delegation_id": {"type": "integer", "format": "foreign key"},
-                        "approver_id": {"type": "integer", "format": "foreign key"},
+                        "delegation_id": {"type": "integer", "format": "foreign key", "nullable": 'false'},
+                        "approver_id": {"type": "integer", "format": "dictionary/managers", "nullable": 'false'},
                     }
                 },
                 "Meal": {
                     "properties": {
                         "id": {"type": "integer", "format": 'primary key'},
-                        "type": {"type": "MealType", "format": "string"},
-                        "settlement_id": {"type": "integer", "format": "foreign key"},
+                        "type": {"type": "MealType", "format": "dictionary/meal_types", "nullable": 'false'},
+                        "settlement_id": {"type": "integer", "format": "foreign key", "nullable": 'false'},
                     }
                 },
                 "Expense": {
                     "properties": {
                         "id": {"type": "integer", "format": 'primary key'},
-                        "type": {"type": "ExpenseType", "format": "string"},
-                        "amount": {"type": "float"},
+                        "type": {"type": "ExpenseType", "format": "dictionary/expense_types", "nullable": 'false'},
+                        "amount": {"type": "float", "nullable": 'false'},
                         "description": {"type": "string"},
-                        "settlement_id": {"type": "integer", "format": 'foreign key'},
-                        "currency_id": {"type": "integer", "format": 'foreign key'},
+                        "settlement_id": {"type": "integer", "format": 'foreign key', "nullable": 'false'},
+                        "currency_id": {"type": "integer", "format": 'dictionary/currency', "nullable": 'false'},
                     }
                 },
                 "Attachment": {
                     "properties": {
                         "id": {"type": "integer", "format": 'primary key'},
-                        "file": {"type": "LargeBinary"},
-                        "expense_id": {"type": "integer", "format": "foreign key"},
+                        "file": {"type": "string", "nullable": 'false'},
+                        "expense_id": {"type": "integer", "format": "foreign key", "nullable": 'false'},
                     }
                 },
             }
