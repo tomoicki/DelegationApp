@@ -20,7 +20,7 @@ def add_delegation():
     creator = User.get_by_token(request.headers.get('token'))
     delegation_details = request.get_json()
     if not creator.id == delegation_details['delegate_id'] and creator.role.value not in ['manager', 'hr', 'admin']:
-        return {'response': 'You dont have the rights to create this delegation.'}, 403
+        return {'response': 'You dont have the rights to create this settlement.'}, 403
     if User.get_by_id(delegation_details['approver_id']) is None:
         return {'response': 'Cannot find user with provided "approver_id".'}, 404
     delegation_details['creator_id'] = creator.id

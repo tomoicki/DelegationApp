@@ -1,7 +1,6 @@
 from flask import Flask
 from app.blueprints.login import login
 from app.blueprints.dictionaries import dictionaries_bp
-from app.blueprints.delegations import delegations_bp
 from app.blueprints.advance_payments import advance_payments_bp
 from app.blueprints.settlements import settlements_bp
 from app.blueprints.meals import meals_bp
@@ -17,7 +16,6 @@ def create_app():
     app.config['SECRET_KEY'] = 'would like not to have this but apparently i have to'
     app.register_blueprint(login)
     app.register_blueprint(dictionaries_bp)
-    app.register_blueprint(delegations_bp)
     app.register_blueprint(advance_payments_bp)
     app.register_blueprint(settlements_bp)
     app.register_blueprint(meals_bp)

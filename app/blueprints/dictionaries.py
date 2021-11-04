@@ -10,12 +10,6 @@ def get_expense_types():
     return {'response': expense_types}, 200
 
 
-@dictionaries_bp.route('/dictionary/delegation_status_options', methods=['GET'])
-def get_delegation_status_options():
-    delegation_status_options = [delegation_status_option.value for delegation_status_option in DelegationStatusOptions]
-    return {'response': delegation_status_options}, 200
-
-
 @dictionaries_bp.route('/dictionary/user_roles', methods=['GET'])
 def get_user_roles():
     user_roles = [user_role.value for user_role in Role]
