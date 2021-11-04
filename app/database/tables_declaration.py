@@ -45,24 +45,24 @@ class Delegation(Base):
     id = Column(Integer, primary_key=True)
     title = Column(String)
     submit_date = Column(DateTime)
-    departure_date = Column(Date)
-    arrival_date = Column(Date)
+    departure_date = Column(Date, nullable=False)
+    arrival_date = Column(Date, nullable=False)
     reason = Column(String)
     remarks = Column(String)
     # one to many
-    delegate_id = Column(Integer, ForeignKey('User.id'))
+    delegate_id = Column(Integer, ForeignKey('User.id'), nullable=False)
     delegate = relationship('User',
                             backref=backref('delegation_his'),
                             primaryjoin='foreign(Delegation.delegate_id) == remote(User.id)')
-    creator_id = Column(Integer, ForeignKey('User.id'))
+    creator_id = Column(Integer, ForeignKey('User.id'), nullable=False)
     creator = relationship('User',
                            backref=backref('delegation_creator'),
                            primaryjoin='foreign(Delegation.creator_id) == remote(User.id)')
-    approver_id = Column(Integer, ForeignKey('User.id'))
+    approver_id = Column(Integer, ForeignKey('User.id'), nullable=False)
     approver = relationship('User',
                             backref=backref('delegation_approver'),
                             primaryjoin='foreign(Delegation.approver_id) == remote(User.id)')
-    country_id = Column(Integer, ForeignKey('Country.id'))
+    country_id = Column(Integer, ForeignKey('Country.id'), nullable=False)
     # many to one
     advance_payment = relationship('AdvancePayment', backref='delegation', cascade="all,delete")
     settlement = relationship('Settlement', backref='delegation')
@@ -140,7 +140,6 @@ class Delegation(Base):
             if cls.get_by_id(kwargs['delegation_id']) is not None:
                 return func(*args, **kwargs)
             return {'response': "Cannot find delegation with provided ID."}, 404
-
         return wrapper
 
 
@@ -216,10 +215,10 @@ class AdvancePayment(Base):
     __tablename__ = 'AdvancePayment'
     # fields
     id = Column(Integer, primary_key=True)
-    amount = Column(Float)
+    amount = Column(Float, nullable=False)
     # one to many
-    delegation_id = Column(Integer, ForeignKey('Delegation.id', ondelete="CASCADE"))
-    currency_id = Column(Integer, ForeignKey('Currency.id'))
+    delegation_id = Column(Integer, ForeignKey('Delegation.id', ondelete="CASCADE"), nullable=False)
+    currency_id = Column(Integer, ForeignKey('Currency.id'), nullable=False)
 
     def show(self):
         advance_payment_to_show = {'id': self.id,
@@ -301,8 +300,8 @@ class Settlement(Base):
     arrival_time = Column(Time)
     diet = Column(Float)
     # one to many
-    delegation_id = Column(Integer, ForeignKey('Delegation.id'))
-    approver_id = Column(Integer, ForeignKey('User.id'))
+    delegation_id = Column(Integer, ForeignKey('Delegation.id'), nullable=False)
+    approver_id = Column(Integer, ForeignKey('User.id'), nullable=False)
     approver = relationship('User',
                             backref=backref('settlement_approver'),
                             primaryjoin='foreign(Settlement.approver_id) == remote(User.id)')
@@ -391,9 +390,9 @@ class Meal(Base):
     __tablename__ = 'Meal'
     # fields
     id = Column(Integer, primary_key=True)
-    type = Column(Enum(MealType))
+    type = Column(Enum(MealType), nullable=False)
     # one to many
-    settlement_id = Column(Integer, ForeignKey('Settlement.id', ondelete="CASCADE"))
+    settlement_id = Column(Integer, ForeignKey('Settlement.id', ondelete="CASCADE"), nullable=False)
 
     def show(self):
         meal_to_show = {'id': self.id,
@@ -433,12 +432,12 @@ class Expense(Base):
     __tablename__ = 'Expense'
     # fields
     id = Column(Integer, primary_key=True)
-    type = Column(Enum(ExpenseType))
-    amount = Column(Float)
+    type = Column(Enum(ExpenseType), nullable=False)
+    amount = Column(Float, nullable=False)
     description = Column(String)
     # one to many
-    settlement_id = Column(Integer, ForeignKey('Settlement.id', ondelete="CASCADE"))
-    currency_id = Column(Integer, ForeignKey('Currency.id'))
+    settlement_id = Column(Integer, ForeignKey('Settlement.id', ondelete="CASCADE"), nullable=False)
+    currency_id = Column(Integer, ForeignKey('Currency.id'), nullable=False)
     # many to one
     attachment = relationship('Attachment', backref='expense', cascade="all,delete")
 
@@ -488,9 +487,9 @@ class Attachment(Base):
     __tablename__ = 'Attachment'
     # fields
     id = Column(Integer, primary_key=True)
-    file = Column(String)
+    file = Column(String, nullable=False)
     # one to many
-    expense_id = Column(Integer, ForeignKey('Expense.id', ondelete="CASCADE"))
+    expense_id = Column(Integer, ForeignKey('Expense.id', ondelete="CASCADE"), nullable=False)
 
     def show(self):
         attachment_to_show = {'id': self.id,
