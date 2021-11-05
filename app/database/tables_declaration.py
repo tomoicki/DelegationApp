@@ -6,6 +6,7 @@ from sqlalchemy import Column, Integer, String, ForeignKey, Date, Float, Time, E
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
 from app.database.create_connection import sqlalchemy_session
+from app.calculators.calculator_functions import recalculate_hours, currency_factor
 
 
 class Base:
@@ -69,31 +70,75 @@ class Settlement(Base):
     id = Column(Integer, primary_key=True)
     title = Column(String)
     submit_date = Column(DateTime)
-    departure_date = Column(Date, nullable=False)
-    departure_time = Column(Time, nullable=False)
-    arrival_date = Column(Date, nullable=False)
-    arrival_time = Column(Time, nullable=False)
+    departure_date = Column(Date)
+    departure_time = Column(Time)
+    arrival_date = Column(Date)
+    arrival_time = Column(Time)
     reason = Column(String)
     remarks = Column(String)
     # one to many
-    delegate_id = Column(Integer, ForeignKey('User.id'), nullable=False)
+    delegate_id = Column(Integer, ForeignKey('User.id'))
     delegate = relationship('User',
                             backref=backref('settlement_his'),
                             primaryjoin='foreign(Settlement.delegate_id) == remote(User.id)')
-    creator_id = Column(Integer, ForeignKey('User.id'), nullable=False)
+    creator_id = Column(Integer, ForeignKey('User.id'))
     creator = relationship('User',
                            backref=backref('creator'),
                            primaryjoin='foreign(Settlement.creator_id) == remote(User.id)')
-    approver_id = Column(Integer, ForeignKey('User.id'), nullable=False)
+    approver_id = Column(Integer, ForeignKey('User.id'))
     approver = relationship('User',
                             backref=backref('approver'),
                             primaryjoin='foreign(Settlement.approver_id) == remote(User.id)')
-    country_id = Column(Integer, ForeignKey('Country.id'), nullable=False)
+    country_id = Column(Integer, ForeignKey('Country.id'))
     # many to one
     advance_payment = relationship('AdvancePayment', backref='settlement', cascade="all,delete")
     expense = relationship('Expense', backref='settlement', cascade="all,delete")
     meal = relationship('Meal', backref='settlement', cascade="all,delete")
     status = relationship('SettlementStatus', backref='settlement', cascade="all,delete")
+
+    def calculate_diet(self):
+        """Calculates diet (D35 in excel) for delegation."""
+        foreign_meal_rates = {'breakfast': 0.15, 'lunch': 0.3, 'supper': 0.3}
+        domestic_meal_rates = {'breakfast': 0.25, 'lunch': 0.5, 'supper': 0.25}
+        country = Country.get_by_id(self.country_id)
+        if country.name == 'Poland':
+            meal_rates = domestic_meal_rates
+        else:
+            meal_rates = foreign_meal_rates
+        meal_cost = [meal_rates[meal_object.type.value] for meal_object in self.meal]
+        days_delta = (self.arrival_date - self.departure_date).days
+        hours_delta = (datetime.datetime.combine(datetime.date.min, self.arrival_time) -
+                       datetime.datetime.combine(datetime.date.min, self.departure_time)).total_seconds()
+        diet = days_delta * country.diet + recalculate_hours(hours_delta) * country.diet - sum(meal_cost)
+        return diet
+
+    def sum_of_expenses(self):
+        expenses_list = self.expense
+        all_expense_types = {expense.type.value for expense in expenses_list}
+        sum_of_expenses_by_type = {expense_type: sum([expense.convert_to_pln() for expense in expenses_list
+                                                      if expense.type.value == expense_type])
+                                   for expense_type in all_expense_types}
+        return sum_of_expenses_by_type
+
+    def sum_of_advanced_payments(self):
+        advanced_payments_list = self.advance_payment
+        sum_of_advanced_payments = [advance_payment.convert_to_pln() for advance_payment in advanced_payments_list]
+        return sum_of_advanced_payments
+
+    def generate_pdf(self):
+        import reportlab.lib.colors as pdf_colors
+        from reportlab.lib.pagesizes import LETTER
+        from reportlab.lib.units import inch
+        from reportlab.pdfgen.canvas import Canvas
+        canvas = Canvas("reimbursement.pdf", pagesize=LETTER)
+        # Set font to Times New Roman with 12-point size
+        canvas.setFont("Times-Roman", 12)
+        # Draw blue text one inch from the left and ten
+        # inches from the bottom
+        canvas.setFillColor(pdf_colors.blue)
+        canvas.drawString(1 * inch, 10 * inch, self.title)
+        # Save the PDF file
+        canvas.save()
 
     def current_status(self):
         return self.status[-1].status.value
@@ -144,6 +189,19 @@ class Settlement(Base):
         return settlement
 
     @classmethod
+    def not_valid_dict(cls, func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            body = request.get_json()
+            try:
+                cls.create(body)
+                sqlalchemy_session.rollback()
+                return func(*args, **kwargs)
+            except (KeyError, TypeError) as e:
+                return {"response": str(e)}, 400
+        return wrapper
+
+    @classmethod
     def if_exists(cls, func):
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -157,12 +215,20 @@ class AdvancePayment(Base):
     __tablename__ = 'AdvancePayment'
     # fields
     id = Column(Integer, primary_key=True)
-    amount = Column(Float, nullable=False)
+    amount = Column(Float)
     submit_date = Column(DateTime)
     nr_kw = Column(String)
     # one to many
-    settlement_id = Column(Integer, ForeignKey('Settlement.id', ondelete="CASCADE"), nullable=False)
-    currency_id = Column(Integer, ForeignKey('Currency.id'), nullable=False)
+    settlement_id = Column(Integer, ForeignKey('Settlement.id', ondelete="CASCADE"))
+    currency_id = Column(Integer, ForeignKey('Currency.id'))
+
+    def convert_to_pln(self):
+        """Recalculates amount from XXX to PLN if needed."""
+        currency_name = Currency.get_by_id(self.currency_id).name
+        if currency_name == 'PLN':
+            return self.amount
+        factor = currency_factor(currency_name)
+        return self.amount/factor
 
     def show(self):
         advance_payment_to_show = {'id': self.id,
@@ -181,6 +247,19 @@ class AdvancePayment(Base):
         sqlalchemy_session.add(advance_payment)
         sqlalchemy_session.commit()
         return advance_payment
+
+    @classmethod
+    def not_valid_dict(cls, func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            body = request.get_json()
+            try:
+                cls.create(body)
+                sqlalchemy_session.rollback()
+                return func(*args, **kwargs)
+            except (KeyError, TypeError) as e:
+                return {"response": str(e)}, 400
+        return wrapper
 
     @classmethod
     def if_exists(cls, func):
@@ -202,9 +281,9 @@ class Meal(Base):
     __tablename__ = 'Meal'
     # fields
     id = Column(Integer, primary_key=True)
-    type = Column(Enum(MealType), nullable=False)
+    type = Column(Enum(MealType))
     # one to many
-    settlement_id = Column(Integer, ForeignKey('Settlement.id', ondelete="CASCADE"), nullable=False)
+    settlement_id = Column(Integer, ForeignKey('Settlement.id', ondelete="CASCADE"))
 
     def show(self):
         meal_to_show = {'id': self.id,
@@ -222,6 +301,19 @@ class Meal(Base):
         sqlalchemy_session.add(meal)
         sqlalchemy_session.commit()
         return meal
+
+    @classmethod
+    def not_valid_dict(cls, func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            body = request.get_json()
+            try:
+                cls.create(body)
+                sqlalchemy_session.rollback()
+                return func(*args, **kwargs)
+            except (KeyError, TypeError) as e:
+                return {"response": str(e)}, 400
+        return wrapper
 
     @classmethod
     def if_exists(cls, func):
@@ -244,14 +336,23 @@ class Expense(Base):
     __tablename__ = 'Expense'
     # fields
     id = Column(Integer, primary_key=True)
-    type = Column(Enum(ExpenseType), nullable=False)
-    amount = Column(Float, nullable=False)
+    type = Column(Enum(ExpenseType))
+    amount = Column(Float)
     description = Column(String)
     # one to many
-    settlement_id = Column(Integer, ForeignKey('Settlement.id', ondelete="CASCADE"), nullable=False)
-    currency_id = Column(Integer, ForeignKey('Currency.id'), nullable=False)
+    settlement_id = Column(Integer, ForeignKey('Settlement.id', ondelete="CASCADE"))
+    currency_id = Column(Integer, ForeignKey('Currency.id'))
     # many to one
     attachment = relationship('Attachment', backref='expense', cascade="all,delete")
+
+    def convert_to_pln(self):
+        """Recalculates amount from XXX to PLN if needed."""
+        currency_name = Currency.get_by_id(self.currency_id).name
+        if currency_name == 'PLN':
+            return self.amount
+        # else, get the factor
+        factor = currency_factor(currency_name)
+        return self.amount/factor
 
     def show(self):
         expense_to_show = {'id': self.id,
@@ -275,6 +376,19 @@ class Expense(Base):
         return expense
 
     @classmethod
+    def not_valid_dict(cls, func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            body = request.get_json()
+            try:
+                cls.create(body)
+                sqlalchemy_session.rollback()
+                return func(*args, **kwargs)
+            except (KeyError, TypeError) as e:
+                return {"response": str(e)}, 400
+        return wrapper
+
+    @classmethod
     def if_exists(cls, func):
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -292,6 +406,7 @@ class Expense(Base):
             if expense in settlement.expense:
                 return func(*args, **kwargs)
             return {'response': 'Provided settlement is not a child of provided delegation.'}, 404
+
         return wrapper
 
 
@@ -299,9 +414,9 @@ class Attachment(Base):
     __tablename__ = 'Attachment'
     # fields
     id = Column(Integer, primary_key=True)
-    file = Column(String, nullable=False)
+    file = Column(String)
     # one to many
-    expense_id = Column(Integer, ForeignKey('Expense.id', ondelete="CASCADE"), nullable=False)
+    expense_id = Column(Integer, ForeignKey('Expense.id', ondelete="CASCADE"))
 
     def show(self):
         attachment_to_show = {'id': self.id,
@@ -319,6 +434,19 @@ class Attachment(Base):
         sqlalchemy_session.add(attachment)
         sqlalchemy_session.commit()
         return attachment
+
+    @classmethod
+    def not_valid_dict(cls, func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            body = request.get_json()
+            try:
+                cls.create(body)
+                sqlalchemy_session.rollback()
+                return func(*args, **kwargs)
+            except (KeyError, TypeError) as e:
+                return {"response": str(e)}, 400
+        return wrapper
 
     @classmethod
     def if_exists(cls, func):
@@ -343,9 +471,9 @@ class User(Base):
     id = Column(Integer, primary_key=True)
     first_name = Column(String)
     last_name = Column(String)
-    email = Column(String, unique=True, nullable=False)
-    password = Column(String, nullable=False)
-    role = Column(Enum(Role), nullable=False)
+    email = Column(String, unique=True)
+    password = Column(String)
+    role = Column(Enum(Role))
     is_active = Column(Boolean)
     supervisor_id = Column(Integer)
     token = Column(String, unique=True)

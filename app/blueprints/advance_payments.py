@@ -21,6 +21,7 @@ def advance_payments_list_view(settlement_id):
 @advance_payments_bp.route('/settlements/<settlement_id>/advance_payments', methods=['POST'])
 @User.is_logged_in
 @Settlement.if_exists
+@AdvancePayment.not_valid_dict
 def add_advance_payment(settlement_id):
     creator = User.get_by_token(request.headers.get('token'))
     settlement = Settlement.get_by_id(settlement_id)
@@ -51,14 +52,15 @@ def show_advance_payment(advance_payment_id):
 @advance_payments_bp.route('/advance_payments/<advance_payment_id>', methods=['PUT'])
 @User.is_logged_in
 @AdvancePayment.if_exists
+@AdvancePayment.not_valid_dict
 def modify_advance_payment(advance_payment_id):
     advance_payment = AdvancePayment.get_by_id(advance_payment_id)
     settlement = Settlement.get_by_id(advance_payment.delegation_id)
     user = User.get_by_token(request.headers.get('token'))
-    body = request.get_json()
+    advance_payment_details = request.get_json()
     if user.is_authorized(settlement):
         try:
-            advance_payment.modify(body)
+            advance_payment.modify(advance_payment_details)
             return {'response': 'Success.'}, 201
         except InvalidRequestError:
             return {'response': 'Fail.'}, 400

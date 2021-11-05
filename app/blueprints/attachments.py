@@ -16,12 +16,13 @@ def attachments_list_view(expense_id):
         attachments_list = expense.attachment
         attachments_list = [attachment.show() for attachment in attachments_list]
         return {'response': attachments_list}, 200
-    return {'response': 'You dont have the rights to see this delegation.'}, 403
+    return {'response': 'You dont have the rights to see this attachments.'}, 403
 
 
 @attachments_bp.route('/expenses/<expense_id>/attachments', methods=['POST'])
 @User.is_logged_in
 @Expense.if_exists
+@Attachment.not_valid_dict
 def add_attachment(expense_id):
     expense = Expense.get_by_id(expense_id)
     settlement = Settlement.get_by_id(expense.settlement_id)
@@ -54,15 +55,16 @@ def show_attachment(attachment_id):
 @attachments_bp.route('/attachments/<attachment_id>', methods=['PUT'])
 @User.is_logged_in
 @Attachment.if_exists
+@Attachment.not_valid_dict
 def modify_attachment(attachment_id):
     attachment = Attachment.get_by_id(attachment_id)
     expense = Expense.get_by_id(attachment.expense_id)
     settlement = Settlement.get_by_id(expense.settlement_id)
     user = User.get_by_token(request.headers.get('token'))
-    body = request.get_json()
+    attachment_details = request.get_json()
     if user.is_authorized(settlement):
         try:
-            attachment.modify(body)
+            attachment.modify(attachment_details)
             return {'response': 'Success.'}, 201
         except InvalidRequestError:
             return {'response': 'Fail.'}, 400

@@ -1,0 +1,16 @@
+build-job:
+  stage: build
+  tags:
+    - tripapp
+  when: manual
+  script:
+    - echo "Hello, $GITLAB_USER_LOGIN!"
+
+start:
+  stage: deploy
+  tags:
+    - tripapp
+  when: manual
+  script:
+    - echo "This job tests something"
+    - python3 run.py

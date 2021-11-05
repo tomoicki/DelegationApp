@@ -16,13 +16,14 @@ def settlement_list_view():
 
 @settlements_bp.route('/settlements', methods=['POST'])
 @User.is_logged_in
+@Settlement.not_valid_dict
 def add_settlement():
     creator = User.get_by_token(request.headers.get('token'))
     settlement_details = request.get_json()
     if not creator.id == settlement_details['delegate_id'] and creator.role.value not in ['manager', 'hr', 'admin']:
         return {'response': 'You dont have the rights to create this settlement.'}, 403
     if User.get_by_id(settlement_details['approver_id']) is None:
-        return {'response': 'Cannot find user with provided "approver_id".'}, 404
+        return {'response': 'Cannot find user with provided approver_id.'}, 404
     settlement_details['creator_id'] = creator.id
     try:
         new_settlement = Settlement.create(settlement_details)
@@ -46,13 +47,14 @@ def show_settlement(settlement_id):
 @settlements_bp.route('/settlements/<settlement_id>', methods=['PUT'])
 @User.is_logged_in
 @Settlement.if_exists
+@Settlement.not_valid_dict
 def modify_settlement(settlement_id):
     settlement = Settlement.get_by_id(settlement_id)
     user = User.get_by_token(request.headers.get('token'))
-    body = request.get_json()
+    settlement_details = request.get_json()
     if user.is_authorized(settlement):
         try:
-            settlement.modify(body)
+            settlement.modify(settlement_details)
             return {'response': 'Success.'}, 201
         except InvalidRequestError:
             return {'response': 'Fail.'}, 400

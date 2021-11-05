@@ -2,16 +2,21 @@ from flask import Blueprint
 from app.database.tables_declaration import *
 from shortuuid import uuid
 from sqlalchemy.exc import IntegrityError, InvalidRequestError
+import datetime
+from datetime import timedelta
 
 login = Blueprint('login', __name__)
 
 
-@login.route('/', methods=['POST'])
+@login.route('/', methods=['GET'])
 def welcome():
-    r = request.data
-    print(r)
-    j = request.get_json()
-    print(j)
+    settlement = Settlement.get_by_id(1)
+    days_delta = (settlement.arrival_date - settlement.departure_date).days
+    some = datetime.datetime.combine(datetime.date.min, settlement.arrival_time) - \
+           datetime.datetime.combine(datetime.date.min, settlement.departure_time)
+    settlement.sum_of_expenses()
+    settlement.calculate_diet()
+    settlement.generate_pdf()
     return str(User.get_by_id(1)), 200
 
 
@@ -41,9 +46,9 @@ def login_users():
         except TypeError or KeyError:
             return {'response': 'Bad request.'}, 400
         if user is None:
-            return {'response': 'Cannot find user with provided email.'}
+            return {'response': 'Cannot find user with provided email.'}, 403
         if user_credentials['password'] != user.password:
-            return {'response': 'Bad password.'}
+            return {'response': 'Bad password.'}, 401
         return {'token': user.token}, 200
     else:
         return {'response': "Wrong input, need 'email' key."}, 400
@@ -66,4 +71,3 @@ def change_user_details():
         return {'response': 'Success.'}, 201
     except InvalidRequestError:
         return {'response': 'Fail.'}, 400
-

@@ -76,11 +76,17 @@ def swagger_details_provider():
                         "application/json"
                     ],
                     "responses": {
-                        "20": {
+                        "200": {
                             "description": "Ok",
                         },
                         "400": {
                             "description": "Bad request.",
+                        },
+                        "401": {
+                            "description": "Bad password.",
+                        },
+                        "403": {
+                            "description": "Cannot find user with provided email.",
                         },
                     }
                 },
@@ -104,6 +110,9 @@ def swagger_details_provider():
                     "responses": {
                         "200": {
                             "description": "OK",
+                        },
+                        "401": {
+                            "description": "You are not logged in.",
                         }
                     }
                 },
@@ -139,234 +148,19 @@ def swagger_details_provider():
                         "200": {
                             "description": "OK.",
                         },
+                        "401": {
+                            "description": "You are not logged in.",
+                        },
                         "400": {
                             "description": "Fail."
                         },
-                        "403": {
-                            "description": "You dont have the rights to modify this delegation.",
-                        },
-                        "404": {
-                            "description": "Cannot find delegation with provided ID.",
-                        }
                     }
                 },
-
             },
-            # "/delegations": {
-            #     "get": {
-            #         "tags": ["Delegation"],
-            #         "summary": "Returns list of user delegations.",
-            #         "parameters": [
-            #             {
-            #                 "name": "token",
-            #                 "in": "header",
-            #                 "description": "Token of logged user.",
-            #                 "type": "string",
-            #                 "example": "ieZJQPebstKXutENPiQNmh"
-            #             }
-            #         ],
-            #         "produces": [
-            #             "application/json"
-            #         ],
-            #         "responses": {
-            #             "200": {
-            #                 "description": "OK",
-            #             },
-            #             "401": {
-            #                 "description": "You are not logged in.",
-            #             },
-            #         }
-            #     },
-            #     "post": {
-            #         "tags": ["Delegation"],
-            #         "summary": "Adds new delegation.",
-            #         "parameters": [
-            #             {
-            #                 "name": "token",
-            #                 "in": "header",
-            #                 "description": "Token of logged user.",
-            #                 "type": "string",
-            #                 "example": "e5k9ih78cEDjpqV5YQdxmf"
-            #             }
-            #         ],
-            #         "requestBody": {
-            #             "description": "Takes delegation details.",
-            #             "content": {
-            #                 "application/json": {
-            #                     "schema": {
-            #                         "$ref": "#/components/schemas/Delegation"
-            #                     },
-            #                     "example": {
-            #                         "title": "some title",
-            #                         "country_id": 11,
-            #                         "approver_id": 3,
-            #                         "arrival_date": "2020-01-20",
-            #                         "delegate_id": 2,
-            #                         "departure_date": "2020-01-15",
-            #                         "reason": "some reason",
-            #                         "remarks": "some remarks",
-            #                     }
-            #                 }
-            #             }
-            #         },
-            #         "produces": [
-            #             "application/json"
-            #         ],
-            #         "responses": {
-            #             "201": {
-            #                 "description": "Success.",
-            #             },
-            #             "401": {
-            #                 "description": "You are not logged in.",
-            #             },
-            #             "403": {
-            #                 "description": "You dont have the rights to create this delegation.",
-            #             },
-            #             "404": {
-            #                 "description": "Fail.",
-            #             },
-            #             "404.2": {
-            #                 "description": "Cannot find user with provided approver_id.",
-            #             },
-            #         }
-            #     }
-            # },
-            # "/delegations/{delegation_id}": {
-            #     "get": {
-            #         "tags": ["Delegation"],
-            #         "summary": "Shows delegation details.",
-            #         "parameters": [
-            #             {
-            #                 "name": "token",
-            #                 "in": "header",
-            #                 "description": "Token of logged user.",
-            #                 "type": "string",
-            #                 "example": "2T7y2x29rpxQJT4474RPWv"
-            #             },
-            #             {
-            #                 "name": "delegation_id",
-            #                 "in": "path",
-            #                 "description": "ID of the delegation to show.",
-            #                 "type": "int"
-            #             }
-            #         ],
-            #         "produces": [
-            #             "application/json"
-            #         ],
-            #         "responses": {
-            #             "200": {
-            #                 "description": "OK",
-            #             },
-            #             "401": {
-            #                 "description": "You are not logged in.",
-            #             },
-            #             "403": {
-            #                 "description": "You dont have the rights to see this delegation.",
-            #             },
-            #             "404": {
-            #                 "description": "Cannot find delegation with provided ID.",
-            #             },
-            #         }
-            #     },
-            #     "put": {
-            #         "tags": ["Delegation"],
-            #         "summary": "Modifies existing delegation.",
-            #         "parameters": [
-            #             {
-            #                 "name": "token",
-            #                 "in": "header",
-            #                 "description": "Token of logged user.",
-            #                 "type": "string",
-            #                 "example": "2T7y2x29rpxQJT4474RPWv"
-            #             },
-            #             {
-            #                 "name": "delegation_id",
-            #                 "in": "path",
-            #                 "description": "ID of the delegation to modify.",
-            #                 "type": "int"
-            #             }
-            #         ],
-            #         "requestBody": {
-            #             "description": "Changes existing delegation.",
-            #             "content": {
-            #                 "application/json": {
-            #                     "schema": {
-            #                         "$ref": "#/components/schemas/Delegation"
-            #                     },
-            #                     "example": {
-            #                         "arrival_date": "Mon, 22 Jan 2020 00:00:00 GMT",
-            #                         "departure_date": "Wed, 15 Jan 2020 00:00:00 GMT",
-            #                         "reason": "xxx",
-            #                         "title": "xxx"
-            #                     }
-            #                 }
-            #             }
-            #         },
-            #         "produces": [
-            #             "application/json"
-            #         ],
-            #         "responses": {
-            #             "200": {
-            #                 "description": "OK.",
-            #             },
-            #             "400": {
-            #                 "description": "Fail."
-            #             },
-            #             "401": {
-            #                 "description": "You are not logged in.",
-            #             },
-            #             "403": {
-            #                 "description": "You dont have the rights to modify this delegation.",
-            #             },
-            #             "404": {
-            #                 "description": "Cannot find delegation with provided ID.",
-            #             }
-            #         }
-            #     },
-            #     "delete": {
-            #         "tags": ["Delegation"],
-            #         "summary": "Deletes delegation.",
-            #         "parameters": [
-            #             {
-            #                 "name": "token",
-            #                 "in": "header",
-            #                 "description": "Token of logged user.",
-            #                 "type": "string",
-            #                 "example": "LFvxPVWyetuPyKo8ZrLm5F"
-            #             },
-            #             {
-            #                 "name": "delegation_id",
-            #                 "in": "path",
-            #                 "description": "ID of the delegation to delete.",
-            #                 "type": "int"
-            #             }
-            #         ],
-            #         "produces": [
-            #             "application/json"
-            #         ],
-            #         "responses": {
-            #             "201": {
-            #                 "description": "Success.",
-            #             },
-            #             "400": {
-            #                 "description": "Fail."
-            #             },
-            #             "401": {
-            #                 "description": "You are not logged in.",
-            #             },
-            #             "403": {
-            #                 "description": "You dont have the rights to delete this delegation.",
-            #             },
-            #             "404": {
-            #                 "description": "Cannot find delegation with provided ID.",
-            #             },
-            #         }
-            #     }
-            # },
             "/settlements": {
                 "get": {
                     "tags": ["Settlement"],
-                    "summary": "Shows settlements for delegation.",
+                    "summary": "Shows settlements for user.",
                     "parameters": [
                         {
                             "name": "token",
@@ -385,12 +179,6 @@ def swagger_details_provider():
                         },
                         "401": {
                             "description": "You are not logged in.",
-                        },
-                        "403": {
-                            "description": "You dont have the rights to see this delegation.",
-                        },
-                        "404": {
-                            "description": "Cannot find delegation with provided ID.",
                         },
                     }
                 },
@@ -439,15 +227,12 @@ def swagger_details_provider():
                             "description": "You are not logged in.",
                         },
                         "403": {
-                            "description": "You dont have the rights to see this delegation.",
+                            "description": "You dont have the rights to create this settlement.",
                         },
                         "404": {
                             "description": "Fail.",
                         },
                         "404.2": {
-                            "description": "Cannot find delegation with provided ID.",
-                        },
-                        "404.3": {
                             "description": 'Cannot find user with provided approver_id.',
                         },
                     }
@@ -483,16 +268,10 @@ def swagger_details_provider():
                             "description": "You are not logged in.",
                         },
                         "403": {
-                            "description": "You dont have the rights to see this delegation.",
+                            "description": "You dont have the rights to see this settlement.",
                         },
                         "404": {
-                            "description": "Cannot find delegation with provided ID.",
-                        },
-                        "404.2": {
                             "description": "Cannot find settlement with provided ID.",
-                        },
-                        "404.3": {
-                            "description": "Provided settlement is not a child of provided delegation.",
                         },
                     }
                 },
@@ -510,7 +289,7 @@ def swagger_details_provider():
                         {
                             "name": "settlement_id",
                             "in": "path",
-                            "description": "ID of the settlement to show.",
+                            "description": "ID of the settlement to modify.",
                             "type": "int"
                         }
                     ],
@@ -542,16 +321,10 @@ def swagger_details_provider():
                             "description": "You are not logged in.",
                         },
                         "403": {
-                            "description": "You dont have the rights to see this delegation.",
+                            "description": "You dont have the rights to modify this settlement.",
                         },
                         "404": {
-                            "description": "Cannot find delegation with provided ID.",
-                        },
-                        "404.2": {
                             "description": "Cannot find settlement with provided ID.",
-                        },
-                        "404.3": {
-                            "description": "Provided settlement is not a child of provided delegation.",
                         },
                     }
                 },
@@ -569,7 +342,7 @@ def swagger_details_provider():
                         {
                             "name": "settlement_id",
                             "in": "path",
-                            "description": "ID of the settlement to show.",
+                            "description": "ID of the settlement to delete.",
                             "type": "int"
                         }
                     ],
@@ -587,16 +360,10 @@ def swagger_details_provider():
                             "description": "You are not logged in.",
                         },
                         "403": {
-                            "description": "You dont have the rights to see this delegation.",
+                            "description": "You dont have the rights to delete this settlement.",
                         },
                         "404": {
-                            "description": "Cannot find delegation with provided ID.",
-                        },
-                        "404.2": {
                             "description": "Cannot find settlement with provided ID.",
-                        },
-                        "404.3": {
-                            "description": "Provided settlement is not a child of provided delegation.",
                         },
                     }
                 }
@@ -616,7 +383,7 @@ def swagger_details_provider():
                         {
                             "name": "settlement_id",
                             "in": "path",
-                            "description": "ID of the settlement to show.",
+                            "description": "ID of the settlement - parent of advance payments.",
                             "type": "int"
                         }
                     ],
@@ -631,10 +398,10 @@ def swagger_details_provider():
                             "description": "You are not logged in.",
                         },
                         "403": {
-                            "description": "You dont have the rights to see this delegation.",
+                            "description": "You dont have the rights to see this advance payment list.",
                         },
                         "404": {
-                            "description": "Cannot find delegation with provided ID.",
+                            "description": "Cannot find settlement with provided ID.",
                         },
                     }
                 },
@@ -652,7 +419,7 @@ def swagger_details_provider():
                         {
                             "name": "settlement_id",
                             "in": "path",
-                            "description": "ID of the settlement to show.",
+                            "description": "ID of the settlement - parent of advance payment to add.",
                             "type": "int"
                         }
                     ],
@@ -675,19 +442,19 @@ def swagger_details_provider():
                     ],
                     "responses": {
                         "201": {
-                            "description": "Success.",
+                            "description": "OK",
                         },
                         "401": {
                             "description": "You are not logged in.",
                         },
                         "403": {
-                            "description": "You dont have the rights to see this delegation.",
+                            "description": "You dont have the rights to create this delegation.",
                         },
                         "404": {
                             "description": "Fail.",
                         },
                         "404.2": {
-                            "description": "Cannot find delegation with provided ID.",
+                            "description": "Cannot find settlement with provided ID.",
                         },
                     }
                 },
@@ -722,16 +489,10 @@ def swagger_details_provider():
                             "description": "You are not logged in.",
                         },
                         "403": {
-                            "description": "You dont have the rights to see this delegation.",
+                            "description": "You dont have the rights to delete this advance payment.",
                         },
                         "404": {
-                            "description": "Cannot find delegation with provided ID.",
-                        },
-                        "404.2": {
-                            "description": "Cannot find settlement with provided ID.",
-                        },
-                        "404.3": {
-                            "description": "Provided settlement is not a child of provided delegation.",
+                            "description": "Cannot find advance payment with provided ID.",
                         },
                     }
                 },
@@ -781,16 +542,10 @@ def swagger_details_provider():
                             "description": "You are not logged in.",
                         },
                         "403": {
-                            "description": "You dont have the rights to see this delegation.",
+                            "description": "You dont have the rights to delete this advance payment.",
                         },
                         "404": {
-                            "description": "Cannot find delegation with provided ID.",
-                        },
-                        "404.2": {
-                            "description": "Cannot find settlement with provided ID.",
-                        },
-                        "404.3": {
-                            "description": "Provided settlement is not a child of provided delegation.",
+                            "description": "Cannot find advance payment with provided ID.",
                         },
                     }
                 },
@@ -826,16 +581,10 @@ def swagger_details_provider():
                             "description": "You are not logged in.",
                         },
                         "403": {
-                            "description": "You dont have the rights to see this delegation.",
+                            "description": "You dont have the rights to delete this advance payment.",
                         },
                         "404": {
-                            "description": "Cannot find delegation with provided ID.",
-                        },
-                        "404.2": {
-                            "description": "Cannot find settlement with provided ID.",
-                        },
-                        "404.3": {
-                            "description": "Provided settlement is not a child of provided delegation.",
+                            "description": "Cannot find advance payment with provided ID.",
                         },
                     }
                 }
@@ -855,7 +604,7 @@ def swagger_details_provider():
                         {
                             "name": "settlement_id",
                             "in": "path",
-                            "description": "ID of the settlement to show.",
+                            "description": "ID of the settlement - parent of meals.",
                             "type": "int"
                         }
                     ],
@@ -867,10 +616,10 @@ def swagger_details_provider():
                             "description": "OK",
                         },
                         "403": {
-                            "description": "You dont have the rights to see this delegation.",
+                            "description": "You dont have the rights to see this meals.",
                         },
                         "404": {
-                            "description": "Cannot find delegation with provided ID.",
+                            "description": "Cannot find settlement with provided ID.",
                         },
                     }
                 },
@@ -888,7 +637,7 @@ def swagger_details_provider():
                         {
                             "name": "settlement_id",
                             "in": "path",
-                            "description": "ID of the settlement to show.",
+                            "description": "ID of the settlement - parent of the meal to add.",
                             "type": "int"
                         }
                     ],
@@ -912,8 +661,14 @@ def swagger_details_provider():
                         "201": {
                             "description": "Success.",
                         },
+                        "403": {
+                            "description": "You dont have the rights to add this meal.",
+                        },
                         "404": {
                             "description": "Fail.",
+                        },
+                        "404.2": {
+                            "description": "Cannot find settlement with provided ID.",
                         },
                     }
                 },
@@ -948,16 +703,10 @@ def swagger_details_provider():
                             "description": "You are not logged in.",
                         },
                         "403": {
-                            "description": "You dont have the rights to see this delegation.",
+                            "description": "You dont have the rights to see this meal.",
                         },
                         "404": {
-                            "description": "Cannot find delegation with provided ID.",
-                        },
-                        "404.2": {
-                            "description": "Cannot find settlement with provided ID.",
-                        },
-                        "404.3": {
-                            "description": "Provided settlement is not a child of provided delegation.",
+                            "description": "Cannot find meal with provided ID.",
                         },
                     }
                 },
@@ -1006,16 +755,10 @@ def swagger_details_provider():
                             "description": "You are not logged in.",
                         },
                         "403": {
-                            "description": "You dont have the rights to see this delegation.",
+                            "description": "You dont have the rights to modify this meal.",
                         },
                         "404": {
-                            "description": "Cannot find delegation with provided ID.",
-                        },
-                        "404.2": {
-                            "description": "Cannot find settlement with provided ID.",
-                        },
-                        "404.3": {
-                            "description": "Provided settlement is not a child of provided delegation.",
+                            "description": "Cannot find meal with provided ID.",
                         },
                     }
                 },
@@ -1051,16 +794,10 @@ def swagger_details_provider():
                             "description": "You are not logged in.",
                         },
                         "403": {
-                            "description": "You dont have the rights to see this delegation.",
+                            "description": "You dont have the rights to delete this meal.",
                         },
                         "404": {
-                            "description": "Cannot find delegation with provided ID.",
-                        },
-                        "404.2": {
-                            "description": "Cannot find settlement with provided ID.",
-                        },
-                        "404.3": {
-                            "description": "Provided settlement is not a child of provided delegation.",
+                            "description": "Cannot find meal with provided ID.",
                         },
                     }
                 }
@@ -1080,7 +817,7 @@ def swagger_details_provider():
                         {
                             "name": "settlement_id",
                             "in": "path",
-                            "description": "ID of the settlement to show.",
+                            "description": "ID of the settlement - parent of expenses.",
                             "type": "int"
                         }
                     ],
@@ -1091,11 +828,14 @@ def swagger_details_provider():
                         "200": {
                             "description": "OK",
                         },
+                        "401": {
+                            "description": "You are not logged in.",
+                        },
                         "403": {
-                            "description": "You dont have the rights to see this delegation.",
+                            "description": "You dont have the rights to see this expenses.",
                         },
                         "404": {
-                            "description": "Cannot find delegation with provided ID.",
+                            "description": "Cannot find settlement with provided ID.",
                         },
                     }
                 },
@@ -1113,12 +853,12 @@ def swagger_details_provider():
                         {
                             "name": "settlement_id",
                             "in": "path",
-                            "description": "ID of the settlement to show.",
+                            "description": "ID of the settlement - parent of the expense to add.",
                             "type": "int"
                         }
                     ],
                     "requestBody": {
-                        "description": "Takes settlement details.",
+                        "description": "Takes expense details.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1139,7 +879,16 @@ def swagger_details_provider():
                         "201": {
                             "description": "Success.",
                         },
+                        "401": {
+                            "description": "You are not logged in.",
+                        },
+                        "403": {
+                            "description": "You dont have the rights to add this expenses.",
+                        },
                         "404": {
+                            "description": "Cannot find settlement with provided ID.",
+                        },
+                        "404.2": {
                             "description": "Fail.",
                         },
                     }
@@ -1175,16 +924,10 @@ def swagger_details_provider():
                             "description": "You are not logged in.",
                         },
                         "403": {
-                            "description": "You dont have the rights to see this delegation.",
+                            "description": "You dont have the rights to see this expense.",
                         },
                         "404": {
-                            "description": "Cannot find delegation with provided ID.",
-                        },
-                        "404.2": {
-                            "description": "Cannot find settlement with provided ID.",
-                        },
-                        "404.3": {
-                            "description": "Provided settlement is not a child of provided delegation.",
+                            "description": "Cannot find expense with provided ID.",
                         },
                     }
                 },
@@ -1207,14 +950,14 @@ def swagger_details_provider():
                         },
                     ],
                     "requestBody": {
-                        "description": "Changes existing settlement.",
+                        "description": "Changes existing expense.",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/Settlement"
+                                    "$ref": "#/components/schemas/Expense"
                                 },
                                 "example": {
-                                    "description": "some info added",
+                                    "reason": "some info added",
                                 }
                             }
                         }
@@ -1233,16 +976,10 @@ def swagger_details_provider():
                             "description": "You are not logged in.",
                         },
                         "403": {
-                            "description": "You dont have the rights to see this delegation.",
+                            "description": "You dont have the rights to modify this expense.",
                         },
                         "404": {
-                            "description": "Cannot find delegation with provided ID.",
-                        },
-                        "404.2": {
-                            "description": "Cannot find settlement with provided ID.",
-                        },
-                        "404.3": {
-                            "description": "Provided settlement is not a child of provided delegation.",
+                            "description": "Cannot find expense with provided ID.",
                         },
                     }
                 },
@@ -1278,16 +1015,10 @@ def swagger_details_provider():
                             "description": "You are not logged in.",
                         },
                         "403": {
-                            "description": "You dont have the rights to see this delegation.",
+                            "description": "You dont have the rights to delete this expense.",
                         },
                         "404": {
-                            "description": "Cannot find delegation with provided ID.",
-                        },
-                        "404.2": {
-                            "description": "Cannot find settlement with provided ID.",
-                        },
-                        "404.3": {
-                            "description": "Provided settlement is not a child of provided delegation.",
+                            "description": "Cannot find expense with provided ID.",
                         },
                     }
                 }
@@ -1307,7 +1038,7 @@ def swagger_details_provider():
                         {
                             "name": "expense_id",
                             "in": "path",
-                            "description": "ID of the expense to show.",
+                            "description": "ID of the expense - parent of attachments.",
                             "type": "int"
                         }
                     ],
@@ -1318,11 +1049,14 @@ def swagger_details_provider():
                         "200": {
                             "description": "OK",
                         },
+                        "401": {
+                            "description": "You are not logged in.",
+                        },
                         "403": {
-                            "description": "You dont have the rights to see this delegation.",
+                            "description": "You dont have the rights to see this attachments.",
                         },
                         "404": {
-                            "description": "Cannot find delegation with provided ID.",
+                            "description": "Cannot find expense with provided ID.",
                         },
                     }
                 },
@@ -1364,7 +1098,16 @@ def swagger_details_provider():
                         "201": {
                             "description": "Success.",
                         },
+                        "401": {
+                            "description": "You are not logged in.",
+                        },
+                        "403": {
+                            "description": "You dont have the rights to create this attachments.",
+                        },
                         "404": {
+                            "description": "Cannot find expense with provided ID.",
+                        },
+                        "404.2": {
                             "description": "Fail.",
                         },
                     }
@@ -1400,16 +1143,10 @@ def swagger_details_provider():
                             "description": "You are not logged in.",
                         },
                         "403": {
-                            "description": "You dont have the rights to see this delegation.",
+                            "description": "You dont have the rights to see this attachment.",
                         },
                         "404": {
-                            "description": "Cannot find delegation with provided ID.",
-                        },
-                        "404.2": {
-                            "description": "Cannot find settlement with provided ID.",
-                        },
-                        "404.3": {
-                            "description": "Provided settlement is not a child of provided delegation.",
+                            "description": "Cannot find attachment with provided ID.",
                         },
                     }
                 },
@@ -1458,16 +1195,10 @@ def swagger_details_provider():
                             "description": "You are not logged in.",
                         },
                         "403": {
-                            "description": "You dont have the rights to see this delegation.",
+                            "description": "You dont have the rights to see this attachment.",
                         },
                         "404": {
-                            "description": "Cannot find delegation with provided ID.",
-                        },
-                        "404.2": {
-                            "description": "Cannot find settlement with provided ID.",
-                        },
-                        "404.3": {
-                            "description": "Provided settlement is not a child of provided delegation.",
+                            "description": "Cannot find attachment with provided ID.",
                         },
                     }
                 },
@@ -1503,16 +1234,10 @@ def swagger_details_provider():
                             "description": "You are not logged in.",
                         },
                         "403": {
-                            "description": "You dont have the rights to see this delegation.",
+                            "description": "You dont have the rights to see this attachment.",
                         },
                         "404": {
-                            "description": "Cannot find delegation with provided ID.",
-                        },
-                        "404.2": {
-                            "description": "Cannot find settlement with provided ID.",
-                        },
-                        "404.3": {
-                            "description": "Provided settlement is not a child of provided delegation.",
+                            "description": "Cannot find attachment with provided ID.",
                         },
                     }
                 }
@@ -1520,7 +1245,7 @@ def swagger_details_provider():
             "/dictionary/currency": {
                 "get": {
                     "tags": ["Dictionary"],
-                    "summary": "Shows list of currencies.",
+                    "summary": "Shows dictionary of currencies.",
                     "produces": [
                         "application/json"
                     ],
@@ -1534,7 +1259,7 @@ def swagger_details_provider():
             "/dictionary/expense_types": {
                 "get": {
                     "tags": ["Dictionary"],
-                    "summary": "Shows list of available expense types.",
+                    "summary": "Shows dictionary of available expense types.",
                     "produces": [
                         "application/json"
                     ],
@@ -1548,7 +1273,7 @@ def swagger_details_provider():
             "/dictionary/user_roles": {
                 "get": {
                     "tags": ["Dictionary"],
-                    "summary": "Shows list of available user roles.",
+                    "summary": "Shows dictionary of available user roles.",
                     "produces": [
                         "application/json"
                     ],
@@ -1562,7 +1287,7 @@ def swagger_details_provider():
             "/dictionary/meal_types": {
                 "get": {
                     "tags": ["Dictionary"],
-                    "summary": "Shows list of available meal types.",
+                    "summary": "Shows dictionary of available meal types.",
                     "produces": [
                         "application/json"
                     ],
@@ -1576,7 +1301,7 @@ def swagger_details_provider():
             "/dictionary/settlement_status_options": {
                 "get": {
                     "tags": ["Dictionary"],
-                    "summary": "Shows list of available settlement status options.",
+                    "summary": "Shows dictionary of available settlement status options.",
                     "produces": [
                         "application/json"
                     ],
@@ -1590,7 +1315,7 @@ def swagger_details_provider():
             "/dictionary/countries": {
                 "get": {
                     "tags": ["Dictionary"],
-                    "summary": "Shows list of countries.",
+                    "summary": "Shows dictionary of countries.",
                     "produces": [
                         "application/json"
                     ],
