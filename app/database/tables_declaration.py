@@ -47,6 +47,8 @@ class Delegation(Base):
     submit_date = Column(DateTime)
     departure_date = Column(Date, nullable=False)
     arrival_date = Column(Date, nullable=False)
+    departure_city = Column(String)
+    arrival_city = Column(String)
     reason = Column(String)
     remarks = Column(String)
     # one to many
