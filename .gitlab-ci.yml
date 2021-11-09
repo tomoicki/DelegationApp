@@ -13,4 +13,4 @@ start:
   when: manual
   script:
     - echo "This job tests something"
-    - python3 run.py
+    - python3 app.py
