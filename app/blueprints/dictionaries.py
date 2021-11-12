@@ -46,11 +46,11 @@ def get_countries_list():
 def get_users_dict():
     name_fragment = request.args.get('search', False)
     if not name_fragment:
-        users = sqlalchemy_session.query(User).all()
+        users = sqlalchemy_session.query(Users).all()
         users_list = [user.show_id_names() for user in users]
         return {'response': users_list}, 200
-    users = sqlalchemy_session.query(User).where(
-        User.first_name.like(f'%{name_fragment}%') | User.last_name.like(f'%{name_fragment}%'))
+    users = sqlalchemy_session.query(Users).where(
+        Users.first_name.like(f'%{name_fragment}%') | Users.last_name.like(f'%{name_fragment}%'))
     users_list = [user.show_id_names() for user in users]
     return {'response': users_list}, 200
 
@@ -59,11 +59,11 @@ def get_users_dict():
 def get_managers_dict():
     name_fragment = request.args.get('search', False)
     if not name_fragment:
-        users = sqlalchemy_session.query(User).where(User.role != 'user')
+        users = sqlalchemy_session.query(Users).where(Users.role != 'user')
         users_list = [user.show_id_names() for user in users]
         return {'response': users_list}, 200
-    users = sqlalchemy_session.query(User).where(User.role != 'user').filter(
-        User.first_name.like(f'%{name_fragment}%') | User.last_name.like(f'%{name_fragment}%'))
+    users = sqlalchemy_session.query(Users).where(Users.role != 'user').filter(
+        Users.first_name.like(f'%{name_fragment}%') | Users.last_name.like(f'%{name_fragment}%'))
     users_list = [user.show_id_names() for user in users]
     return {'response': users_list}, 200
 

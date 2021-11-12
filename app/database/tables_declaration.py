@@ -50,6 +50,7 @@ Base = declarative_base(cls=Base)
 
 class Country(Base):
     __tablename__ = 'Country'
+    __table_args__ = {'quote': False}
     # fields
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
@@ -63,6 +64,7 @@ class Country(Base):
 
 class Currency(Base):
     __tablename__ = 'Currency'
+    __table_args__ = {'quote': False}
     # fields
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
@@ -81,6 +83,7 @@ class SettlementStatusOptions(enum.Enum):
 
 class SettlementStatus(Base):
     __tablename__ = 'SettlementStatus'
+    __table_args__ = {'quote': False}
     # fields
     id = Column(Integer, primary_key=True)
     status = Column(Enum(SettlementStatusOptions))
@@ -91,6 +94,7 @@ class SettlementStatus(Base):
 
 class Settlement(Base):
     __tablename__ = 'Settlement'
+    __table_args__ = {'quote': False}
     # fields
     id = Column(Integer, primary_key=True)
     title = Column(String)
@@ -184,7 +188,7 @@ class Settlement(Base):
 
     def details(self):
         settlement_with_details = {'id': str(self.id),
-                                   'approver': str(User.get_by_id(self.approver_id)),
+                                   'approver': str(Users.get_by_id(self.approver_id)),
                                    'submit_date': self.submit_date,
                                    'departure_date': self.departure_date,
                                    'departure_time': self.departure_time.isoformat(),
@@ -220,6 +224,7 @@ class Settlement(Base):
 
 class AdvancePayment(Base):
     __tablename__ = 'AdvancePayment'
+    __table_args__ = {'quote': False}
     # fields
     id = Column(Integer, primary_key=True)
     amount = Column(Float)
@@ -270,6 +275,7 @@ class MealType(enum.Enum):
 
 class Meal(Base):
     __tablename__ = 'Meal'
+    __table_args__ = {'quote': False}
     # fields
     id = Column(Integer, primary_key=True)
     type = Column(Enum(MealType))
@@ -308,6 +314,7 @@ class ExpenseType(enum.Enum):
 
 class Expense(Base):
     __tablename__ = 'Expense'
+    __table_args__ = {'quote': False}
     # fields
     id = Column(Integer, primary_key=True)
     type = Column(Enum(ExpenseType))
@@ -357,6 +364,7 @@ class Expense(Base):
 
 class Attachment(Base):
     __tablename__ = 'Attachment'
+    __table_args__ = {'quote': False}
     # fields
     id = Column(Integer, primary_key=True)
     file = Column(String)
@@ -393,8 +401,9 @@ class Role(enum.Enum):
     admin = 'admin'
 
 
-class User(Base):
-    __tablename__ = 'User'
+class Users(Base):
+    __tablename__ = 'Users'
+    __table_args__ = {'quote': False}
     # fields
     id = Column(Integer, primary_key=True)
     first_name = Column(String)
@@ -433,7 +442,7 @@ class User(Base):
 
     @classmethod
     def create(cls, user_details: dict):
-        user = User(**user_details)
+        user = Users(**user_details)
         user.is_active = True
         sqlalchemy_session.add(user)
         sqlalchemy_session.commit()
