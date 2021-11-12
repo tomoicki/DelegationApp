@@ -11,29 +11,31 @@ attachments_bp = Blueprint('attachments', __name__)
 def attachments_list_view(expense_id):
     expense = Expense.get_by_id(expense_id)
     settlement = Settlement.get_by_id(expense.settlement_id)
-    delegation = Delegation.get_by_id(settlement.delegation_id)
     user = User.get_by_token(request.headers.get('token'))
-    if user.is_authorized(delegation):
+    if user.is_authorized(settlement):
         attachments_list = expense.attachment
         attachments_list = [attachment.show() for attachment in attachments_list]
         return {'response': attachments_list}, 200
-    return {'response': 'You dont have the rights to see this delegation.'}, 403
+    return {'response': 'You dont have the rights to see this attachments.'}, 403
 
 
 @attachments_bp.route('/expenses/<expense_id>/attachments', methods=['POST'])
 @User.is_logged_in
 @Expense.if_exists
+@Attachment.not_valid_dict
 def add_attachment(expense_id):
     expense = Expense.get_by_id(expense_id)
     settlement = Settlement.get_by_id(expense.settlement_id)
-    delegation = Delegation.get_by_id(settlement.delegation_id)
     user = User.get_by_token(request.headers.get('token'))
-    attachment_details = request.get_json()
-    attachment_details['expense_id'] = expense.id
-    if user.is_authorized(delegation):
+    attachment_details_list = request.get_json()
+    if user.is_authorized(settlement):
         try:
-            new_attachment = Attachment.create(attachment_details)
-            return {'response': new_attachment.show()}, 201
+            response = []
+            for attachment_details in attachment_details_list:
+                attachment_details['expense_id'] = expense.id
+                new_attachment = Attachment.create(attachment_details)
+                response.append(new_attachment.show())
+            return {'response': response}, 201
         except IntegrityError:
             sqlalchemy_session.rollback()
             return {'response': 'Fail.'}, 404
@@ -47,9 +49,8 @@ def show_attachment(attachment_id):
     attachment = Attachment.get_by_id(attachment_id)
     expense = Expense.get_by_id(attachment.expense_id)
     settlement = Settlement.get_by_id(expense.settlement_id)
-    delegation = Delegation.get_by_id(settlement.delegation_id)
     user = User.get_by_token(request.headers.get('token'))
-    if user.is_authorized(delegation):
+    if user.is_authorized(settlement):
         return {'response': attachment.show()}, 200
     return {'response': 'You dont have the rights to see this attachment.'}, 403
 
@@ -57,17 +58,17 @@ def show_attachment(attachment_id):
 @attachments_bp.route('/attachments/<attachment_id>', methods=['PUT'])
 @User.is_logged_in
 @Attachment.if_exists
+@Attachment.not_valid_dict
 def modify_attachment(attachment_id):
     attachment = Attachment.get_by_id(attachment_id)
     expense = Expense.get_by_id(attachment.expense_id)
     settlement = Settlement.get_by_id(expense.settlement_id)
-    delegation = Delegation.get_by_id(settlement.delegation_id)
     user = User.get_by_token(request.headers.get('token'))
-    body = request.get_json()
-    if user.is_authorized(delegation):
+    attachment_details = request.get_json()
+    if user.is_authorized(settlement):
         try:
-            attachment.modify(body)
-            return {'response': 'Success.'}, 201
+            modified_attachment = attachment.modify(attachment_details)
+            return {'response': modified_attachment.show()}, 201
         except InvalidRequestError:
             return {'response': 'Fail.'}, 400
     return {'response': 'You dont have the rights to modify this attachment.'}, 403
@@ -80,9 +81,8 @@ def delete_expense(attachment_id):
     attachment = Attachment.get_by_id(attachment_id)
     expense = Expense.get_by_id(attachment.expense_id)
     settlement = Settlement.get_by_id(expense.settlement_id)
-    delegation = Delegation.get_by_id(settlement.delegation_id)
     user = User.get_by_token(request.headers.get('token'))
-    if user.is_authorized(delegation):
+    if user.is_authorized(settlement):
         try:
             attachment.delete()
             return {'response': 'Success.'}, 201

@@ -10,12 +10,6 @@ def get_expense_types():
     return {'response': expense_types}, 200
 
 
-@dictionaries_bp.route('/dictionary/delegation_status_options', methods=['GET'])
-def get_delegation_status_options():
-    delegation_status_options = [delegation_status_option.value for delegation_status_option in DelegationStatusOptions]
-    return {'response': delegation_status_options}, 200
-
-
 @dictionaries_bp.route('/dictionary/user_roles', methods=['GET'])
 def get_user_roles():
     user_roles = [user_role.value for user_role in Role]
@@ -53,12 +47,12 @@ def get_users_dict():
     name_fragment = request.args.get('search', False)
     if not name_fragment:
         users = sqlalchemy_session.query(User).all()
-        users_dict = {user.id: str(user) for user in users}
-        return {'response': users_dict}, 200
+        users_list = [user.show_id_names() for user in users]
+        return {'response': users_list}, 200
     users = sqlalchemy_session.query(User).where(
         User.first_name.like(f'%{name_fragment}%') | User.last_name.like(f'%{name_fragment}%'))
-    users_dict = {user.id: str(user) for user in users}
-    return {'response': users_dict}, 200
+    users_list = [user.show_id_names() for user in users]
+    return {'response': users_list}, 200
 
 
 @dictionaries_bp.route('/dictionary/managers', methods=['GET'])
@@ -66,10 +60,10 @@ def get_managers_dict():
     name_fragment = request.args.get('search', False)
     if not name_fragment:
         users = sqlalchemy_session.query(User).where(User.role != 'user')
-        users_dict = {user.id: str(user) for user in users}
-        return {'response': users_dict}, 200
+        users_list = [user.show_id_names() for user in users]
+        return {'response': users_list}, 200
     users = sqlalchemy_session.query(User).where(User.role != 'user').filter(
         User.first_name.like(f'%{name_fragment}%') | User.last_name.like(f'%{name_fragment}%'))
-    users_dict = {user.id: str(user) for user in users}
-    return {'response': users_dict}, 200
+    users_list = [user.show_id_names() for user in users]
+    return {'response': users_list}, 200
 
