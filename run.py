@@ -6,7 +6,6 @@ import logging
 if __name__ == '__main__':
     app = create_app()
     handler = RotatingFileHandler('console_output.log')
-    handler.setLevel(logging.INFO)
     app.logger.addHandler(handler)
-    app.run(debug=False)
-    # app.run(debug=False, host='0.0.0.0', port='5000')
+    # app.run(debug=False)
+    app.run(debug=False, host='0.0.0.0', port='5000')
