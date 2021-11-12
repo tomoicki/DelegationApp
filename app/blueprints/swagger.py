@@ -430,10 +430,16 @@ def swagger_details_provider():
                                 "schema": {
                                     "$ref": "#/components/schemas/AdvancePayment"
                                 },
-                                "example": {
-                                    "amount": 66,
-                                    "currency_id": 11,
-                                }
+                                "example": [
+                                    {
+                                        "amount": 66,
+                                        "currency_id": 11,
+                                    },
+                                    {
+                                        "amount": 0,
+                                        "currency_id": 1,
+                                    }
+                                ]
                             }
                         }
                     },
@@ -648,9 +654,14 @@ def swagger_details_provider():
                                 "schema": {
                                     "$ref": "#/components/schemas/Meal"
                                 },
-                                "example": {
-                                    "type": "lunch"
-                                }
+                                "example": [
+                                    {
+                                        "type": "lunch"
+                                    },
+                                    {
+                                        "type": "supper"
+                                    },
+                                ]
                             }
                         }
                     },
@@ -864,11 +875,18 @@ def swagger_details_provider():
                                 "schema": {
                                     "$ref": "#/components/schemas/Expense"
                                 },
-                                "example": {
-                                    "currency_id": 6,
-                                    "type": 'accommodation',
-                                    'amount': 12.21
-                                }
+                                "example": [
+                                    {
+                                        "currency_id": 6,
+                                        "type": 'accommodation',
+                                        'amount': 12.21
+                                    },
+                                    {
+                                        "currency_id": 1,
+                                        "type": 'drive',
+                                        'amount': 1
+                                    }
+                                ]
                             }
                         }
                     },
@@ -1085,9 +1103,14 @@ def swagger_details_provider():
                                 "schema": {
                                     "$ref": "#/components/schemas/Attachment"
                                 },
-                                "example": {
-                                    "file": 'c://windows/sys32.exe'
-                                }
+                                "example": [
+                                    {
+                                        "file": 'c://windows/sys32.exe'
+                                    },
+                                    {
+                                        "file": '...'
+                                    }
+                                ]
                             }
                         }
                     },

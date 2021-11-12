@@ -25,12 +25,15 @@ def expenses_list_view(settlement_id):
 def add_expense(settlement_id):
     settlement = Settlement.get_by_id(settlement_id)
     user = User.get_by_token(request.headers.get('token'))
-    expense_details = request.get_json()
-    expense_details['settlement_id'] = settlement.id
+    expense_details_list = request.get_json()
     if user.is_authorized(settlement):
         try:
-            new_expense = Expense.create(expense_details)
-            return {'response': new_expense.show()}, 201
+            response = []
+            for expense_details in expense_details_list:
+                expense_details['settlement_id'] = settlement.id
+                new_expense = Expense.create(expense_details)
+                response.append(new_expense.show())
+            return {'response': response}, 201
         except IntegrityError:
             sqlalchemy_session.rollback()
             return {'response': 'Fail.'}, 404
@@ -60,8 +63,8 @@ def modify_expense(expense_id):
     expense_details = request.get_json()
     if user.is_authorized(settlement):
         try:
-            expense.modify(expense_details)
-            return {'response': 'Success.'}, 201
+            modified_expense = expense.modify(expense_details)
+            return {'response': modified_expense.show()}, 201
         except InvalidRequestError:
             return {'response': 'Fail.'}, 400
     return {'response': 'You dont have the rights to modify this expense.'}, 403

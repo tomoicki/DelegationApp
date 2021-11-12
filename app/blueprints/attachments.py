@@ -27,12 +27,15 @@ def add_attachment(expense_id):
     expense = Expense.get_by_id(expense_id)
     settlement = Settlement.get_by_id(expense.settlement_id)
     user = User.get_by_token(request.headers.get('token'))
-    attachment_details = request.get_json()
-    attachment_details['expense_id'] = expense.id
+    attachment_details_list = request.get_json()
     if user.is_authorized(settlement):
         try:
-            new_attachment = Attachment.create(attachment_details)
-            return {'response': new_attachment.show()}, 201
+            response = []
+            for attachment_details in attachment_details_list:
+                attachment_details['expense_id'] = expense.id
+                new_attachment = Attachment.create(attachment_details)
+                response.append(new_attachment.show())
+            return {'response': response}, 201
         except IntegrityError:
             sqlalchemy_session.rollback()
             return {'response': 'Fail.'}, 404
@@ -64,8 +67,8 @@ def modify_attachment(attachment_id):
     attachment_details = request.get_json()
     if user.is_authorized(settlement):
         try:
-            attachment.modify(attachment_details)
-            return {'response': 'Success.'}, 201
+            modified_attachment = attachment.modify(attachment_details)
+            return {'response': modified_attachment.show()}, 201
         except InvalidRequestError:
             return {'response': 'Fail.'}, 400
     return {'response': 'You dont have the rights to modify this attachment.'}, 403

@@ -25,12 +25,15 @@ def meals_list_view(settlement_id):
 def add_meal(settlement_id):
     settlement = Settlement.get_by_id(settlement_id)
     user = User.get_by_token(request.headers.get('token'))
-    meal_details = request.get_json()
-    meal_details['settlement_id'] = settlement.id
+    meal_details_list = request.get_json()
     if user.is_authorized(settlement):
         try:
-            new_meal = Meal.create(meal_details)
-            return {'response': new_meal.show()}, 201
+            response = []
+            for meal_details in meal_details_list:
+                meal_details['settlement_id'] = settlement.id
+                new_meal = Meal.create(meal_details)
+                response.append(new_meal.show())
+            return {'response': response}, 201
         except IntegrityError:
             sqlalchemy_session.rollback()
             return {'response': 'Fail.'}, 404
@@ -60,8 +63,8 @@ def modify_meal(meal_id):
     meal_details = request.get_json()
     if user.is_authorized(settlement):
         try:
-            meal.modify(meal_details)
-            return {'response': 'Success.'}, 201
+            modified_meal = meal.modify(meal_details)
+            return {'response': modified_meal.show()}, 201
         except InvalidRequestError:
             return {'response': 'Fail.'}, 400
     return {'response': 'You dont have the rights to modify this meal.'}, 403

@@ -10,14 +10,39 @@ from app.calculators.calculator_functions import recalculate_hours, currency_fac
 
 
 class Base:
+    id = Column(Integer)
+
     def delete(self):
         sqlalchemy_session.delete(self)
         sqlalchemy_session.commit()
+
+    def modify(self, modifications_dict: dict):
+        stmt = update(self.__class__).where(self.__class__.id == self.id).values(**modifications_dict)
+        sqlalchemy_session.execute(stmt)
+        sqlalchemy_session.commit()
+        return self
 
     @classmethod
     def get_by_id(cls, provided_id: int):
         if provided_id is not None and provided_id != 'None':
             return sqlalchemy_session.get(cls, provided_id)
+
+    @classmethod
+    def not_valid_dict(cls, func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            body = request.get_json()
+            try:
+                if type(body) == dict:
+                    cls(**body)
+                elif type(body) == list:
+                    for item in body:
+                        cls(**item)
+                return func(*args, **kwargs)
+            except (KeyError, TypeError) as e:
+                return {"response": str(e)}, 400
+
+        return wrapper
 
 
 Base = declarative_base(cls=Base)
@@ -153,12 +178,12 @@ class Settlement(Base):
                 sqlalchemy_session.commit()
 
     def show(self):
-        settlement_to_show = {'id': self.id,
+        settlement_to_show = {'id': str(self.id),
                               'submit_date': self.submit_date}
         return settlement_to_show
 
     def details(self):
-        settlement_with_details = {'id': self.id,
+        settlement_with_details = {'id': str(self.id),
                                    'approver': str(User.get_by_id(self.approver_id)),
                                    'submit_date': self.submit_date,
                                    'departure_date': self.departure_date,
@@ -168,12 +193,6 @@ class Settlement(Base):
                                    'delegation_id': self.delegation_id,
                                    'diet': self.diet}
         return settlement_with_details
-
-    def modify(self, modifications_dict: dict):
-        modifications_dict['submit_date'] = datetime.datetime.now()
-        stmt = update(Settlement).where(Settlement.id == self.id).values(**modifications_dict)
-        sqlalchemy_session.execute(stmt)
-        sqlalchemy_session.commit()
 
     @classmethod
     def create(cls, settlement_details: dict):
@@ -189,25 +208,13 @@ class Settlement(Base):
         return settlement
 
     @classmethod
-    def not_valid_dict(cls, func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            body = request.get_json()
-            try:
-                cls.create(body)
-                sqlalchemy_session.rollback()
-                return func(*args, **kwargs)
-            except (KeyError, TypeError) as e:
-                return {"response": str(e)}, 400
-        return wrapper
-
-    @classmethod
     def if_exists(cls, func):
         @wraps(func)
         def wrapper(*args, **kwargs):
             if cls.get_by_id(kwargs['settlement_id']) is not None:
                 return func(*args, **kwargs)
             return {'response': "Cannot find settlement with provided ID."}, 404
+
         return wrapper
 
 
@@ -228,38 +235,21 @@ class AdvancePayment(Base):
         if currency_name == 'PLN':
             return self.amount
         factor = currency_factor(currency_name)
-        return self.amount/factor
+        return self.amount / factor
 
     def show(self):
-        advance_payment_to_show = {'id': self.id,
+        advance_payment_to_show = {'id': str(self.id),
                                    'amount': self.amount,
                                    'currency_id': self.currency_id}
         return advance_payment_to_show
 
-    def modify(self, modifications_dict: dict):
-        stmt = update(AdvancePayment).where(AdvancePayment.id == self.id).values(**modifications_dict)
-        sqlalchemy_session.execute(stmt)
-        sqlalchemy_session.commit()
-
     @classmethod
     def create(cls, advance_payment_details: dict):
+        advance_payment_details['submit_date'] = datetime.datetime.now()
         advance_payment = AdvancePayment(**advance_payment_details)
         sqlalchemy_session.add(advance_payment)
         sqlalchemy_session.commit()
         return advance_payment
-
-    @classmethod
-    def not_valid_dict(cls, func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            body = request.get_json()
-            try:
-                cls.create(body)
-                sqlalchemy_session.rollback()
-                return func(*args, **kwargs)
-            except (KeyError, TypeError) as e:
-                return {"response": str(e)}, 400
-        return wrapper
 
     @classmethod
     def if_exists(cls, func):
@@ -268,6 +258,7 @@ class AdvancePayment(Base):
             if cls.get_by_id(kwargs['advance_payment_id']) is not None:
                 return func(*args, **kwargs)
             return {'response': "Cannot find advance payment with provided ID."}, 404
+
         return wrapper
 
 
@@ -286,14 +277,9 @@ class Meal(Base):
     settlement_id = Column(Integer, ForeignKey('Settlement.id', ondelete="CASCADE"))
 
     def show(self):
-        meal_to_show = {'id': self.id,
+        meal_to_show = {'id': str(self.id),
                         'type': self.type.value}
         return meal_to_show
-
-    def modify(self, modifications_dict: dict):
-        stmt = update(Meal).where(Meal.id == self.id).values(**modifications_dict)
-        sqlalchemy_session.execute(stmt)
-        sqlalchemy_session.commit()
 
     @classmethod
     def create(cls, meal_details: dict):
@@ -303,25 +289,13 @@ class Meal(Base):
         return meal
 
     @classmethod
-    def not_valid_dict(cls, func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            body = request.get_json()
-            try:
-                cls.create(body)
-                sqlalchemy_session.rollback()
-                return func(*args, **kwargs)
-            except (KeyError, TypeError) as e:
-                return {"response": str(e)}, 400
-        return wrapper
-
-    @classmethod
     def if_exists(cls, func):
         @wraps(func)
         def wrapper(*args, **kwargs):
             if cls.get_by_id(kwargs['meal_id']) is not None:
                 return func(*args, **kwargs)
             return {'response': "Cannot find meal with provided ID."}, 404
+
         return wrapper
 
 
@@ -352,21 +326,16 @@ class Expense(Base):
             return self.amount
         # else, get the factor
         factor = currency_factor(currency_name)
-        return self.amount/factor
+        return self.amount / factor
 
     def show(self):
-        expense_to_show = {'id': self.id,
+        expense_to_show = {'id': str(self.id),
                            'settlement_id': self.settlement_id,
                            'amount': self.amount,
                            'currency': Currency.get_by_id(self.currency_id).name,
                            'type': self.type.value,
                            'description': self.description}
         return expense_to_show
-
-    def modify(self, modifications_dict: dict):
-        stmt = update(Expense).where(Expense.id == self.id).values(**modifications_dict)
-        sqlalchemy_session.execute(stmt)
-        sqlalchemy_session.commit()
 
     @classmethod
     def create(cls, expense_details: dict):
@@ -376,36 +345,12 @@ class Expense(Base):
         return expense
 
     @classmethod
-    def not_valid_dict(cls, func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            body = request.get_json()
-            try:
-                cls.create(body)
-                sqlalchemy_session.rollback()
-                return func(*args, **kwargs)
-            except (KeyError, TypeError) as e:
-                return {"response": str(e)}, 400
-        return wrapper
-
-    @classmethod
     def if_exists(cls, func):
         @wraps(func)
         def wrapper(*args, **kwargs):
             if cls.get_by_id(kwargs['expense_id']) is not None:
                 return func(*args, **kwargs)
             return {'response': "Cannot find expense with provided ID."}, 404
-        return wrapper
-
-    @classmethod
-    def is_correct_child(cls, func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            expense = cls.get_by_id(kwargs['expense_id'])
-            settlement = Settlement.get_by_id(kwargs['settlement_id'])
-            if expense in settlement.expense:
-                return func(*args, **kwargs)
-            return {'response': 'Provided settlement is not a child of provided delegation.'}, 404
 
         return wrapper
 
@@ -419,14 +364,9 @@ class Attachment(Base):
     expense_id = Column(Integer, ForeignKey('Expense.id', ondelete="CASCADE"))
 
     def show(self):
-        attachment_to_show = {'id': self.id,
+        attachment_to_show = {'id': str(self.id),
                               'file': self.file}
         return attachment_to_show
-
-    def modify(self, modifications_dict: dict):
-        stmt = update(Attachment).where(Attachment.id == self.id).values(**modifications_dict)
-        sqlalchemy_session.execute(stmt)
-        sqlalchemy_session.commit()
 
     @classmethod
     def create(cls, attachment_details: dict):
@@ -436,25 +376,13 @@ class Attachment(Base):
         return attachment
 
     @classmethod
-    def not_valid_dict(cls, func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            body = request.get_json()
-            try:
-                cls.create(body)
-                sqlalchemy_session.rollback()
-                return func(*args, **kwargs)
-            except (KeyError, TypeError) as e:
-                return {"response": str(e)}, 400
-        return wrapper
-
-    @classmethod
     def if_exists(cls, func):
         @wraps(func)
         def wrapper(*args, **kwargs):
             if cls.get_by_id(kwargs['attachment_id']) is not None:
                 return func(*args, **kwargs)
             return {'response': "Cannot find attachment with provided ID."}, 404
+
         return wrapper
 
 
@@ -482,7 +410,7 @@ class User(Base):
         return f'{self.first_name} {self.last_name}'
 
     def show(self):
-        user_to_show = {'id': self.id,
+        user_to_show = {'id': str(self.id),
                         'first_name': self.first_name,
                         'last_name': self.last_name,
                         'email': self.email,
@@ -490,15 +418,16 @@ class User(Base):
                         'is_active': self.is_active}
         return user_to_show
 
+    def show_id_names(self):
+        stuff_to_show = {'id': str(self.id),
+                         'first_name': self.first_name,
+                         'last_name': self.last_name}
+        return stuff_to_show
+
     def is_authorized(self, settlement: Settlement):
         if self.id == settlement.delegate_id or self.role.value in ['manager', 'hr', 'admin']:
             return True
         return False
-
-    def modify(self, modifications_dict: dict):
-        stmt = update(User).where(User.id == self.id).values(**modifications_dict)
-        sqlalchemy_session.execute(stmt)
-        sqlalchemy_session.commit()
 
     @classmethod
     def create(cls, user_details: dict):
@@ -523,5 +452,5 @@ class User(Base):
             if cls.get_by_token(request.headers.get('token')) is not None:
                 return func(*args, **kwargs)
             return {'response': "You are not logged in."}, 401
-        return wrapper
 
+        return wrapper

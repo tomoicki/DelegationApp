@@ -47,12 +47,12 @@ def get_users_dict():
     name_fragment = request.args.get('search', False)
     if not name_fragment:
         users = sqlalchemy_session.query(User).all()
-        users_dict = {user.id: str(user) for user in users}
-        return {'response': users_dict}, 200
+        users_list = [user.show_id_names() for user in users]
+        return {'response': users_list}, 200
     users = sqlalchemy_session.query(User).where(
         User.first_name.like(f'%{name_fragment}%') | User.last_name.like(f'%{name_fragment}%'))
-    users_dict = {user.id: str(user) for user in users}
-    return {'response': users_dict}, 200
+    users_list = [user.show_id_names() for user in users]
+    return {'response': users_list}, 200
 
 
 @dictionaries_bp.route('/dictionary/managers', methods=['GET'])
@@ -60,10 +60,10 @@ def get_managers_dict():
     name_fragment = request.args.get('search', False)
     if not name_fragment:
         users = sqlalchemy_session.query(User).where(User.role != 'user')
-        users_dict = {user.id: str(user) for user in users}
-        return {'response': users_dict}, 200
+        users_list = [user.show_id_names() for user in users]
+        return {'response': users_list}, 200
     users = sqlalchemy_session.query(User).where(User.role != 'user').filter(
         User.first_name.like(f'%{name_fragment}%') | User.last_name.like(f'%{name_fragment}%'))
-    users_dict = {user.id: str(user) for user in users}
-    return {'response': users_dict}, 200
+    users_list = [user.show_id_names() for user in users]
+    return {'response': users_list}, 200
 

@@ -54,8 +54,8 @@ def modify_settlement(settlement_id):
     settlement_details = request.get_json()
     if user.is_authorized(settlement):
         try:
-            settlement.modify(settlement_details)
-            return {'response': 'Success.'}, 201
+            modified_settlement = settlement.modify(settlement_details)
+            return {'response': modified_settlement.show()}, 201
         except InvalidRequestError:
             return {'response': 'Fail.'}, 400
     return {'response': 'You dont have the rights to modify this settlement.'}, 403
