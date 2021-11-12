@@ -425,10 +425,16 @@ def swagger_details_provider():
                                 "schema": {
                                     "$ref": "#/components/schemas/AdvancePayment"
                                 },
-                                "example": {
+                                "example": [
+                                    {
                                     "amount": 66,
                                     "currency_id": 11,
-                                }
+                                    },
+                                    {
+                                    "amount": 0,
+                                    "currency_id": 1,
+                                    }
+                                ]
                             }
                         }
                     },
