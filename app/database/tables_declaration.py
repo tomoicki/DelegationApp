@@ -112,9 +112,9 @@ class Delegation(Base):
                                    "status": self.current_status(),
                                    'settlements_list': settlements_list,
                                    'advance_payment': advance_payment_list,
-                                   'delegate': str(User.get_by_id(self.delegate_id)),
-                                   'creator': str(User.get_by_id(self.creator_id)),
-                                   'approver': str(User.get_by_id(self.approver_id))}
+                                   'delegate': str(Users.get_by_id(self.delegate_id)),
+                                   'creator': str(Users.get_by_id(self.creator_id)),
+                                   'approver': str(Users.get_by_id(self.approver_id))}
         return delegation_with_details
 
     def modify(self, modifications_dict: dict):
@@ -154,7 +154,7 @@ class Role(enum.Enum):
     admin = 'admin'
 
 
-class User(Base):
+class Users(Base):
     __tablename__ = 'Users'
     __table_args__ = {'quote': False}
     # fields
@@ -186,13 +186,13 @@ class User(Base):
         return False
 
     def modify(self, modifications_dict: dict):
-        stmt = update(User).where(User.id == self.id).values(**modifications_dict)
+        stmt = update(Users).where(Users.id == self.id).values(**modifications_dict)
         sqlalchemy_session.execute(stmt)
         sqlalchemy_session.commit()
 
     @classmethod
     def create(cls, user_details: dict):
-        user = User(**user_details)
+        user = Users(**user_details)
         user.is_active = True
         sqlalchemy_session.add(user)
         sqlalchemy_session.commit()
@@ -340,7 +340,7 @@ class Settlement(Base):
     def details(self):
         parent_delegation = Delegation.get_by_id(self.delegation_id)
         settlement_with_details = {'id': self.id,
-                                   'approver': str(User.get_by_id(self.approver_id)),
+                                   'approver': str(Users.get_by_id(self.approver_id)),
                                    'submit_date': self.submit_date,
                                    'departure_date': parent_delegation.departure_date,
                                    'departure_time': self.departure_time.isoformat(),

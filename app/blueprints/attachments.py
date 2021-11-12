@@ -6,13 +6,13 @@ attachments_bp = Blueprint('attachments', __name__)
 
 
 @attachments_bp.route('/expenses/<expense_id>/attachments', methods=['GET'])
-@User.is_logged_in
+@Users.is_logged_in
 @Expense.if_exists
 def attachments_list_view(expense_id):
     expense = Expense.get_by_id(expense_id)
     settlement = Settlement.get_by_id(expense.settlement_id)
     delegation = Delegation.get_by_id(settlement.delegation_id)
-    user = User.get_by_token(request.headers.get('token'))
+    user = Users.get_by_token(request.headers.get('token'))
     if user.is_authorized(delegation):
         attachments_list = expense.attachment
         attachments_list = [attachment.show() for attachment in attachments_list]
@@ -21,13 +21,13 @@ def attachments_list_view(expense_id):
 
 
 @attachments_bp.route('/expenses/<expense_id>/attachments', methods=['POST'])
-@User.is_logged_in
+@Users.is_logged_in
 @Expense.if_exists
 def add_attachment(expense_id):
     expense = Expense.get_by_id(expense_id)
     settlement = Settlement.get_by_id(expense.settlement_id)
     delegation = Delegation.get_by_id(settlement.delegation_id)
-    user = User.get_by_token(request.headers.get('token'))
+    user = Users.get_by_token(request.headers.get('token'))
     attachment_details = request.get_json()
     attachment_details['expense_id'] = expense.id
     if user.is_authorized(delegation):
@@ -41,28 +41,28 @@ def add_attachment(expense_id):
 
 
 @attachments_bp.route('/attachments/<attachment_id>', methods=['GET'])
-@User.is_logged_in
+@Users.is_logged_in
 @Attachment.if_exists
 def show_attachment(attachment_id):
     attachment = Attachment.get_by_id(attachment_id)
     expense = Expense.get_by_id(attachment.expense_id)
     settlement = Settlement.get_by_id(expense.settlement_id)
     delegation = Delegation.get_by_id(settlement.delegation_id)
-    user = User.get_by_token(request.headers.get('token'))
+    user = Users.get_by_token(request.headers.get('token'))
     if user.is_authorized(delegation):
         return {'response': attachment.show()}, 200
     return {'response': 'You dont have the rights to see this attachment.'}, 403
 
 
 @attachments_bp.route('/attachments/<attachment_id>', methods=['PUT'])
-@User.is_logged_in
+@Users.is_logged_in
 @Attachment.if_exists
 def modify_attachment(attachment_id):
     attachment = Attachment.get_by_id(attachment_id)
     expense = Expense.get_by_id(attachment.expense_id)
     settlement = Settlement.get_by_id(expense.settlement_id)
     delegation = Delegation.get_by_id(settlement.delegation_id)
-    user = User.get_by_token(request.headers.get('token'))
+    user = Users.get_by_token(request.headers.get('token'))
     body = request.get_json()
     if user.is_authorized(delegation):
         try:
@@ -74,14 +74,14 @@ def modify_attachment(attachment_id):
 
 
 @attachments_bp.route('/attachments/<attachment_id>', methods=['DELETE'])
-@User.is_logged_in
+@Users.is_logged_in
 @Attachment.if_exists
 def delete_expense(attachment_id):
     attachment = Attachment.get_by_id(attachment_id)
     expense = Expense.get_by_id(attachment.expense_id)
     settlement = Settlement.get_by_id(expense.settlement_id)
     delegation = Delegation.get_by_id(settlement.delegation_id)
-    user = User.get_by_token(request.headers.get('token'))
+    user = Users.get_by_token(request.headers.get('token'))
     if user.is_authorized(delegation):
         try:
             attachment.delete()

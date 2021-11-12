@@ -6,12 +6,12 @@ expenses_bp = Blueprint('expenses', __name__)
 
 
 @expenses_bp.route('/settlements/<settlement_id>/expenses', methods=['GET'])
-@User.is_logged_in
+@Users.is_logged_in
 @Settlement.if_exists
 def expenses_list_view(settlement_id):
     settlement = Settlement.get_by_id(settlement_id)
     delegation = Delegation.get_by_id(settlement.delegation_id)
-    user = User.get_by_token(request.headers.get('token'))
+    user = Users.get_by_token(request.headers.get('token'))
     if user.is_authorized(delegation):
         expenses_list = settlement.expense
         expenses_list = [expense.show() for expense in expenses_list]
@@ -20,12 +20,12 @@ def expenses_list_view(settlement_id):
 
 
 @expenses_bp.route('/settlements/<settlement_id>/expenses', methods=['POST'])
-@User.is_logged_in
+@Users.is_logged_in
 @Settlement.if_exists
 def add_expense(settlement_id):
     settlement = Settlement.get_by_id(settlement_id)
     delegation = Delegation.get_by_id(settlement.delegation_id)
-    user = User.get_by_token(request.headers.get('token'))
+    user = Users.get_by_token(request.headers.get('token'))
     expense_details = request.get_json()
     expense_details['settlement_id'] = settlement.id
     if user.is_authorized(delegation):
@@ -39,26 +39,26 @@ def add_expense(settlement_id):
 
 
 @expenses_bp.route('/expenses/<expense_id>', methods=['GET'])
-@User.is_logged_in
+@Users.is_logged_in
 @Expense.if_exists
 def show_expense(expense_id):
     expense = Expense.get_by_id(expense_id)
     settlement = Settlement.get_by_id(expense.settlement_id)
     delegation = Delegation.get_by_id(settlement.delegation_id)
-    user = User.get_by_token(request.headers.get('token'))
+    user = Users.get_by_token(request.headers.get('token'))
     if user.is_authorized(delegation):
         return {'response': expense.show()}, 200
     return {'response': 'You dont have the rights to see this delegation.'}, 403
 
 
 @expenses_bp.route('/expenses/<expense_id>', methods=['PUT'])
-@User.is_logged_in
+@Users.is_logged_in
 @Expense.if_exists
 def modify_expense(expense_id):
     expense = Expense.get_by_id(expense_id)
     settlement = Settlement.get_by_id(expense.settlement_id)
     delegation = Delegation.get_by_id(settlement.delegation_id)
-    user = User.get_by_token(request.headers.get('token'))
+    user = Users.get_by_token(request.headers.get('token'))
     body = request.get_json()
     if user.is_authorized(delegation):
         try:
@@ -70,13 +70,13 @@ def modify_expense(expense_id):
 
 
 @expenses_bp.route('/expenses/<expense_id>', methods=['DELETE'])
-@User.is_logged_in
+@Users.is_logged_in
 @Expense.if_exists
 def delete_expense(expense_id):
     expense = Expense.get_by_id(expense_id)
     settlement = Settlement.get_by_id(expense.settlement_id)
     delegation = Delegation.get_by_id(settlement.delegation_id)
-    user = User.get_by_token(request.headers.get('token'))
+    user = Users.get_by_token(request.headers.get('token'))
     body = request.get_json()
     if user.is_authorized(delegation):
         try:

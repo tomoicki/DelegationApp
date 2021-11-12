@@ -6,12 +6,12 @@ meals_bp = Blueprint('meals', __name__)
 
 
 @meals_bp.route('/settlements/<settlement_id>/meals', methods=['GET'])
-@User.is_logged_in
+@Users.is_logged_in
 @Settlement.if_exists
 def meals_list_view(settlement_id):
     settlement = Settlement.get_by_id(settlement_id)
     delegation = Delegation.get_by_id(settlement.delegation_id)
-    user = User.get_by_token(request.headers.get('token'))
+    user = Users.get_by_token(request.headers.get('token'))
     if user.is_authorized(delegation):
         meals_list = settlement.meal
         meals_list = [meal.show() for meal in meals_list]
@@ -20,12 +20,12 @@ def meals_list_view(settlement_id):
 
 
 @meals_bp.route('/settlements/<settlement_id>/meals', methods=['POST'])
-@User.is_logged_in
+@Users.is_logged_in
 @Settlement.if_exists
 def add_meal(settlement_id):
     settlement = Settlement.get_by_id(settlement_id)
     delegation = Delegation.get_by_id(settlement.delegation_id)
-    user = User.get_by_token(request.headers.get('token'))
+    user = Users.get_by_token(request.headers.get('token'))
     meals_list = request.get_json()
     meals_list['settlement_id'] = settlement.id
     if user.is_authorized(delegation):
@@ -39,26 +39,26 @@ def add_meal(settlement_id):
 
 
 @meals_bp.route('/meals/<meal_id>', methods=['GET'])
-@User.is_logged_in
+@Users.is_logged_in
 @Meal.if_exists
 def show_meal(meal_id):
     meal = Meal.get_by_id(meal_id)
     settlement = Settlement.get_by_id(meal.settlement_id)
     delegation = Delegation.get_by_id(settlement.delegation_id)
-    user = User.get_by_token(request.headers.get('token'))
+    user = Users.get_by_token(request.headers.get('token'))
     if user.is_authorized(delegation):
         return {'response': meal.show()}, 200
     return {'response': 'You dont have the rights to see this delegation.'}, 403
 
 
 @meals_bp.route('/meals/<meal_id>', methods=['PUT'])
-@User.is_logged_in
+@Users.is_logged_in
 @Meal.if_exists
 def modify_meal(meal_id):
     meal = Meal.get_by_id(meal_id)
     settlement = Settlement.get_by_id(meal.settlement_id)
     delegation = Delegation.get_by_id(settlement.delegation_id)
-    user = User.get_by_token(request.headers.get('token'))
+    user = Users.get_by_token(request.headers.get('token'))
     body = request.get_json()
     if user.is_authorized(delegation):
         try:
@@ -70,13 +70,13 @@ def modify_meal(meal_id):
 
 
 @meals_bp.route('/meals/<meal_id>', methods=['DELETE'])
-@User.is_logged_in
+@Users.is_logged_in
 @Meal.if_exists
 def delete_meal(meal_id):
     meal = Meal.get_by_id(meal_id)
     settlement = Settlement.get_by_id(meal.settlement_id)
     delegation = Delegation.get_by_id(settlement.delegation_id)
-    user = User.get_by_token(request.headers.get('token'))
+    user = Users.get_by_token(request.headers.get('token'))
     if user.is_authorized(delegation):
         try:
             meal.delete()

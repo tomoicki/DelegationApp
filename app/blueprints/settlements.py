@@ -6,11 +6,11 @@ settlements_bp = Blueprint('settlements', __name__)
 
 
 @settlements_bp.route('/delegations/<delegation_id>/settlements', methods=['GET'])
-@User.is_logged_in
+@Users.is_logged_in
 @Delegation.if_exists
 def settlement_list_view(delegation_id):
     delegation = Delegation.get_by_id(delegation_id)
-    user = User.get_by_token(request.headers.get('token'))
+    user = Users.get_by_token(request.headers.get('token'))
     if user.is_authorized(delegation):
         settlements_list = delegation.settlement
         settlements_list = [settlement.show() for settlement in settlements_list]
@@ -19,15 +19,15 @@ def settlement_list_view(delegation_id):
 
 
 @settlements_bp.route('/delegations/<delegation_id>/settlements', methods=['POST'])
-@User.is_logged_in
+@Users.is_logged_in
 @Delegation.if_exists
 def add_settlement(delegation_id):
     delegation = Delegation.get_by_id(delegation_id)
-    user = User.get_by_token(request.headers.get('token'))
+    user = Users.get_by_token(request.headers.get('token'))
     settlement_details = request.get_json()
     settlement_details['delegation_id'] = delegation.id
     if user.is_authorized(delegation):
-        if User.get_by_id(settlement_details['approver_id']) is None:
+        if Users.get_by_id(settlement_details['approver_id']) is None:
             return {'response': 'Cannot find user with provided approver_id.'}, 404
         try:
             new_settlement = Settlement.create(settlement_details)
@@ -39,24 +39,24 @@ def add_settlement(delegation_id):
 
 
 @settlements_bp.route('/settlements/<settlement_id>', methods=['GET'])
-@User.is_logged_in
+@Users.is_logged_in
 @Settlement.if_exists
 def show_settlement(settlement_id):
     settlement = Settlement.get_by_id(settlement_id)
     delegation = Delegation.get_by_id(settlement.delegation_id)
-    user = User.get_by_token(request.headers.get('token'))
+    user = Users.get_by_token(request.headers.get('token'))
     if user.is_authorized(delegation):
         return {'response': settlement.details()}, 200
     return {'response': 'You dont have the rights to see this delegation.'}, 403
 
 
 @settlements_bp.route('/settlements/<settlement_id>', methods=['PUT'])
-@User.is_logged_in
+@Users.is_logged_in
 @Settlement.if_exists
 def modify_settlement(settlement_id):
     settlement = Settlement.get_by_id(settlement_id)
     delegation = Delegation.get_by_id(settlement.delegation_id)
-    user = User.get_by_token(request.headers.get('token'))
+    user = Users.get_by_token(request.headers.get('token'))
     body = request.get_json()
     if user.is_authorized(delegation):
         try:
@@ -68,12 +68,12 @@ def modify_settlement(settlement_id):
 
 
 @settlements_bp.route('/settlements/<settlement_id>', methods=['DELETE'])
-@User.is_logged_in
+@Users.is_logged_in
 @Settlement.if_exists
 def delete_settlement(settlement_id):
     settlement = Settlement.get_by_id(settlement_id)
     delegation = Delegation.get_by_id(settlement.delegation_id)
-    user = User.get_by_token(request.headers.get('token'))
+    user = Users.get_by_token(request.headers.get('token'))
     if user.is_authorized(delegation):
         try:
             settlement.delete()
