@@ -34,21 +34,21 @@ some_user = {'first_name': 'Admin',
              'password': 'right',
              'role': Role.admin,
              'token': uuid()}
-admin_user = User.create(some_user)
+admin_user = Users.create(some_user)
 some_user = {'first_name': 'HR',
              'last_name': 'hrovitcz',
              'email': 'hr@itechart.com',
              'password': 'right',
              'role': Role.hr,
              'token': uuid()}
-hr_user = User.create(some_user)
+hr_user = Users.create(some_user)
 some_user = {'first_name': 'Manager',
              'last_name': 'Managerowicz',
              'email': 'manager@itechart.com',
              'password': 'right',
              'role': Role.manager,
              'token': uuid()}
-manager_user = User.create(some_user)
+manager_user = Users.create(some_user)
 some_user = {'first_name': 'First',
              'last_name': 'User',
              'email': 'user1@itechart.com',
@@ -56,7 +56,7 @@ some_user = {'first_name': 'First',
              'role': Role.user,
              'token': uuid(),
              'supervisor_id': hr_user.id}
-user1 = User.create(some_user)
+user1 = Users.create(some_user)
 some_user = {'first_name': 'Second',
              'last_name': 'User',
              'email': 'user2@itechart.com',
@@ -64,7 +64,7 @@ some_user = {'first_name': 'Second',
              'role': Role.user,
              'token': uuid(),
              'supervisor_id': manager_user.id}
-user2 = User.create(some_user)
+user2 = Users.create(some_user)
 
 #
 # some_delegation = {'title': 'to wroclaw',

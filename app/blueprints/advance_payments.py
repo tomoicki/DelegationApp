@@ -6,10 +6,10 @@ advance_payments_bp = Blueprint('advance_payments', __name__)
 
 
 @advance_payments_bp.route('/settlements/<settlement_id>/advance_payments', methods=['GET'])
-@User.is_logged_in
+@Users.is_logged_in
 @Settlement.if_exists
 def advance_payments_list_view(settlement_id):
-    user = User.get_by_token(request.headers.get('token'))
+    user = Users.get_by_token(request.headers.get('token'))
     settlement = Settlement.get_by_id(settlement_id)
     if user.is_authorized(settlement):
         advance_payments_list = settlement.advance_payment
@@ -19,11 +19,11 @@ def advance_payments_list_view(settlement_id):
 
 
 @advance_payments_bp.route('/settlements/<settlement_id>/advance_payments', methods=['POST'])
-@User.is_logged_in
+@Users.is_logged_in
 @Settlement.if_exists
 @AdvancePayment.not_valid_dict
 def add_advance_payment(settlement_id):
-    creator = User.get_by_token(request.headers.get('token'))
+    creator = Users.get_by_token(request.headers.get('token'))
     settlement = Settlement.get_by_id(settlement_id)
     advance_payment_details_list = request.get_json()
     if not creator.id == settlement.delegate_id and creator.role.value not in ['manager', 'hr', 'admin']:
@@ -41,25 +41,25 @@ def add_advance_payment(settlement_id):
 
 
 @advance_payments_bp.route('/advance_payments/<advance_payment_id>', methods=['GET'])
-@User.is_logged_in
+@Users.is_logged_in
 @AdvancePayment.if_exists
 def show_advance_payment(advance_payment_id):
     advance_payment = AdvancePayment.get_by_id(advance_payment_id)
     settlement = Settlement.get_by_id(advance_payment.settlement_id)
-    user = User.get_by_token(request.headers.get('token'))
+    user = Users.get_by_token(request.headers.get('token'))
     if user.is_authorized(settlement):
         return {'response': advance_payment.show()}, 200
     return {'response': 'You dont have the rights to see this advance payment.'}, 403
 
 
 @advance_payments_bp.route('/advance_payments/<advance_payment_id>', methods=['PUT'])
-@User.is_logged_in
+@Users.is_logged_in
 @AdvancePayment.if_exists
 @AdvancePayment.not_valid_dict
 def modify_advance_payment(advance_payment_id):
     advance_payment = AdvancePayment.get_by_id(advance_payment_id)
     settlement = Settlement.get_by_id(advance_payment.settlement_id)
-    user = User.get_by_token(request.headers.get('token'))
+    user = Users.get_by_token(request.headers.get('token'))
     advance_payment_details = request.get_json()
     if user.is_authorized(settlement):
         try:
@@ -71,12 +71,12 @@ def modify_advance_payment(advance_payment_id):
 
 
 @advance_payments_bp.route('/advance_payments/<advance_payment_id>', methods=['DELETE'])
-@User.is_logged_in
+@Users.is_logged_in
 @AdvancePayment.if_exists
 def delete_advance_payment(advance_payment_id):
     advance_payment = AdvancePayment.get_by_id(advance_payment_id)
     settlement = Settlement.get_by_id(advance_payment.delegation_id)
-    user = User.get_by_token(request.headers.get('token'))
+    user = Users.get_by_token(request.headers.get('token'))
     if user.is_authorized(settlement):
         try:
             advance_payment.delete()

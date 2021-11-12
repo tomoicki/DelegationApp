@@ -17,7 +17,7 @@ def welcome():
     # settlement.sum_of_expenses()
     print(settlement.calculate_diet())
     # settlement.generate_pdf()
-    return str(User.get_by_id(1)), 200
+    return str(Users.get_by_id(1)), 200
 
 
 @login.route('/register', methods=['POST'])
@@ -28,7 +28,7 @@ def register_new_user():
     user_credentials.update({'role': Role.user, 'is_active': True, 'token': uuid()})
     del user_credentials['retype_password']
     try:
-        user = User(**user_credentials)
+        user = Users(**user_credentials)
         sqlalchemy_session.add(user)
         sqlalchemy_session.commit()
         return {'response': 'Success.'}, 201
@@ -42,7 +42,7 @@ def login_users():
     user_credentials = request.get_json()
     if 'email' in user_credentials.keys():
         try:
-            user = User.get_by_email(user_credentials['email'])
+            user = Users.get_by_email(user_credentials['email'])
         except TypeError or KeyError:
             return {'response': 'Bad request.'}, 400
         if user is None:
@@ -55,16 +55,16 @@ def login_users():
 
 
 @login.route('/user', methods=['GET'])
-@User.is_logged_in
+@Users.is_logged_in
 def get_user_details():
-    user = User.get_by_token(request.headers.get('token'))
+    user = Users.get_by_token(request.headers.get('token'))
     return {'response': user.show()}
 
 
 @login.route('/user', methods=['PUT'])
-@User.is_logged_in
+@Users.is_logged_in
 def change_user_details():
-    user = User.get_by_token(request.headers.get('token'))
+    user = Users.get_by_token(request.headers.get('token'))
     body = request.get_json()
     try:
         user.modify(body)
