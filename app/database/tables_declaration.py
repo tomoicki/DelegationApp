@@ -401,6 +401,7 @@ class User(Base):
     last_name = Column(String)
     email = Column(String, unique=True)
     password = Column(String)
+    default_city = Column(String)
     role = Column(Enum(Role))
     is_active = Column(Boolean)
     supervisor_id = Column(Integer)
@@ -414,6 +415,7 @@ class User(Base):
                         'first_name': self.first_name,
                         'last_name': self.last_name,
                         'email': self.email,
+                        'default_city': self.default_city,
                         'role': self.role.value,
                         'is_active': self.is_active}
         return user_to_show
