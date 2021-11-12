@@ -31,6 +31,7 @@ class DelegationStatusOptions(enum.Enum):
 
 class DelegationStatus(Base):
     __tablename__ = 'DelegationStatus'
+    __table_args__ = {'quote': False}
     # fields
     id = Column(Integer, primary_key=True)
     status = Column(Enum(DelegationStatusOptions))
@@ -41,6 +42,7 @@ class DelegationStatus(Base):
 
 class Delegation(Base):
     __tablename__ = 'Delegation'
+    __table_args__ = {'quote': False}
     # fields
     id = Column(Integer, primary_key=True)
     title = Column(String)
@@ -52,15 +54,15 @@ class Delegation(Base):
     reason = Column(String)
     remarks = Column(String)
     # one to many
-    delegate_id = Column(Integer, ForeignKey('User.id'), nullable=False)
+    delegate_id = Column(Integer, ForeignKey('Users.id'), nullable=False)
     delegate = relationship('User',
                             backref=backref('delegation_his'),
                             primaryjoin='foreign(Delegation.delegate_id) == remote(User.id)')
-    creator_id = Column(Integer, ForeignKey('User.id'), nullable=False)
+    creator_id = Column(Integer, ForeignKey('Users.id'), nullable=False)
     creator = relationship('User',
                            backref=backref('delegation_creator'),
                            primaryjoin='foreign(Delegation.creator_id) == remote(User.id)')
-    approver_id = Column(Integer, ForeignKey('User.id'), nullable=False)
+    approver_id = Column(Integer, ForeignKey('Users.id'), nullable=False)
     approver = relationship('User',
                             backref=backref('delegation_approver'),
                             primaryjoin='foreign(Delegation.approver_id) == remote(User.id)')
@@ -153,7 +155,8 @@ class Role(enum.Enum):
 
 
 class User(Base):
-    __tablename__ = 'User'
+    __tablename__ = 'Users'
+    __table_args__ = {'quote': False}
     # fields
     id = Column(Integer, primary_key=True)
     first_name = Column(String)
@@ -215,6 +218,7 @@ class User(Base):
 
 class AdvancePayment(Base):
     __tablename__ = 'AdvancePayment'
+    __table_args__ = {'quote': False}
     # fields
     id = Column(Integer, primary_key=True)
     amount = Column(Float, nullable=False)
@@ -252,6 +256,7 @@ class AdvancePayment(Base):
 
 class Country(Base):
     __tablename__ = 'Country'
+    __table_args__ = {'quote': False}
     # fields
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
@@ -265,6 +270,7 @@ class Country(Base):
 
 class Currency(Base):
     __tablename__ = 'Currency'
+    __table_args__ = {'quote': False}
     # fields
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
@@ -285,6 +291,7 @@ class SettlementStatusOptions(enum.Enum):
 
 class SettlementStatus(Base):
     __tablename__ = 'SettlementStatus'
+    __table_args__ = {'quote': False}
     # fields
     id = Column(Integer, primary_key=True)
     status = Column(Enum(SettlementStatusOptions))
@@ -295,6 +302,7 @@ class SettlementStatus(Base):
 
 class Settlement(Base):
     __tablename__ = 'Settlement'
+    __table_args__ = {'quote': False}
     # fields
     id = Column(Integer, primary_key=True)
     submit_date = Column(DateTime)
@@ -303,7 +311,7 @@ class Settlement(Base):
     diet = Column(Float)
     # one to many
     delegation_id = Column(Integer, ForeignKey('Delegation.id'), nullable=False)
-    approver_id = Column(Integer, ForeignKey('User.id'), nullable=False)
+    approver_id = Column(Integer, ForeignKey('Users.id'), nullable=False)
     approver = relationship('User',
                             backref=backref('settlement_approver'),
                             primaryjoin='foreign(Settlement.approver_id) == remote(User.id)')
@@ -390,6 +398,7 @@ class MealType(enum.Enum):
 
 class Meal(Base):
     __tablename__ = 'Meal'
+    __table_args__ = {'quote': False}
     # fields
     id = Column(Integer, primary_key=True)
     type = Column(Enum(MealType), nullable=False)
@@ -432,6 +441,7 @@ class ExpenseType(enum.Enum):
 
 class Expense(Base):
     __tablename__ = 'Expense'
+    __table_args__ = {'quote': False}
     # fields
     id = Column(Integer, primary_key=True)
     type = Column(Enum(ExpenseType), nullable=False)
@@ -487,6 +497,7 @@ class Expense(Base):
 
 class Attachment(Base):
     __tablename__ = 'Attachment'
+    __table_args__ = {'quote': False}
     # fields
     id = Column(Integer, primary_key=True)
     file = Column(String, nullable=False)
