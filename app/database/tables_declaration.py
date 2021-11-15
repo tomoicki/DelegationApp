@@ -98,6 +98,8 @@ class Settlement(Base):
     # fields
     id = Column(Integer, primary_key=True)
     title = Column(String)
+    departure_city = Column(String)
+    arrival_city = Column(String)
     submit_date = Column(DateTime)
     departure_date = Column(Date)
     departure_time = Column(Time)
@@ -183,19 +185,29 @@ class Settlement(Base):
 
     def show(self):
         settlement_to_show = {'id': str(self.id),
-                              'submit_date': self.submit_date}
+                              'approver': str(Users.get_by_id(self.approver_id)),
+                              'submit_date': self.submit_date,
+                              'departure_city': self.departure_city,
+                              'arrival_city': self.arrival_city,
+                              'departure_date': self.departure_date,
+                              'arrival_date': self.arrival_date,
+                              'country': Country.get_by_id(self.country_id).name,
+                              'delegate': str(Users.get_by_id(self.delegate_id)),
+                              'title': self.title,
+                              'reason': self.reason,
+                              'remarks': self.remarks}
         return settlement_to_show
 
     def details(self):
         settlement_with_details = {'id': str(self.id),
                                    'approver': str(Users.get_by_id(self.approver_id)),
                                    'submit_date': self.submit_date,
+                                   'departure_city': self.departure_city,
+                                   'arrival_city': self.arrival_city,
                                    'departure_date': self.departure_date,
                                    'departure_time': self.departure_time.isoformat(),
                                    'arrival_date': self.arrival_date,
-                                   'arrival_time': self.arrival_time.isoformat(),
-                                   'delegation_id': self.delegation_id,
-                                   'diet': self.diet}
+                                   'arrival_time': self.arrival_time.isoformat()}
         return settlement_with_details
 
     @classmethod
