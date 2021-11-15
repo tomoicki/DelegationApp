@@ -257,7 +257,7 @@ class AdvancePayment(Base):
 
     def show(self):
         advance_payment_to_show = {'id': str(self.id),
-                                   'amount': self.amount,
+                                   'amount': str(self.amount),
                                    'currency_id': self.currency_id}
         return advance_payment_to_show
 
@@ -350,8 +350,8 @@ class Expense(Base):
 
     def show(self):
         expense_to_show = {'id': str(self.id),
-                           'settlement_id': self.settlement_id,
-                           'amount': self.amount,
+                           'settlement_id': str(self.settlement_id),
+                           'amount': str(self.amount),
                            'currency': Currency.get_by_id(self.currency_id).name,
                            'type': self.type.value,
                            'description': self.description}
