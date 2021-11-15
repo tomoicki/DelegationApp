@@ -1108,10 +1108,10 @@ def swagger_details_provider():
                                 },
                                 "example": [
                                     {
-                                        "file": 'c://windows/sys32.exe'
+                                        "path": 'c://windows/sys32.exe'
                                     },
                                     {
-                                        "file": '...'
+                                        "path": '...'
                                     }
                                 ]
                             }
@@ -1202,7 +1202,7 @@ def swagger_details_provider():
                                     "$ref": "#/components/schemas/Attachment"
                                 },
                                 "example": {
-                                    "file": "new/path",
+                                    "path": "new/path",
                                 }
                             }
                         }
@@ -1478,7 +1478,7 @@ def swagger_details_provider():
                 "Attachment": {
                     "properties": {
                         "id": {"type": "integer", "format": 'primary key'},
-                        "file": {"type": "string", "nullable": 'false'},
+                        "path": {"type": "string", "nullable": 'false'},
                         "expense_id": {"type": "integer", "format": "foreign key", "nullable": 'false'},
                     }
                 },
