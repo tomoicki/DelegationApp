@@ -180,7 +180,8 @@ class Settlement(Base):
             if self.current_status() != changed_status:
                 new_status = SettlementStatus(settlement_id=self.id,
                                               status=changed_status,
-                                              reason=reason)
+                                              reason=reason,
+                                              date=datetime.datetime.now())
                 sqlalchemy_session.add(new_status)
                 sqlalchemy_session.commit()
 
@@ -387,7 +388,7 @@ class Attachment(Base):
 
     def show(self):
         attachment_to_show = {'id': str(self.id),
-                              'file': self.file}
+                              'path': self.path}
         return attachment_to_show
 
     @classmethod
