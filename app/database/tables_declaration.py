@@ -88,6 +88,7 @@ class SettlementStatus(Base):
     id = Column(Integer, primary_key=True)
     status = Column(Enum(SettlementStatusOptions))
     reason = Column(String)
+    date = Column(DateTime)
     # one to many
     settlement_id = Column(Integer, ForeignKey('Settlement.id', ondelete="CASCADE"))
 
@@ -258,7 +259,7 @@ class AdvancePayment(Base):
     def show(self):
         advance_payment_to_show = {'id': str(self.id),
                                    'amount': str(self.amount),
-                                   'currency_id': self.currency_id}
+                                   'currency_id': str(self.currency_id)}
         return advance_payment_to_show
 
     @classmethod
@@ -380,7 +381,7 @@ class Attachment(Base):
     __table_args__ = {'quote': False}
     # fields
     id = Column(Integer, primary_key=True)
-    file = Column(String)
+    path = Column(String)
     # one to many
     expense_id = Column(Integer, ForeignKey('Expense.id', ondelete="CASCADE"))
 
@@ -403,7 +404,6 @@ class Attachment(Base):
             if cls.get_by_id(kwargs['attachment_id']) is not None:
                 return func(*args, **kwargs)
             return {'response': "Cannot find attachment with provided ID."}, 404
-
         return wrapper
 
 
@@ -476,5 +476,4 @@ class Users(Base):
             if cls.get_by_token(request.headers.get('token')) is not None:
                 return func(*args, **kwargs)
             return {'response': "You are not logged in."}, 401
-
         return wrapper

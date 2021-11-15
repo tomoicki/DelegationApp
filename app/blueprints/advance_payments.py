@@ -75,7 +75,7 @@ def modify_advance_payment(advance_payment_id):
 @AdvancePayment.if_exists
 def delete_advance_payment(advance_payment_id):
     advance_payment = AdvancePayment.get_by_id(advance_payment_id)
-    settlement = Settlement.get_by_id(advance_payment.delegation_id)
+    settlement = Settlement.get_by_id(advance_payment.settlement_id)
     user = Users.get_by_token(request.headers.get('token'))
     if user.is_authorized(settlement):
         try:

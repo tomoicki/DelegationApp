@@ -13,8 +13,11 @@ def swagger_details_provider():
             "title": "DelegationApp API"},
         "servers": [
             {
-                "url": "/"
-            }
+                "url": "/",
+            },
+            {
+                "url": "https://tripapp-be.azurewebsites.net/",
+            },
         ],
         "paths": {
             "/register": {

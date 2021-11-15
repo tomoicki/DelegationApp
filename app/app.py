@@ -6,6 +6,7 @@ from app.blueprints.settlements import settlements_bp
 from app.blueprints.meals import meals_bp
 from app.blueprints.expenses import expenses_bp
 from app.blueprints.attachments import attachments_bp
+from app.blueprints.save_attachments import save_attachments_bp
 from app.blueprints.swagger import swagger_ui_blueprint, swagger_details
 from flask_cors import CORS
 
@@ -21,6 +22,7 @@ def create_app():
     app.register_blueprint(meals_bp)
     app.register_blueprint(expenses_bp)
     app.register_blueprint(attachments_bp)
+    app.register_blueprint(save_attachments_bp)
     app.register_blueprint(swagger_details)
     app.register_blueprint(swagger_ui_blueprint)
     return app
