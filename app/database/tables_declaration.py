@@ -195,7 +195,8 @@ class Settlement(Base):
                               'delegate': str(Users.get_by_id(self.delegate_id)),
                               'title': self.title,
                               'reason': self.reason,
-                              'remarks': self.remarks}
+                              'remarks': self.remarks,
+                              'status': self.current_status()}
         return settlement_to_show
 
     def details(self):
