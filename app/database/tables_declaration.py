@@ -1,6 +1,8 @@
 import enum
+import os
 import datetime
 from flask import request
+from werkzeug.utils import secure_filename
 from functools import wraps
 from sqlalchemy import Column, Integer, String, ForeignKey, Date, Float, Time, Enum, Boolean, DateTime, update
 from sqlalchemy.orm import relationship, backref
@@ -21,6 +23,13 @@ class Base:
         sqlalchemy_session.execute(stmt)
         sqlalchemy_session.commit()
         return self
+
+    @classmethod
+    def create(cls, object_details: dict):
+        new_object = cls(**object_details)
+        sqlalchemy_session.add(new_object)
+        sqlalchemy_session.commit()
+        return new_object
 
     @classmethod
     def get_by_id(cls, provided_id: int):
@@ -208,9 +217,11 @@ class Settlement(Base):
                                    'departure_city': self.departure_city,
                                    'arrival_city': self.arrival_city,
                                    'departure_date': self.departure_date,
-                                   'departure_time': self.departure_time.isoformat(),
+                                   'departure_time': self.departure_time,
                                    'arrival_date': self.arrival_date,
-                                   'arrival_time': self.arrival_time.isoformat()}
+                                   'arrival_time': self.arrival_time}
+        settlement_with_details = {key: (value.isoformat() if '_time' in key and value is not None else value)
+                                   for key, value in settlement_with_details.items()}
         return settlement_with_details
 
     @classmethod
@@ -264,14 +275,6 @@ class AdvancePayment(Base):
         return advance_payment_to_show
 
     @classmethod
-    def create(cls, advance_payment_details: dict):
-        advance_payment_details['submit_date'] = datetime.datetime.now()
-        advance_payment = AdvancePayment(**advance_payment_details)
-        sqlalchemy_session.add(advance_payment)
-        sqlalchemy_session.commit()
-        return advance_payment
-
-    @classmethod
     def if_exists(cls, func):
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -301,13 +304,6 @@ class Meal(Base):
         meal_to_show = {'id': str(self.id),
                         'type': self.type.value}
         return meal_to_show
-
-    @classmethod
-    def create(cls, meal_details: dict):
-        meal = Meal(**meal_details)
-        sqlalchemy_session.add(meal)
-        sqlalchemy_session.commit()
-        return meal
 
     @classmethod
     def if_exists(cls, func):
@@ -360,13 +356,6 @@ class Expense(Base):
         return expense_to_show
 
     @classmethod
-    def create(cls, expense_details: dict):
-        expense = Expense(**expense_details)
-        sqlalchemy_session.add(expense)
-        sqlalchemy_session.commit()
-        return expense
-
-    @classmethod
     def if_exists(cls, func):
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -386,17 +375,36 @@ class Attachment(Base):
     # one to many
     expense_id = Column(Integer, ForeignKey('Expense.id', ondelete="CASCADE"))
 
+    @staticmethod
+    def allowed_file(filename):
+        valid_extensions = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
+        return '.' in filename and filename.rsplit('.', 1)[1].lower() in valid_extensions
+
+    @classmethod
+    def create(cls, expense_id: int):
+        uploads_dir = os.path.join(os.getcwd(), 'uploads')
+        expense_path = os.path.join(uploads_dir, 'expense_' + str(expense_id))
+        if not os.path.exists(expense_path):
+            os.makedirs(expense_path)
+        response = []
+        files = request.files.getlist('attachment')
+        print(files)
+        for file in files:
+            if file and cls.allowed_file(file.filename):
+                file_name = secure_filename(file.filename)
+                file_path = os.path.join(expense_path, file_name)
+                file.save(file_path)
+                attachment = Attachment(expense_id=expense_id,
+                                        path=file_path)
+                sqlalchemy_session.add(attachment)
+                sqlalchemy_session.commit()
+                response.append(attachment.show())
+        return response
+
     def show(self):
         attachment_to_show = {'id': str(self.id),
                               'path': self.path}
         return attachment_to_show
-
-    @classmethod
-    def create(cls, attachment_details: dict):
-        attachment = Attachment(**attachment_details)
-        sqlalchemy_session.add(attachment)
-        sqlalchemy_session.commit()
-        return attachment
 
     @classmethod
     def if_exists(cls, func):

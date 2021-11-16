@@ -1097,23 +1097,50 @@ def swagger_details_provider():
                             "in": "path",
                             "description": "ID of the expense to create attachment for.",
                             "type": "int"
-                        }
+                        },
                     ],
                     "requestBody": {
                         "description": "Takes attachment details.",
                         "content": {
-                            "application/json": {
+                            "multipart/form-data": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "filename": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "format": "binary"
+                                            }
+                                        }
+                                    }
+                                },
+                            },
+                            "application/octet-stream": {
+                                "schema": {
+                                    "type": "string",
+                                    "format": "binary"
+                                },
+                            },
+                            "image/jpg": {
                                 "schema": {
                                     "$ref": "#/components/schemas/Attachment"
                                 },
-                                "example": [
-                                    {
-                                        "path": 'c://windows/sys32.exe'
-                                    },
-                                    {
-                                        "path": '...'
+                            },
+                        }
+                    },
+                    "requestBody2": {
+                        "content": {
+                            "multipart/form-data": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "fileName": {
+                                            "type": "string",
+                                            "format": "binary"
+                                        }
                                     }
-                                ]
+                                }
                             }
                         }
                     },

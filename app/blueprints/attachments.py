@@ -27,14 +27,9 @@ def add_attachment(expense_id):
     expense = Expense.get_by_id(expense_id)
     settlement = Settlement.get_by_id(expense.settlement_id)
     user = Users.get_by_token(request.headers.get('token'))
-    attachment_details_list = request.get_json()
     if user.is_authorized(settlement):
         try:
-            response = []
-            for attachment_details in attachment_details_list:
-                attachment_details['expense_id'] = expense.id
-                new_attachment = Attachment.create(attachment_details)
-                response.append(new_attachment.show())
+            response = Attachment.create(expense.id)
             return {'response': response}, 201
         except IntegrityError:
             sqlalchemy_session.rollback()
