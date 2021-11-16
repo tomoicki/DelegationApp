@@ -1090,7 +1090,7 @@ def swagger_details_provider():
                             "in": "header",
                             "description": "Token of logged user.",
                             "type": "string",
-                            "example": "e5k9ih78cEDjpqV5YQdxmf"
+                            "example": "QDQ384QVf3Ciy7XJCK9xhq"
                         },
                         {
                             "name": "expense_id",
@@ -1106,42 +1106,16 @@ def swagger_details_provider():
                                 "schema": {
                                     "type": "object",
                                     "properties": {
-                                        "filename": {
+                                        "attachment": {
                                             "type": "array",
                                             "items": {
-                                                "type": "string",
+                                                "type": "file",
                                                 "format": "binary"
                                             }
                                         }
                                     }
                                 },
                             },
-                            "application/octet-stream": {
-                                "schema": {
-                                    "type": "string",
-                                    "format": "binary"
-                                },
-                            },
-                            "image/jpg": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Attachment"
-                                },
-                            },
-                        }
-                    },
-                    "requestBody2": {
-                        "content": {
-                            "multipart/form-data": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "fileName": {
-                                            "type": "string",
-                                            "format": "binary"
-                                        }
-                                    }
-                                }
-                            }
                         }
                     },
                     "produces": [
@@ -1176,7 +1150,7 @@ def swagger_details_provider():
                             "in": "header",
                             "description": "Token of logged user.",
                             "type": "string",
-                            "example": "2T7y2x29rpxQJT4474RPWv"
+                            "example": "QDQ384QVf3Ciy7XJCK9xhq"
                         },
                         {
                             "name": "attachment_id",

@@ -241,10 +241,13 @@ class Settlement(Base):
     def if_exists(cls, func):
         @wraps(func)
         def wrapper(*args, **kwargs):
-            if cls.get_by_id(kwargs['settlement_id']) is not None:
-                return func(*args, **kwargs)
-            return {'response': "Cannot find settlement with provided ID."}, 404
-
+            try:
+                int(kwargs['settlement_id'])
+                if cls.get_by_id(kwargs['settlement_id']) is not None:
+                    return func(*args, **kwargs)
+                return {'response': "Cannot find settlement with provided ID."}, 404
+            except ValueError:
+                return {'response': f"Wrong 'id' format. You gave '{kwargs['settlement_id']}', but needs to be an integer."}, 404
         return wrapper
 
 
@@ -278,10 +281,13 @@ class AdvancePayment(Base):
     def if_exists(cls, func):
         @wraps(func)
         def wrapper(*args, **kwargs):
-            if cls.get_by_id(kwargs['advance_payment_id']) is not None:
-                return func(*args, **kwargs)
-            return {'response': "Cannot find advance payment with provided ID."}, 404
-
+            try:
+                int(kwargs['advance_payment_id'])
+                if cls.get_by_id(kwargs['advance_payment_id']) is not None:
+                    return func(*args, **kwargs)
+                return {'response': "Cannot find advance payment with provided ID."}, 404
+            except ValueError:
+                return {'response': f"Wrong 'id' format. You gave '{kwargs['advance_payment_id']}', but needs to be an integer."}, 404
         return wrapper
 
 
@@ -309,10 +315,13 @@ class Meal(Base):
     def if_exists(cls, func):
         @wraps(func)
         def wrapper(*args, **kwargs):
-            if cls.get_by_id(kwargs['meal_id']) is not None:
-                return func(*args, **kwargs)
-            return {'response': "Cannot find meal with provided ID."}, 404
-
+            try:
+                int(kwargs['meal_id'])
+                if cls.get_by_id(kwargs['meal_id']) is not None:
+                    return func(*args, **kwargs)
+                return {'response': "Cannot find meal with provided ID."}, 404
+            except ValueError:
+                return {'response': f"Wrong 'id' format. You gave '{kwargs['meal_id']}', but needs to be an integer."}, 404
         return wrapper
 
 
@@ -359,10 +368,13 @@ class Expense(Base):
     def if_exists(cls, func):
         @wraps(func)
         def wrapper(*args, **kwargs):
-            if cls.get_by_id(kwargs['expense_id']) is not None:
-                return func(*args, **kwargs)
-            return {'response': "Cannot find expense with provided ID."}, 404
-
+            try:
+                int(kwargs['expense_id'])
+                if cls.get_by_id(kwargs['expense_id']) is not None:
+                    return func(*args, **kwargs)
+                return {'response': "Cannot find expense with provided ID."}, 404
+            except ValueError:
+                return {'response': f"Wrong 'id' format. You gave '{kwargs['expense_id']}', but needs to be an integer."}, 404
         return wrapper
 
 
@@ -388,9 +400,8 @@ class Attachment(Base):
             os.makedirs(expense_path)
         response = []
         files = request.files.getlist('attachment')
-        print(files)
         for file in files:
-            if file and cls.allowed_file(file.filename):
+            if file and cls.allowed_file(file.filename) and file.filename.replace(' ', '_') not in os.listdir(expense_path):
                 file_name = secure_filename(file.filename)
                 file_path = os.path.join(expense_path, file_name)
                 file.save(file_path)
@@ -399,6 +410,8 @@ class Attachment(Base):
                 sqlalchemy_session.add(attachment)
                 sqlalchemy_session.commit()
                 response.append(attachment.show())
+            else:
+                response.append({"error": f"uploaded attachment '{file.filename}' already exists."})
         return response
 
     def show(self):
@@ -410,9 +423,13 @@ class Attachment(Base):
     def if_exists(cls, func):
         @wraps(func)
         def wrapper(*args, **kwargs):
-            if cls.get_by_id(kwargs['attachment_id']) is not None:
-                return func(*args, **kwargs)
-            return {'response': "Cannot find attachment with provided ID."}, 404
+            try:
+                int(kwargs['attachment_id'])
+                if cls.get_by_id(kwargs['attachment_id']) is not None:
+                    return func(*args, **kwargs)
+                return {'response': "Cannot find attachment with provided ID."}, 404
+            except ValueError:
+                return {'response': f"Wrong 'id' format. You gave '{kwargs['attachment_id']}', but needs to be an integer."}, 404
         return wrapper
 
 
