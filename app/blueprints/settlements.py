@@ -27,7 +27,7 @@ def add_settlement():
     settlement_details['creator_id'] = creator.id
     try:
         new_settlement = Settlement.create(settlement_details)
-        return {'response': new_settlement.show()}, 201
+        return {'response': new_settlement.details()}, 201
     except IntegrityError:
         sqlalchemy_session.rollback()
         return {'response': 'Fail.'}, 404

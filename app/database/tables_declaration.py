@@ -50,7 +50,6 @@ class Base:
                 return func(*args, **kwargs)
             except (KeyError, TypeError) as e:
                 return {"response": str(e)}, 400
-
         return wrapper
 
 
@@ -117,6 +116,9 @@ class Settlement(Base):
     arrival_time = Column(Time)
     reason = Column(String)
     remarks = Column(String)
+    breakfast = Column(Integer, default=0)
+    lunch = Column(Integer, default=0)
+    supper = Column(Integer, default=0)
     # one to many
     delegate_id = Column(Integer, ForeignKey('Users.id'))
     delegate = relationship('Users',
@@ -134,7 +136,6 @@ class Settlement(Base):
     # many to one
     advance_payment = relationship('AdvancePayment', backref='settlement', cascade="all,delete")
     expense = relationship('Expense', backref='settlement', cascade="all,delete")
-    meal = relationship('Meal', backref='settlement', cascade="all,delete")
     status = relationship('SettlementStatus', backref='settlement', cascade="all,delete")
 
     def calculate_diet(self):
@@ -219,6 +220,9 @@ class Settlement(Base):
                                    'departure_time': self.departure_time,
                                    'arrival_date': self.arrival_date,
                                    'arrival_time': self.arrival_time,
+                                   'breakfast': str(self.breakfast),
+                                   'lunch': str(self.lunch),
+                                   'supper': str(self.supper),
                                    'country': Country.get_by_id(self.country_id).name,
                                    'delegate': str(Users.get_by_id(self.delegate_id)),
                                    'approver': str(Users.get_by_id(self.approver_id)),
@@ -254,9 +258,7 @@ class Settlement(Base):
                     return func(*args, **kwargs)
                 return {'response': "Cannot find settlement with provided ID."}, 404
             except ValueError:
-                return {
-                           'response': f"Wrong 'id' format. You gave '{kwargs['settlement_id']}', but needs to be an integer."}, 404
-
+                return {'response': f"Wrong 'id' format. You gave '{kwargs['settlement_id']}', but needs to be an integer."}, 404
         return wrapper
 
 
@@ -296,45 +298,7 @@ class AdvancePayment(Base):
                     return func(*args, **kwargs)
                 return {'response': "Cannot find advance payment with provided ID."}, 404
             except ValueError:
-                return {
-                           'response': f"Wrong 'id' format. You gave '{kwargs['advance_payment_id']}', but needs to be an integer."}, 404
-
-        return wrapper
-
-
-class MealType(enum.Enum):
-    breakfast = 'breakfast'
-    lunch = 'lunch'
-    supper = 'supper'
-
-
-class Meal(Base):
-    __tablename__ = 'Meal'
-    __table_args__ = {'quote': False}
-    # fields
-    id = Column(Integer, primary_key=True)
-    type = Column(Enum(MealType))
-    # one to many
-    settlement_id = Column(Integer, ForeignKey('Settlement.id', ondelete="CASCADE"))
-
-    def show(self):
-        meal_to_show = {'id': str(self.id),
-                        'type': self.type.value}
-        return meal_to_show
-
-    @classmethod
-    def if_exists(cls, func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            try:
-                int(kwargs['meal_id'])
-                if cls.get_by_id(kwargs['meal_id']) is not None:
-                    return func(*args, **kwargs)
-                return {'response': "Cannot find meal with provided ID."}, 404
-            except ValueError:
-                return {
-                           'response': f"Wrong 'id' format. You gave '{kwargs['meal_id']}', but needs to be an integer."}, 404
-
+                return {'response': f"Wrong 'id' format. You gave '{kwargs['advance_payment_id']}', but needs to be an integer."}, 404
         return wrapper
 
 
@@ -387,9 +351,7 @@ class Expense(Base):
                     return func(*args, **kwargs)
                 return {'response': "Cannot find expense with provided ID."}, 404
             except ValueError:
-                return {
-                           'response': f"Wrong 'id' format. You gave '{kwargs['expense_id']}', but needs to be an integer."}, 404
-
+                return {'response': f"Wrong 'id' format. You gave '{kwargs['expense_id']}', but needs to be an integer."}, 404
         return wrapper
 
 
@@ -445,9 +407,7 @@ class Attachment(Base):
                     return func(*args, **kwargs)
                 return {'response': "Cannot find attachment with provided ID."}, 404
             except ValueError:
-                return {
-                           'response': f"Wrong 'id' format. You gave '{kwargs['attachment_id']}', but needs to be an integer."}, 404
-
+                return {'response': f"Wrong 'id' format. You gave '{kwargs['attachment_id']}', but needs to be an integer."}, 404
         return wrapper
 
 
@@ -520,5 +480,4 @@ class Users(Base):
             if cls.get_by_token(request.headers.get('token')) is not None:
                 return func(*args, **kwargs)
             return {'response': "You are not logged in."}, 401
-
         return wrapper

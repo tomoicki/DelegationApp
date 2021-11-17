@@ -209,6 +209,7 @@ def swagger_details_provider():
                                     "delegate_id": 2,
                                     "country_id": 11,
                                     "approver_id": 3,
+                                    "lunch": 2,
                                     "arrival_date": "2020-01-20",
                                     "departure_time": "10:10:10",
                                     "arrival_time": "20:10:10",
@@ -594,224 +595,6 @@ def swagger_details_provider():
                         },
                         "404": {
                             "description": "Cannot find advance payment with provided ID.",
-                        },
-                    }
-                }
-            },
-            "/settlements/{settlement_id}/meals": {
-                "get": {
-                    "tags": ["Meal"],
-                    "summary": "Shows meals for settlement.",
-                    "parameters": [
-                        {
-                            "name": "token",
-                            "in": "header",
-                            "description": "Token of logged user.",
-                            "type": "string",
-                            "example": "2T7y2x29rpxQJT4474RPWv"
-                        },
-                        {
-                            "name": "settlement_id",
-                            "in": "path",
-                            "description": "ID of the settlement - parent of meals.",
-                            "type": "int"
-                        }
-                    ],
-                    "produces": [
-                        "application/json"
-                    ],
-                    "responses": {
-                        "200": {
-                            "description": "OK",
-                        },
-                        "403": {
-                            "description": "You dont have the rights to see this meals.",
-                        },
-                        "404": {
-                            "description": "Cannot find settlement with provided ID.",
-                        },
-                    }
-                },
-                "post": {
-                    "tags": ["Meal"],
-                    "summary": "Adds new meal.",
-                    "parameters": [
-                        {
-                            "name": "token",
-                            "in": "header",
-                            "description": "Token of logged user.",
-                            "type": "string",
-                            "example": "e5k9ih78cEDjpqV5YQdxmf"
-                        },
-                        {
-                            "name": "settlement_id",
-                            "in": "path",
-                            "description": "ID of the settlement - parent of the meal to add.",
-                            "type": "int"
-                        }
-                    ],
-                    "requestBody": {
-                        "description": "Takes meal details.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Meal"
-                                },
-                                "example": [
-                                    {
-                                        "type": "lunch"
-                                    },
-                                    {
-                                        "type": "supper"
-                                    },
-                                ]
-                            }
-                        }
-                    },
-                    "produces": [
-                        "application/json"
-                    ],
-                    "responses": {
-                        "201": {
-                            "description": "Success.",
-                        },
-                        "403": {
-                            "description": "You dont have the rights to add this meal.",
-                        },
-                        "404": {
-                            "description": "Fail.",
-                        },
-                        "404.2": {
-                            "description": "Cannot find settlement with provided ID.",
-                        },
-                    }
-                },
-            },
-            "/meals/{meal_id}": {
-                "get": {
-                    "tags": ["Meal"],
-                    "summary": "Shows meal details.",
-                    "parameters": [
-                        {
-                            "name": "token",
-                            "in": "header",
-                            "description": "Token of logged user.",
-                            "type": "string",
-                            "example": "2T7y2x29rpxQJT4474RPWv"
-                        },
-                        {
-                            "name": "meal_id",
-                            "in": "path",
-                            "description": "ID of the meal to show.",
-                            "type": "int"
-                        }
-                    ],
-                    "produces": [
-                        "application/json"
-                    ],
-                    "responses": {
-                        "200": {
-                            "description": "OK",
-                        },
-                        "401": {
-                            "description": "You are not logged in.",
-                        },
-                        "403": {
-                            "description": "You dont have the rights to see this meal.",
-                        },
-                        "404": {
-                            "description": "Cannot find meal with provided ID.",
-                        },
-                    }
-                },
-                "put": {
-                    "tags": ["Meal"],
-                    "summary": "Modifies existing meal.",
-                    "parameters": [
-                        {
-                            "name": "token",
-                            "in": "header",
-                            "description": "Token of logged user.",
-                            "type": "string",
-                            "example": "2T7y2x29rpxQJT4474RPWv"
-                        },
-                        {
-                            "name": "meal_id",
-                            "in": "path",
-                            "description": "ID of the meal to modify.",
-                            "type": "int"
-                        },
-                    ],
-                    "requestBody": {
-                        "description": "Changes existing meal.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Meal"
-                                },
-                                "example": {
-                                    "type": "supper",
-                                }
-                            }
-                        }
-                    },
-                    "produces": [
-                        "application/json"
-                    ],
-                    "responses": {
-                        "201": {
-                            "description": "Success.",
-                        },
-                        "400": {
-                            "description": "Fail."
-                        },
-                        "401": {
-                            "description": "You are not logged in.",
-                        },
-                        "403": {
-                            "description": "You dont have the rights to modify this meal.",
-                        },
-                        "404": {
-                            "description": "Cannot find meal with provided ID.",
-                        },
-                    }
-                },
-                "delete": {
-                    "tags": ["Meal"],
-                    "summary": "Deletes meal.",
-                    "parameters": [
-                        {
-                            "name": "token",
-                            "in": "header",
-                            "description": "Token of logged user.",
-                            "type": "string",
-                            "example": "LFvxPVWyetuPyKo8ZrLm5F"
-                        },
-                        {
-                            "name": "meal_id",
-                            "in": "path",
-                            "description": "ID of the meal to delete.",
-                            "type": "int"
-                        }
-                    ],
-                    "produces": [
-                        "application/json"
-                    ],
-                    "responses": {
-                        "201": {
-                            "description": "Success.",
-                        },
-                        "400": {
-                            "description": "Fail."
-                        },
-                        "401": {
-                            "description": "You are not logged in.",
-                        },
-                        "403": {
-                            "description": "You dont have the rights to delete this meal.",
-                        },
-                        "404": {
-                            "description": "Cannot find meal with provided ID.",
                         },
                     }
                 }
@@ -1311,20 +1094,6 @@ def swagger_details_provider():
                     }
                 },
             },
-            "/dictionary/meal_types": {
-                "get": {
-                    "tags": ["Dictionary"],
-                    "summary": "Shows dictionary of available meal types.",
-                    "produces": [
-                        "application/json"
-                    ],
-                    "responses": {
-                        "200": {
-                            "description": "OK",
-                        },
-                    }
-                },
-            },
             "/dictionary/settlement_status_options": {
                 "get": {
                     "tags": ["Dictionary"],
@@ -1457,13 +1226,6 @@ def swagger_details_provider():
                         "creator_id": {"type": "integer", "format": "dictionary/users", "nullable": 'false'},
                         "approver_id": {"type": "integer", "format": "dictionary/managers", "nullable": 'false'},
                         "country_id": {"type": "integer", "format": "dictionary/countries", "nullable": 'false'}
-                    }
-                },
-                "Meal": {
-                    "properties": {
-                        "id": {"type": "integer", "format": 'primary key'},
-                        "type": {"type": "MealType", "format": "dictionary/meal_types", "nullable": 'false'},
-                        "settlement_id": {"type": "integer", "format": "foreign key", "nullable": 'false'},
                     }
                 },
                 "Expense": {

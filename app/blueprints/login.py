@@ -15,7 +15,9 @@ def welcome():
     # some = datetime.datetime.combine(datetime.date.min, settlement.arrival_time) - \
     #        datetime.datetime.combine(datetime.date.min, settlement.departure_time)
     # settlement.sum_of_expenses()
-    # print(settlement.current_status())
+    advance_payment_ids = [advance_payment.id for advance_payment in settlement.advance_payment]
+    print(advance_payment_ids)
+    print(settlement.expense)
     # settlement.generate_pdf()
     return str(Users.get_by_id(1)), 200
 

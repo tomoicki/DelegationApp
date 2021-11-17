@@ -22,12 +22,6 @@ def get_settlement_status_options():
     return {'response': settlement_status_options}, 200
 
 
-@dictionaries_bp.route('/dictionary/meal_types', methods=['GET'])
-def get_meal_types():
-    meal_types = [meal_type.value for meal_type in MealType]
-    return {'response': meal_types}, 200
-
-
 @dictionaries_bp.route('/dictionary/currency', methods=['GET'])
 def get_currencies_list():
     currencies = sqlalchemy_session.query(Currency).all()
