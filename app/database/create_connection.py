@@ -3,6 +3,7 @@ from os import environ as env
 from dotenv import load_dotenv
 from app.database.connection_functions import connection_to_db
 
+
 load_dotenv()
 connection_dictionary = {'host': env['POSTGRE_SQL_HOST'],
                          'port': env['POSTGRE_SQL_PORT'],

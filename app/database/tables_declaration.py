@@ -212,14 +212,21 @@ class Settlement(Base):
 
     def details(self):
         settlement_with_details = {'id': str(self.id),
-                                   'approver': str(Users.get_by_id(self.approver_id)),
                                    'submit_date': self.submit_date,
                                    'departure_city': self.departure_city,
                                    'arrival_city': self.arrival_city,
                                    'departure_date': self.departure_date,
                                    'departure_time': self.departure_time,
                                    'arrival_date': self.arrival_date,
-                                   'arrival_time': self.arrival_time}
+                                   'arrival_time': self.arrival_time,
+                                   'country': Country.get_by_id(self.country_id).name,
+                                   'delegate': str(Users.get_by_id(self.delegate_id)),
+                                   'approver': str(Users.get_by_id(self.approver_id)),
+                                   'creator': str(Users.get_by_id(self.creator_id)),
+                                   'title': self.title,
+                                   'reason': self.reason,
+                                   'remarks': self.remarks,
+                                   'status': self.current_status()}
         settlement_with_details = {key: (value.isoformat() if '_time' in key and value is not None else value)
                                    for key, value in settlement_with_details.items()}
         return settlement_with_details
@@ -247,7 +254,9 @@ class Settlement(Base):
                     return func(*args, **kwargs)
                 return {'response': "Cannot find settlement with provided ID."}, 404
             except ValueError:
-                return {'response': f"Wrong 'id' format. You gave '{kwargs['settlement_id']}', but needs to be an integer."}, 404
+                return {
+                           'response': f"Wrong 'id' format. You gave '{kwargs['settlement_id']}', but needs to be an integer."}, 404
+
         return wrapper
 
 
@@ -287,7 +296,9 @@ class AdvancePayment(Base):
                     return func(*args, **kwargs)
                 return {'response': "Cannot find advance payment with provided ID."}, 404
             except ValueError:
-                return {'response': f"Wrong 'id' format. You gave '{kwargs['advance_payment_id']}', but needs to be an integer."}, 404
+                return {
+                           'response': f"Wrong 'id' format. You gave '{kwargs['advance_payment_id']}', but needs to be an integer."}, 404
+
         return wrapper
 
 
@@ -321,7 +332,9 @@ class Meal(Base):
                     return func(*args, **kwargs)
                 return {'response': "Cannot find meal with provided ID."}, 404
             except ValueError:
-                return {'response': f"Wrong 'id' format. You gave '{kwargs['meal_id']}', but needs to be an integer."}, 404
+                return {
+                           'response': f"Wrong 'id' format. You gave '{kwargs['meal_id']}', but needs to be an integer."}, 404
+
         return wrapper
 
 
@@ -374,7 +387,9 @@ class Expense(Base):
                     return func(*args, **kwargs)
                 return {'response': "Cannot find expense with provided ID."}, 404
             except ValueError:
-                return {'response': f"Wrong 'id' format. You gave '{kwargs['expense_id']}', but needs to be an integer."}, 404
+                return {
+                           'response': f"Wrong 'id' format. You gave '{kwargs['expense_id']}', but needs to be an integer."}, 404
+
         return wrapper
 
 
@@ -401,7 +416,8 @@ class Attachment(Base):
         response = []
         files = request.files.getlist('attachment')
         for file in files:
-            if file and cls.allowed_file(file.filename) and file.filename.replace(' ', '_') not in os.listdir(expense_path):
+            if file and cls.allowed_file(file.filename) and file.filename.replace(' ', '_') not in os.listdir(
+                    expense_path):
                 file_name = secure_filename(file.filename)
                 file_path = os.path.join(expense_path, file_name)
                 file.save(file_path)
@@ -429,7 +445,9 @@ class Attachment(Base):
                     return func(*args, **kwargs)
                 return {'response': "Cannot find attachment with provided ID."}, 404
             except ValueError:
-                return {'response': f"Wrong 'id' format. You gave '{kwargs['attachment_id']}', but needs to be an integer."}, 404
+                return {
+                           'response': f"Wrong 'id' format. You gave '{kwargs['attachment_id']}', but needs to be an integer."}, 404
+
         return wrapper
 
 
@@ -502,4 +520,5 @@ class Users(Base):
             if cls.get_by_token(request.headers.get('token')) is not None:
                 return func(*args, **kwargs)
             return {'response': "You are not logged in."}, 401
+
         return wrapper
