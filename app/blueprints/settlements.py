@@ -1,5 +1,6 @@
 from sqlalchemy.exc import IntegrityError, InvalidRequestError
 from flask import Blueprint
+from app.tools.useful_functions import id_from_str_to_int
 from app.database.tables_declaration import *
 
 settlements_bp = Blueprint('settlements', __name__)
@@ -19,7 +20,7 @@ def settlement_list_view():
 @Settlement.not_valid_dict
 def add_settlement():
     creator = Users.get_by_token(request.headers.get('token'))
-    settlement_details = request.get_json()
+    settlement_details = id_from_str_to_int(request.get_json())
     if not creator.id == settlement_details['delegate_id'] and creator.role.value not in ['manager', 'hr', 'admin']:
         return {'response': 'You dont have the rights to create this settlement.'}, 403
     if Users.get_by_id(settlement_details['approver_id']) is None:
@@ -51,7 +52,7 @@ def show_settlement(settlement_id):
 def modify_settlement(settlement_id):
     settlement = Settlement.get_by_id(settlement_id)
     user = Users.get_by_token(request.headers.get('token'))
-    settlement_details = request.get_json()
+    settlement_details = id_from_str_to_int(request.get_json())
     if user.is_authorized(settlement):
         try:
             modified_settlement = settlement.modify(settlement_details)

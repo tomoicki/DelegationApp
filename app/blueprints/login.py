@@ -11,14 +11,6 @@ login = Blueprint('login', __name__)
 @login.route('/', methods=['GET'])
 def welcome():
     settlement = Settlement.get_by_id(1)
-    # days_delta = (settlement.arrival_date - settlement.departure_date).days
-    # some = datetime.datetime.combine(datetime.date.min, settlement.arrival_time) - \
-    #        datetime.datetime.combine(datetime.date.min, settlement.departure_time)
-    # settlement.sum_of_expenses()
-    advance_payment_ids = [advance_payment.id for advance_payment in settlement.advance_payment]
-    print(advance_payment_ids)
-    print(settlement.expense)
-    # settlement.generate_pdf()
     return str(Users.get_by_id(1)), 200
 
 

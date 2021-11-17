@@ -1,5 +1,6 @@
 from sqlalchemy.exc import IntegrityError, InvalidRequestError
 from flask import Blueprint
+from app.tools.useful_functions import id_from_str_to_int
 from app.database.tables_declaration import *
 
 attachments_bp = Blueprint('attachments', __name__)

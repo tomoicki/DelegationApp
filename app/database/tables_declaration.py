@@ -8,7 +8,7 @@ from sqlalchemy import Column, Integer, String, ForeignKey, Date, Float, Time, E
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
 from app.database.create_connection import sqlalchemy_session
-from app.calculators.calculator_functions import recalculate_hours, currency_factor
+from app.tools.useful_functions import recalculate_hours, currency_factor
 
 
 class Base:
@@ -140,18 +140,15 @@ class Settlement(Base):
 
     def calculate_diet(self):
         """Calculates diet (D35 in excel) for delegation."""
-        foreign_meal_rates = {'breakfast': 0.15, 'lunch': 0.3, 'supper': 0.3}
-        domestic_meal_rates = {'breakfast': 0.25, 'lunch': 0.5, 'supper': 0.25}
         country = Country.get_by_id(self.country_id)
         if country.name == 'Poland':
-            meal_rates = domestic_meal_rates
+            meal_reduction = self.breakfast * 0.15 + self.lunch * 0.3 + self.supper * 0.3
         else:
-            meal_rates = foreign_meal_rates
-        meal_cost = [meal_rates[meal_object.type.value] for meal_object in self.meal]
+            meal_reduction = self.breakfast * 0.25 + self.lunch * 0.5 + self.supper * 0.25
         days_delta = (self.arrival_date - self.departure_date).days
         hours_delta = (datetime.datetime.combine(datetime.date.min, self.arrival_time) -
                        datetime.datetime.combine(datetime.date.min, self.departure_time)).total_seconds()
-        diet = days_delta * country.diet + recalculate_hours(hours_delta) * country.diet - sum(meal_cost)
+        diet = (days_delta + recalculate_hours(hours_delta) - meal_reduction) * country.diet
         return diet
 
     def sum_of_expenses(self):

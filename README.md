@@ -18,7 +18,7 @@ to<br>
 <code>postgres_str = f'postgresql://your_username:your_password@localhost:5432/your_database_name'</code>
 
 Once you have your database and connection details set up, you will need to run <code>run_me_just_once.py</code>.<br>
-I will create all the tables and populate them.<br>
+It will create all the tables and populate them.<br>
 Then, to start the application execute <code>run.py</code>.<br>
 You should see this or similar output.
 > Serving Flask app 'app.app' (lazy loading)<br>

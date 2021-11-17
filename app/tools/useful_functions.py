@@ -3,6 +3,11 @@ from currency_converter import CurrencyConverter
 from app.database.tables_declaration import *
 
 
+def id_from_str_to_int(object_dict: dict):
+    """Filters by key that contains '_id' and converts the value to int."""
+    return {key: (int(value) if '_id' in key else value) for key, value in object_dict.items()}
+
+
 def currency_factor(currency_from: str, currency_to: str = 'PLN') -> float:
     """Gets currency to currency rate."""
     try:

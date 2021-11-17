@@ -1,5 +1,6 @@
 from sqlalchemy.exc import IntegrityError, InvalidRequestError
 from flask import Blueprint
+from app.tools.useful_functions import id_from_str_to_int
 from app.database.tables_declaration import *
 
 advance_payments_bp = Blueprint('advance_payments', __name__)
@@ -33,6 +34,7 @@ def add_advance_payment(settlement_id):
         for advance_payment_details in advance_payment_details_list:
             advance_payment_details['settlement_id'] = settlement.id
             advance_payment_details['submit_date'] = datetime.datetime.now()
+            advance_payment_details = id_from_str_to_int(advance_payment_details)
             new_delegation = AdvancePayment.create(advance_payment_details)
             response.append(new_delegation.show())
         return {'response': response}, 201
@@ -61,7 +63,7 @@ def modify_advance_payment(advance_payment_id):
     advance_payment = AdvancePayment.get_by_id(advance_payment_id)
     settlement = Settlement.get_by_id(advance_payment.settlement_id)
     user = Users.get_by_token(request.headers.get('token'))
-    advance_payment_details = request.get_json()
+    advance_payment_details = id_from_str_to_int(request.get_json())
     if user.is_authorized(settlement):
         try:
             modified_advance_payment = advance_payment.modify(advance_payment_details)
