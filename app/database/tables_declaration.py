@@ -8,7 +8,7 @@ from sqlalchemy import Column, Integer, String, ForeignKey, Date, Float, Time, E
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
 from app.database.create_connection import sqlalchemy_session
-from app.tools.useful_functions import recalculate_hours, currency_factor
+from app.tools.useful_functions import recalculate_hours, currency_factor, id_from_str_to_int
 
 
 class Base:
@@ -43,12 +43,23 @@ class Base:
             body = request.get_json()
             try:
                 if type(body) == dict:
-                    cls(**body)
+                    try:
+                        id_from_str_to_int(body)
+                        cls(**body)
+                    except ValueError:
+                        return {"response": "id needs to be stringed integer or just integer, e.g. '3' or 3. "
+                                            'Make sure all id or _id keys have proper values.'}, 400
                 elif type(body) == list:
                     for item in body:
-                        cls(**item)
+                        try:
+                            id_from_str_to_int(item)
+                            cls(**item)
+                        except ValueError:
+                            return {"response": "id needs to be stringed integer or just integer, e.g. '3' or 3. "
+                                                'Make sure all id or _id keys have proper values.'}, 400
                 return func(*args, **kwargs)
             except (KeyError, TypeError) as e:
+                print("iwashere")
                 return {"response": str(e)}, 400
         return wrapper
 
