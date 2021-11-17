@@ -48,7 +48,7 @@ class Base:
                         cls(**body)
                     except ValueError:
                         return {"response": "id needs to be stringed integer or just integer, e.g. '3' or 3. "
-                                            'Make sure all id or _id keys have proper values.'}, 400
+                                            "Make sure all id and _id keys have proper values."}, 400
                 elif type(body) == list:
                     for item in body:
                         try:
@@ -56,7 +56,7 @@ class Base:
                             cls(**item)
                         except ValueError:
                             return {"response": "id needs to be stringed integer or just integer, e.g. '3' or 3. "
-                                                'Make sure all id or _id keys have proper values.'}, 400
+                                                "Make sure all id and _id keys have proper values."}, 400
                 return func(*args, **kwargs)
             except (KeyError, TypeError) as e:
                 print("iwashere")
