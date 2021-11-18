@@ -98,4 +98,4 @@ def delete_expense(expense_id):
             return {'response': 'Success.'}, 201
         except InvalidRequestError:
             return {'response': 'Fail.'}, 400
-    return {'response': 'You dont have the rights to see this delegation.'}, 403
+    return {'response': 'You dont have the rights to delete this expense.'}, 403

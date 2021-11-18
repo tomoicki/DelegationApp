@@ -836,7 +836,7 @@ def swagger_details_provider():
             },
             "/expenses/{expense_id}/attachments": {
                 "get": {
-                    "tags": ["Attachment"],
+                    "tags": ["ExpenseAttachment"],
                     "summary": "Shows attachments for expense.",
                     "parameters": [
                         {
@@ -872,8 +872,8 @@ def swagger_details_provider():
                     }
                 },
                 "post": {
-                    "tags": ["Attachment"],
-                    "summary": "Adds new attachment.",
+                    "tags": ["ExpenseAttachment"],
+                    "summary": "Adds new expense attachment.",
                     "parameters": [
                         {
                             "name": "token",
@@ -930,10 +930,10 @@ def swagger_details_provider():
                     }
                 },
             },
-            "/attachments/{attachment_id}": {
+            "/expense_attachments/{attachment_id}": {
                 "get": {
-                    "tags": ["Attachment"],
-                    "summary": "Shows attachment details.",
+                    "tags": ["ExpenseAttachment"],
+                    "summary": "Shows expense attachment details.",
                     "parameters": [
                         {
                             "name": "token",
@@ -948,9 +948,6 @@ def swagger_details_provider():
                             "description": "ID of the attachment to show.",
                             "type": "int"
                         }
-                    ],
-                    "produces": [
-                        "application/json"
                     ],
                     "responses": {
                         "200": {
@@ -968,8 +965,8 @@ def swagger_details_provider():
                     }
                 },
                 "put": {
-                    "tags": ["Attachment"],
-                    "summary": "Modifies existing attachment.",
+                    "tags": ["ExpenseAttachment"],
+                    "summary": "Modifies existing expense attachment.",
                     "parameters": [
                         {
                             "name": "token",
@@ -1020,8 +1017,454 @@ def swagger_details_provider():
                     }
                 },
                 "delete": {
-                    "tags": ["Attachment"],
-                    "summary": "Deletes attachment.",
+                    "tags": ["ExpenseAttachment"],
+                    "summary": "Deletes expense attachment.",
+                    "parameters": [
+                        {
+                            "name": "token",
+                            "in": "header",
+                            "description": "Token of logged user.",
+                            "type": "string",
+                            "example": "LFvxPVWyetuPyKo8ZrLm5F"
+                        },
+                        {
+                            "name": "attachment_id",
+                            "in": "path",
+                            "description": "ID of the attachment to delete.",
+                            "type": "int"
+                        }
+                    ],
+                    "produces": [
+                        "application/json"
+                    ],
+                    "responses": {
+                        "201": {
+                            "description": "Success.",
+                        },
+                        "400": {
+                            "description": "Fail."
+                        },
+                        "401": {
+                            "description": "You are not logged in.",
+                        },
+                        "403": {
+                            "description": "You dont have the rights to see this attachment.",
+                        },
+                        "404": {
+                            "description": "Cannot find attachment with provided ID.",
+                        },
+                    }
+                }
+            },
+            "/settlements/{settlement_id}/provisions": {
+                "get": {
+                    "tags": ["Provision"],
+                    "summary": "Shows provisions for settlement.",
+                    "parameters": [
+                        {
+                            "name": "token",
+                            "in": "header",
+                            "description": "Token of logged user.",
+                            "type": "string",
+                            "example": "2T7y2x29rpxQJT4474RPWv"
+                        },
+                        {
+                            "name": "settlement_id",
+                            "in": "path",
+                            "description": "ID of the settlement - parent of provisions.",
+                            "type": "int"
+                        }
+                    ],
+                    "produces": [
+                        "application/json"
+                    ],
+                    "responses": {
+                        "200": {
+                            "description": "OK",
+                        },
+                        "401": {
+                            "description": "You are not logged in.",
+                        },
+                        "403": {
+                            "description": "You dont have the rights to see this provisions.",
+                        },
+                        "404": {
+                            "description": "Cannot find settlement with provided ID.",
+                        },
+                    }
+                },
+                "post": {
+                    "tags": ["Provision"],
+                    "summary": "Adds new provision.",
+                    "parameters": [
+                        {
+                            "name": "token",
+                            "in": "header",
+                            "description": "Token of logged user.",
+                            "type": "string",
+                            "example": "e5k9ih78cEDjpqV5YQdxmf"
+                        },
+                        {
+                            "name": "settlement_id",
+                            "in": "path",
+                            "description": "ID of the settlement - parent of the provision to add.",
+                            "type": "int"
+                        }
+                    ],
+                    "requestBody": {
+                        "description": "Takes provision details.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Provision"
+                                },
+                                "example": [
+                                    {
+                                        "description": 'accommodation',
+                                    },
+                                ]
+                            }
+                        }
+                    },
+                    "produces": [
+                        "application/json"
+                    ],
+                    "responses": {
+                        "201": {
+                            "description": "Success.",
+                        },
+                        "401": {
+                            "description": "You are not logged in.",
+                        },
+                        "403": {
+                            "description": "You dont have the rights to add this provision.",
+                        },
+                        "404": {
+                            "description": "Cannot find settlement with provided ID.",
+                        },
+                        "404.2": {
+                            "description": "Fail.",
+                        },
+                    }
+                },
+            },
+            "/provisions/{provision_id}": {
+                "get": {
+                    "tags": ["Provision"],
+                    "summary": "Shows provision details.",
+                    "parameters": [
+                        {
+                            "name": "token",
+                            "in": "header",
+                            "description": "Token of logged user.",
+                            "type": "string",
+                            "example": "2T7y2x29rpxQJT4474RPWv"
+                        },
+                        {
+                            "name": "provision_id",
+                            "in": "path",
+                            "description": "ID of the provision to show.",
+                            "type": "int"
+                        }
+                    ],
+                    "produces": [
+                        "application/json"
+                    ],
+                    "responses": {
+                        "200": {
+                            "description": "OK",
+                        },
+                        "401": {
+                            "description": "You are not logged in.",
+                        },
+                        "403": {
+                            "description": "You dont have the rights to see this provision.",
+                        },
+                        "404": {
+                            "description": "Cannot find provision with provided ID.",
+                        },
+                    }
+                },
+                "put": {
+                    "tags": ["Provision"],
+                    "summary": "Modifies existing provision.",
+                    "parameters": [
+                        {
+                            "name": "token",
+                            "in": "header",
+                            "description": "Token of logged user.",
+                            "type": "string",
+                            "example": "2T7y2x29rpxQJT4474RPWv"
+                        },
+                        {
+                            "name": "provision_id",
+                            "in": "path",
+                            "description": "ID of the provision to modify.",
+                            "type": "int"
+                        },
+                    ],
+                    "requestBody": {
+                        "description": "Changes existing provision.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Provision"
+                                },
+                                "example": {
+                                    "description": "some info added",
+                                }
+                            }
+                        }
+                    },
+                    "produces": [
+                        "application/json"
+                    ],
+                    "responses": {
+                        "201": {
+                            "description": "Success.",
+                        },
+                        "400": {
+                            "description": "Fail."
+                        },
+                        "401": {
+                            "description": "You are not logged in.",
+                        },
+                        "403": {
+                            "description": "You dont have the rights to modify this provision.",
+                        },
+                        "404": {
+                            "description": "Cannot find provision with provided ID.",
+                        },
+                    }
+                },
+                "delete": {
+                    "tags": ["Provision"],
+                    "summary": "Deletes provision.",
+                    "parameters": [
+                        {
+                            "name": "token",
+                            "in": "header",
+                            "description": "Token of logged user.",
+                            "type": "string",
+                            "example": "LFvxPVWyetuPyKo8ZrLm5F"
+                        },
+                        {
+                            "name": "provision_id",
+                            "in": "path",
+                            "description": "ID of the provision to delete.",
+                            "type": "int"
+                        }
+                    ],
+                    "produces": [
+                        "application/json"
+                    ],
+                    "responses": {
+                        "201": {
+                            "description": "Success.",
+                        },
+                        "400": {
+                            "description": "Fail."
+                        },
+                        "401": {
+                            "description": "You are not logged in.",
+                        },
+                        "403": {
+                            "description": "You dont have the rights to delete this provision.",
+                        },
+                        "404": {
+                            "description": "Cannot find provision with provided ID.",
+                        },
+                    }
+                }
+            },
+            "/provisions/{provision_id}/attachments": {
+                "get": {
+                    "tags": ["ProvisionAttachment"],
+                    "summary": "Shows attachments for provision.",
+                    "parameters": [
+                        {
+                            "name": "token",
+                            "in": "header",
+                            "description": "Token of logged user.",
+                            "type": "string",
+                            "example": "2T7y2x29rpxQJT4474RPWv"
+                        },
+                        {
+                            "name": "provision_id",
+                            "in": "path",
+                            "description": "ID of the provision - parent of attachments.",
+                            "type": "int"
+                        }
+                    ],
+                    "produces": [
+                        "application/json"
+                    ],
+                    "responses": {
+                        "200": {
+                            "description": "OK",
+                        },
+                        "401": {
+                            "description": "You are not logged in.",
+                        },
+                        "403": {
+                            "description": "You dont have the rights to see this attachments.",
+                        },
+                        "404": {
+                            "description": "Cannot find provision with provided ID.",
+                        },
+                    }
+                },
+                "post": {
+                    "tags": ["ProvisionAttachment"],
+                    "summary": "Adds new provision attachment.",
+                    "parameters": [
+                        {
+                            "name": "token",
+                            "in": "header",
+                            "description": "Token of logged user.",
+                            "type": "string",
+                            "example": "QDQ384QVf3Ciy7XJCK9xhq"
+                        },
+                        {
+                            "name": "provision_id",
+                            "in": "path",
+                            "description": "ID of the provision to create attachment for.",
+                            "type": "int"
+                        },
+                    ],
+                    "requestBody": {
+                        "description": "Takes attachment details.",
+                        "content": {
+                            "multipart/form-data": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "attachment": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "file",
+                                                "format": "binary"
+                                            }
+                                        }
+                                    }
+                                },
+                            },
+                        }
+                    },
+                    "produces": [
+                        "application/json"
+                    ],
+                    "responses": {
+                        "201": {
+                            "description": "Success.",
+                        },
+                        "401": {
+                            "description": "You are not logged in.",
+                        },
+                        "403": {
+                            "description": "You dont have the rights to create this attachments.",
+                        },
+                        "404": {
+                            "description": "Cannot find provision with provided ID.",
+                        },
+                        "404.2": {
+                            "description": "Fail.",
+                        },
+                    }
+                },
+            },
+            "/provision_attachments/{attachment_id}": {
+                "get": {
+                    "tags": ["ProvisionAttachment"],
+                    "summary": "Shows provision attachment details.",
+                    "parameters": [
+                        {
+                            "name": "token",
+                            "in": "header",
+                            "description": "Token of logged user.",
+                            "type": "string",
+                            "example": "QDQ384QVf3Ciy7XJCK9xhq"
+                        },
+                        {
+                            "name": "attachment_id",
+                            "in": "path",
+                            "description": "ID of the attachment to show.",
+                            "type": "int"
+                        }
+                    ],
+                    "produces": [
+                        "application/json"
+                    ],
+                    "responses": {
+                        "200": {
+                            "description": "OK",
+                        },
+                        "401": {
+                            "description": "You are not logged in.",
+                        },
+                        "403": {
+                            "description": "You dont have the rights to see this attachment.",
+                        },
+                        "404": {
+                            "description": "Cannot find attachment with provided ID.",
+                        },
+                    }
+                },
+                "put": {
+                    "tags": ["ProvisionAttachment"],
+                    "summary": "Modifies existing provision attachment.",
+                    "parameters": [
+                        {
+                            "name": "token",
+                            "in": "header",
+                            "description": "Token of logged user.",
+                            "type": "string",
+                            "example": "2T7y2x29rpxQJT4474RPWv"
+                        },
+                        {
+                            "name": "attachment_id",
+                            "in": "path",
+                            "description": "ID of the attachment to modify.",
+                            "type": "int"
+                        },
+                    ],
+                    "requestBody": {
+                        "description": "Changes existing attachment.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Attachment"
+                                },
+                                "example": {
+                                    "path": "new/path",
+                                }
+                            }
+                        }
+                    },
+                    "produces": [
+                        "application/json"
+                    ],
+                    "responses": {
+                        "201": {
+                            "description": "Success.",
+                        },
+                        "400": {
+                            "description": "Fail."
+                        },
+                        "401": {
+                            "description": "You are not logged in.",
+                        },
+                        "403": {
+                            "description": "You dont have the rights to see this attachment.",
+                        },
+                        "404": {
+                            "description": "Cannot find attachment with provided ID.",
+                        },
+                    }
+                },
+                "delete": {
+                    "tags": ["ProvisionAttachment"],
+                    "summary": "Deletes provision attachment.",
                     "parameters": [
                         {
                             "name": "token",

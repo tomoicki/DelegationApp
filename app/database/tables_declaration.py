@@ -59,8 +59,8 @@ class Base:
                                                 "Make sure all id and _id keys have proper values."}, 400
                 return func(*args, **kwargs)
             except (KeyError, TypeError) as e:
-                print("iwashere")
                 return {"response": str(e)}, 400
+
         return wrapper
 
 
@@ -270,7 +270,107 @@ class Settlement(Base):
                     return func(*args, **kwargs)
                 return {'response': "Cannot find settlement with provided ID."}, 404
             except ValueError:
-                return {'response': f"Wrong 'id' format. You gave '{kwargs['settlement_id']}', but needs to be an integer."}, 404
+                return {'response': f"Wrong 'id' format. You gave '{kwargs['settlement_id']}', "
+                                    f"but needs to be an integer."}, 404
+
+        return wrapper
+
+
+# class ProvisionType(enum.Enum):
+#     airplane = 'airplane'
+#     transit = 'transit'
+#     drive = 'drive'
+#     other = 'other'
+
+
+class Provision(Base):
+    __tablename__ = 'Provision'
+    __table_args__ = {'quote': False}
+    # fields
+    id = Column(Integer, primary_key=True)
+    # type = Column(Enum(ExpenseType))
+    description = Column(String)
+    # one to many
+    settlement_id = Column(Integer, ForeignKey('Settlement.id', ondelete="CASCADE"))
+    # many to one
+    attachment = relationship('ProvisionAttachment', backref='provision', cascade="all,delete")
+
+    def show(self):
+        provision_to_show = {'id': str(self.id),
+                             'settlement_id': str(self.settlement_id),
+                             'description': self.description}
+        return provision_to_show
+
+    @classmethod
+    def if_exists(cls, func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            try:
+                int(kwargs['provision_id'])
+                if cls.get_by_id(kwargs['provision_id']) is not None:
+                    return func(*args, **kwargs)
+                return {'response': "Cannot find provision with provided ID."}, 404
+            except ValueError:
+                return {'response': f"Wrong 'id' format. You gave '{kwargs['provision_id']}', "
+                                    f"but needs to be an integer."}, 404
+
+        return wrapper
+
+
+class ProvisionAttachment(Base):
+    __tablename__ = 'ProvisionAttachment'
+    __table_args__ = {'quote': False}
+    # fields
+    id = Column(Integer, primary_key=True)
+    path = Column(String)
+    # one to many
+    provision_id = Column(Integer, ForeignKey('Provision.id', ondelete="CASCADE"))
+
+    @staticmethod
+    def allowed_file(filename):
+        valid_extensions = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
+        return '.' in filename and filename.rsplit('.', 1)[1].lower() in valid_extensions
+
+    @classmethod
+    def create(cls, provision_id: int):
+        uploads_dir = os.path.join(os.getcwd(), 'uploads')
+        provision_path = os.path.join(uploads_dir, 'provision_' + str(provision_id))
+        if not os.path.exists(provision_path):
+            os.makedirs(provision_path)
+        response = []
+        files = request.files.getlist('attachment')
+        for file in files:
+            if file and cls.allowed_file(file.filename) and file.filename.replace(' ', '_') not in os.listdir(provision_path):
+                file_name = secure_filename(file.filename)
+                file_path = os.path.join(provision_path, file_name)
+                file.save(file_path)
+                attachment = ProvisionAttachment(provision_id=provision_id,
+                                                 path=file_path)
+                sqlalchemy_session.add(attachment)
+                sqlalchemy_session.commit()
+                response.append(attachment.show())
+            else:
+                response.append({"error": f"uploaded attachment '{file.filename}' already exists."})
+        return response
+
+    def show(self):
+        attachment_to_show = {'id': str(self.id),
+                              'path': self.path}
+        return attachment_to_show
+
+    @classmethod
+    def if_exists(cls, func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            try:
+                int(kwargs['attachment_id'])
+                if cls.get_by_id(kwargs['attachment_id']) is not None:
+                    return func(*args, **kwargs)
+                return {'response': "Cannot find attachment with provided ID."}, 404
+            except ValueError:
+                return {'response': f"Wrong 'id' format. You gave '{kwargs['attachment_id']}', "
+                                    f"but needs to be an integer."}, 404
+
         return wrapper
 
 
@@ -310,7 +410,9 @@ class AdvancePayment(Base):
                     return func(*args, **kwargs)
                 return {'response': "Cannot find advance payment with provided ID."}, 404
             except ValueError:
-                return {'response': f"Wrong 'id' format. You gave '{kwargs['advance_payment_id']}', but needs to be an integer."}, 404
+                return {'response': f"Wrong 'id' format. You gave '{kwargs['advance_payment_id']}', "
+                                    f"but needs to be an integer."}, 404
+
         return wrapper
 
 
@@ -333,7 +435,7 @@ class Expense(Base):
     settlement_id = Column(Integer, ForeignKey('Settlement.id', ondelete="CASCADE"))
     currency_id = Column(Integer, ForeignKey('Currency.id'))
     # many to one
-    attachment = relationship('Attachment', backref='expense', cascade="all,delete")
+    attachment = relationship('ExpenseAttachment', backref='expense', cascade="all,delete")
 
     def convert_to_pln(self):
         """Recalculates amount from XXX to PLN if needed."""
@@ -363,12 +465,14 @@ class Expense(Base):
                     return func(*args, **kwargs)
                 return {'response': "Cannot find expense with provided ID."}, 404
             except ValueError:
-                return {'response': f"Wrong 'id' format. You gave '{kwargs['expense_id']}', but needs to be an integer."}, 404
+                return {'response': f"Wrong 'id' format. You gave '{kwargs['expense_id']}', "
+                                    f"but needs to be an integer."}, 404
+
         return wrapper
 
 
-class Attachment(Base):
-    __tablename__ = 'Attachment'
+class ExpenseAttachment(Base):
+    __tablename__ = 'ExpenseAttachment'
     __table_args__ = {'quote': False}
     # fields
     id = Column(Integer, primary_key=True)
@@ -395,8 +499,8 @@ class Attachment(Base):
                 file_name = secure_filename(file.filename)
                 file_path = os.path.join(expense_path, file_name)
                 file.save(file_path)
-                attachment = Attachment(expense_id=expense_id,
-                                        path=file_path)
+                attachment = ExpenseAttachment(expense_id=expense_id,
+                                               path=file_path)
                 sqlalchemy_session.add(attachment)
                 sqlalchemy_session.commit()
                 response.append(attachment.show())
@@ -419,7 +523,9 @@ class Attachment(Base):
                     return func(*args, **kwargs)
                 return {'response': "Cannot find attachment with provided ID."}, 404
             except ValueError:
-                return {'response': f"Wrong 'id' format. You gave '{kwargs['attachment_id']}', but needs to be an integer."}, 404
+                return {'response': f"Wrong 'id' format. You gave '{kwargs['attachment_id']}', "
+                                    f"but needs to be an integer."}, 404
+
         return wrapper
 
 
@@ -492,4 +598,5 @@ class Users(Base):
             if cls.get_by_token(request.headers.get('token')) is not None:
                 return func(*args, **kwargs)
             return {'response': "You are not logged in."}, 401
+
         return wrapper
