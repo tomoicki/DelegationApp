@@ -668,18 +668,11 @@ def swagger_details_provider():
                                 "schema": {
                                     "$ref": "#/components/schemas/Expense"
                                 },
-                                "example": [
-                                    {
+                                "example": {
                                         "currency_id": 6,
                                         "type": 'accommodation',
                                         'amount': 12.21
-                                    },
-                                    {
-                                        "currency_id": 1,
-                                        "type": 'drive',
-                                        'amount': 1
-                                    }
-                                ]
+                                }
                             }
                         }
                     },

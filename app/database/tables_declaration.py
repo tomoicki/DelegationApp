@@ -59,7 +59,6 @@ class Base:
                                                 "Make sure all id and _id keys have proper values."}, 400
                 return func(*args, **kwargs)
             except (KeyError, TypeError) as e:
-                print("iwashere")
                 return {"response": str(e)}, 400
         return wrapper
 

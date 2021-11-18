@@ -39,16 +39,13 @@ def expenses_list_view(settlement_id):
 def add_expense(settlement_id):
     settlement = Settlement.get_by_id(settlement_id)
     user = Users.get_by_token(request.headers.get('token'))
-    expense_details_list = request.get_json()
+    expense_details = request.get_json()
     if user.is_authorized(settlement):
         try:
-            response = []
-            for expense_details in expense_details_list:
-                expense_details['settlement_id'] = settlement.id
-                expense_details = id_from_str_to_int(expense_details)
-                new_expense = Expense.create(expense_details)
-                response.append(new_expense.show())
-            return {'response': response}, 201
+            expense_details['settlement_id'] = settlement.id
+            expense_details = id_from_str_to_int(expense_details)
+            new_expense = Expense.create(expense_details)
+            return {'response': new_expense.show()}, 201
         except IntegrityError:
             sqlalchemy_session.rollback()
             return {'response': 'Fail.'}, 404
