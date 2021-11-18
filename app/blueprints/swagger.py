@@ -259,6 +259,13 @@ def swagger_details_provider():
                             "in": "path",
                             "description": "ID of the settlement to show.",
                             "type": "int"
+                        },
+                        {
+                            "name": "calculations",
+                            "in": "query",
+                            "description": "Gives diets and advance payments for settlement. "
+                                           "Leave blank to get settlement details or fill with 'true' to get calculations.",
+                            "type": "string"
                         }
                     ],
                     "produces": [

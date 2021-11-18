@@ -152,15 +152,13 @@ class Settlement(Base):
     def calculate_diet(self):
         """Calculates diet (D35 in excel) for delegation."""
         country = Country.get_by_id(self.country_id)
-        if country.name == 'Poland':
-            meal_reduction = self.breakfast * 0.15 + self.lunch * 0.3 + self.supper * 0.3
-        else:
-            meal_reduction = self.breakfast * 0.25 + self.lunch * 0.5 + self.supper * 0.25
+        meal_reduction = self.breakfast * 0.25 + self.lunch * 0.5 + self.supper * 0.25
         days_delta = (self.arrival_date - self.departure_date).days
         hours_delta = (datetime.datetime.combine(datetime.date.min, self.arrival_time) -
                        datetime.datetime.combine(datetime.date.min, self.departure_time)).total_seconds()
-        diet = (days_delta + recalculate_hours(hours_delta) - meal_reduction) * country.diet
-        return diet
+        diet_from_days_hours = (days_delta + recalculate_hours(hours_delta)) * country.diet
+        diet_meal_reduced = diet_from_days_hours - meal_reduction * country.diet
+        return {'diet_from_days_hours': str(diet_from_days_hours), 'diet_meal_reduced': str(diet_meal_reduced)}
 
     def sum_of_expenses(self):
         expenses_list = self.expense
@@ -172,8 +170,14 @@ class Settlement(Base):
 
     def sum_of_advanced_payments(self):
         advanced_payments_list = self.advance_payment
-        sum_of_advanced_payments = [advance_payment.convert_to_pln() for advance_payment in advanced_payments_list]
-        return sum_of_advanced_payments
+        currency_set = {advance_payment.currency_id for advance_payment in advanced_payments_list}
+        sum_of_advanced_payments_by_currency = \
+            {currency: str(sum([advance_payment.amount for advance_payment in advanced_payments_list if
+                                advance_payment.currency_id == currency])) for currency in currency_set}
+        sum_of_advanced_payments_by_currency = {Currency.get_by_id(key).name: value
+                                                for key, value in sum_of_advanced_payments_by_currency.items()}
+        # sum_of_advanced_payments = [advance_payment.convert_to_pln() for advance_payment in advanced_payments_list]
+        return sum_of_advanced_payments_by_currency
 
     def generate_pdf(self):
         import reportlab.lib.colors as pdf_colors

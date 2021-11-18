@@ -15,22 +15,19 @@ def expenses_list_view(settlement_id):
     if user.is_authorized(settlement):
         expenses_list = settlement.expense
         expenses_list = [expense.show() for expense in expenses_list]
-        currency_set = {expense_dict['currency'] for expense_dict in expenses_list}
-        response = []
-        type_totals = {currency: {ty: str(sum([float(item['amount']) for item in expenses_list if
-                                               item['currency'] == currency and item['type'] == ty]))
-                                  for ty in {expense_dict['type'] for expense_dict in expenses_list if
-                                             expense_dict['currency'] == currency}} for currency in currency_set}
-        for currency in currency_set:
-            part_list = []
-            total = 0
-            for item in expenses_list:
-                if item['currency'] == currency:
-                    total += float(item['amount'])
-                    part_list.append(item)
-            currency_dict = {'currency': currency, 'total': str(total), 'expenses': part_list}
-            currency_dict.update({'type_totals': type_totals[currency]})
-            response.append(currency_dict)
+        currency_set = {expense['currency'] for expense in expenses_list}
+        type_amount = {currency: {expense_type: str(sum([float(expense['amount']) for expense in expenses_list if
+                                                         expense['currency'] == currency and expense['type'] == expense_type]))
+                                  for expense_type in {expense['type'] for expense in expenses_list if
+                                                       expense['currency'] == currency}} for currency in currency_set}
+        total_amount = {currency: {'total': str(sum([float(expense['amount']) for expense in expenses_list if
+                                                     expense['currency'] == currency])) for expense in expenses_list if
+                                   expense['currency'] == currency} for currency in currency_set}
+        response = [{'currency': currency,
+                     'total_amount': total_amount[currency]['total'],
+                     'type_amount': type_amount[currency],
+                     'expenses': [expense for expense in expenses_list if expense['currency'] == currency]}
+                    for currency in currency_set]
         return {'response': response}, 200
     return {'response': 'You dont have the rights to see this expenses.'}, 403
 

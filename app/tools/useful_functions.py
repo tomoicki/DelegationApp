@@ -18,13 +18,12 @@ def currency_factor(currency_from: str, currency_to: str = 'PLN') -> float:
     return factor
 
 
-def recalculate_hours(hours: float):
+def recalculate_hours(seconds: float):
     """Provides rate for remaining hours (Data!H1:I5 in excel)."""
+    hours = seconds / 3600
     if hours <= 0:
         hour_rate = 0
-    elif hours < 8:
-        hour_rate = 1/3
-    elif hours <= 12:
+    elif hours <= 8:
         hour_rate = 0.5
     else:
         hour_rate = 1
