@@ -13,21 +13,7 @@ def expenses_list_view(settlement_id):
     settlement = Settlement.get_by_id(settlement_id)
     user = Users.get_by_token(request.headers.get('token'))
     if user.is_authorized(settlement):
-        expenses_list = settlement.expense
-        expenses_list = [expense.show() for expense in expenses_list]
-        currency_set = {expense['currency'] for expense in expenses_list}
-        type_amount = {currency: {expense_type: str(sum([float(expense['amount']) for expense in expenses_list if
-                                                         expense['currency'] == currency and expense['type'] == expense_type]))
-                                  for expense_type in {expense['type'] for expense in expenses_list if
-                                                       expense['currency'] == currency}} for currency in currency_set}
-        total_amount = {currency: {'total': str(sum([float(expense['amount']) for expense in expenses_list if
-                                                     expense['currency'] == currency])) for expense in expenses_list if
-                                   expense['currency'] == currency} for currency in currency_set}
-        response = [{'currency': currency,
-                     'total_amount': total_amount[currency]['total'],
-                     'type_amount': type_amount[currency],
-                     'expenses': [expense for expense in expenses_list if expense['currency'] == currency]}
-                    for currency in currency_set]
+        response = settlement.give_sorted_expenses()
         return {'response': response}, 200
     return {'response': 'You dont have the rights to see this expenses.'}, 403
 
@@ -45,7 +31,8 @@ def add_expense(settlement_id):
             expense_details['settlement_id'] = settlement.id
             expense_details = id_from_str_to_int(expense_details)
             new_expense = Expense.create(expense_details)
-            return {'response': new_expense.show()}, 201
+            response = settlement.give_sorted_expenses()
+            return {'response': response}, 201
         except IntegrityError:
             sqlalchemy_session.rollback()
             return {'response': 'Fail.'}, 404

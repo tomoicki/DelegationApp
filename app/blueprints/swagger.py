@@ -1056,6 +1056,15 @@ def swagger_details_provider():
                 "get": {
                     "tags": ["Dictionary"],
                     "summary": "Shows dictionary of currencies.",
+                    "parameters": [
+                        {
+                            "name": "token",
+                            "in": "header",
+                            "description": "Token of logged user.",
+                            "type": "string",
+                            "example": "QDQ384QVf3Ciy7XJCK9xhq"
+                        }
+                    ],
                     "produces": [
                         "application/json"
                     ],
@@ -1070,6 +1079,15 @@ def swagger_details_provider():
                 "get": {
                     "tags": ["Dictionary"],
                     "summary": "Shows dictionary of available expense types.",
+                    "parameters": [
+                        {
+                            "name": "token",
+                            "in": "header",
+                            "description": "Token of logged user.",
+                            "type": "string",
+                            "example": "QDQ384QVf3Ciy7XJCK9xhq"
+                        }
+                    ],
                     "produces": [
                         "application/json"
                     ],
@@ -1084,6 +1102,15 @@ def swagger_details_provider():
                 "get": {
                     "tags": ["Dictionary"],
                     "summary": "Shows dictionary of available user roles.",
+                    "parameters": [
+                        {
+                            "name": "token",
+                            "in": "header",
+                            "description": "Token of logged user.",
+                            "type": "string",
+                            "example": "QDQ384QVf3Ciy7XJCK9xhq"
+                        }
+                    ],
                     "produces": [
                         "application/json"
                     ],
@@ -1098,6 +1125,15 @@ def swagger_details_provider():
                 "get": {
                     "tags": ["Dictionary"],
                     "summary": "Shows dictionary of available settlement status options.",
+                    "parameters": [
+                        {
+                            "name": "token",
+                            "in": "header",
+                            "description": "Token of logged user.",
+                            "type": "string",
+                            "example": "QDQ384QVf3Ciy7XJCK9xhq"
+                        }
+                    ],
                     "produces": [
                         "application/json"
                     ],
@@ -1112,6 +1148,15 @@ def swagger_details_provider():
                 "get": {
                     "tags": ["Dictionary"],
                     "summary": "Shows dictionary of countries.",
+                    "parameters": [
+                        {
+                            "name": "token",
+                            "in": "header",
+                            "description": "Token of logged user.",
+                            "type": "string",
+                            "example": "QDQ384QVf3Ciy7XJCK9xhq"
+                        }
+                    ],
                     "produces": [
                         "application/json"
                     ],
@@ -1127,6 +1172,13 @@ def swagger_details_provider():
                     "tags": ["Dictionary"],
                     "summary": "Shows dictionary of all users with their id as key.",
                     "parameters": [
+                        {
+                            "name": "token",
+                            "in": "header",
+                            "description": "Token of logged user.",
+                            "type": "string",
+                            "example": "QDQ384QVf3Ciy7XJCK9xhq"
+                        },
                         {
                             "name": "search",
                             "in": "query",
@@ -1150,6 +1202,13 @@ def swagger_details_provider():
                     "tags": ["Dictionary"],
                     "summary": "Shows dictionary of all privileged users with their id as key.",
                     "parameters": [
+                        {
+                            "name": "token",
+                            "in": "header",
+                            "description": "Token of logged user.",
+                            "type": "string",
+                            "example": "QDQ384QVf3Ciy7XJCK9xhq"
+                        },
                         {
                             "name": "search",
                             "in": "query",

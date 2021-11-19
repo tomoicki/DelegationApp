@@ -11,7 +11,15 @@ from app.database.create_connection import sqlalchemy_session
 from app.tools.useful_functions import recalculate_hours, currency_factor, id_from_str_to_int
 
 
-class Base:
+# class Base:
+class Mixin:
+    # when u comment __init__ then every Table that inherits from Mixin
+    # get false warnings "unexpected argument" when u try to construct an object Table()
+    # and when i dont use Mixin and inherit methods from Base,
+    # then PyCharm doesnt see the methods object.[list of all possible methods]
+    def __init__(self, *args, **kwargs):
+        pass
+
     id = Column(Integer)
 
     def delete(self):
@@ -60,13 +68,15 @@ class Base:
                 return func(*args, **kwargs)
             except (KeyError, TypeError) as e:
                 return {"response": str(e)}, 400
+
         return wrapper
 
 
-Base = declarative_base(cls=Base)
+# Base = declarative_base(cls=Base)
+Base = declarative_base()
 
 
-class Country(Base):
+class Country(Base, Mixin):
     __tablename__ = 'Country'
     __table_args__ = {'quote': False}
     # fields
@@ -80,7 +90,7 @@ class Country(Base):
     settlement = relationship("Settlement", backref='country')
 
 
-class Currency(Base):
+class Currency(Base, Mixin):
     __tablename__ = 'Currency'
     __table_args__ = {'quote': False}
     # fields
@@ -99,7 +109,7 @@ class SettlementStatusOptions(enum.Enum):
     closed = 'closed'
 
 
-class SettlementStatus(Base):
+class SettlementStatus(Base, Mixin):
     __tablename__ = 'SettlementStatus'
     __table_args__ = {'quote': False}
     # fields
@@ -111,7 +121,7 @@ class SettlementStatus(Base):
     settlement_id = Column(Integer, ForeignKey('Settlement.id', ondelete="CASCADE"))
 
 
-class Settlement(Base):
+class Settlement(Base, Mixin):
     __tablename__ = 'Settlement'
     __table_args__ = {'quote': False}
     # fields
@@ -246,6 +256,25 @@ class Settlement(Base):
                                    for key, value in settlement_with_details.items()}
         return settlement_with_details
 
+    def give_sorted_expenses(self):
+        expenses_list = self.expense
+        expenses_list = [expense.show() for expense in expenses_list]
+        currency_set = {expense['currency'] for expense in expenses_list}
+        type_amount = {currency: {expense_type: str(sum([float(expense['amount']) for expense in expenses_list if
+                                                         expense['currency'] == currency and expense[
+                                                             'type'] == expense_type]))
+                                  for expense_type in {expense['type'] for expense in expenses_list if
+                                                       expense['currency'] == currency}} for currency in currency_set}
+        total_amount = {currency: {'total': str(sum([float(expense['amount']) for expense in expenses_list if
+                                                     expense['currency'] == currency])) for expense in expenses_list if
+                                   expense['currency'] == currency} for currency in currency_set}
+        expenses_by_currency = [{'currency': currency,
+                                 'total_amount': total_amount[currency]['total'],
+                                 'type_amount': type_amount[currency],
+                                 'expenses': [expense for expense in expenses_list if expense['currency'] == currency]}
+                                for currency in currency_set]
+        return expenses_by_currency
+
     @classmethod
     def create(cls, settlement_details: dict):
         settlement_details['submit_date'] = datetime.datetime.now()
@@ -269,11 +298,13 @@ class Settlement(Base):
                     return func(*args, **kwargs)
                 return {'response': "Cannot find settlement with provided ID."}, 404
             except ValueError:
-                return {'response': f"Wrong 'id' format. You gave '{kwargs['settlement_id']}', but needs to be an integer."}, 404
+                return {
+                           'response': f"Wrong 'id' format. You gave '{kwargs['settlement_id']}', but needs to be an integer."}, 404
+
         return wrapper
 
 
-class AdvancePayment(Base):
+class AdvancePayment(Base, Mixin):
     __tablename__ = 'AdvancePayment'
     __table_args__ = {'quote': False}
     # fields
@@ -309,7 +340,9 @@ class AdvancePayment(Base):
                     return func(*args, **kwargs)
                 return {'response': "Cannot find advance payment with provided ID."}, 404
             except ValueError:
-                return {'response': f"Wrong 'id' format. You gave '{kwargs['advance_payment_id']}', but needs to be an integer."}, 404
+                return {
+                           'response': f"Wrong 'id' format. You gave '{kwargs['advance_payment_id']}', but needs to be an integer."}, 404
+
         return wrapper
 
 
@@ -320,7 +353,7 @@ class ExpenseType(enum.Enum):
     other = 'other'
 
 
-class Expense(Base):
+class Expense(Base, Mixin):
     __tablename__ = 'Expense'
     __table_args__ = {'quote': False}
     # fields
@@ -362,11 +395,13 @@ class Expense(Base):
                     return func(*args, **kwargs)
                 return {'response': "Cannot find expense with provided ID."}, 404
             except ValueError:
-                return {'response': f"Wrong 'id' format. You gave '{kwargs['expense_id']}', but needs to be an integer."}, 404
+                return {
+                           'response': f"Wrong 'id' format. You gave '{kwargs['expense_id']}', but needs to be an integer."}, 404
+
         return wrapper
 
 
-class Attachment(Base):
+class Attachment(Base, Mixin):
     __tablename__ = 'Attachment'
     __table_args__ = {'quote': False}
     # fields
@@ -418,7 +453,9 @@ class Attachment(Base):
                     return func(*args, **kwargs)
                 return {'response': "Cannot find attachment with provided ID."}, 404
             except ValueError:
-                return {'response': f"Wrong 'id' format. You gave '{kwargs['attachment_id']}', but needs to be an integer."}, 404
+                return {
+                           'response': f"Wrong 'id' format. You gave '{kwargs['attachment_id']}', but needs to be an integer."}, 404
+
         return wrapper
 
 
@@ -429,7 +466,7 @@ class Role(enum.Enum):
     admin = 'admin'
 
 
-class Users(Base):
+class Users(Base, Mixin):
     __tablename__ = 'Users'
     __table_args__ = {'quote': False}
     # fields
@@ -491,4 +528,5 @@ class Users(Base):
             if cls.get_by_token(request.headers.get('token')) is not None:
                 return func(*args, **kwargs)
             return {'response': "You are not logged in."}, 401
+
         return wrapper
