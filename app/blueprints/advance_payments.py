@@ -1,4 +1,4 @@
-from sqlalchemy.exc import IntegrityError, InvalidRequestError
+from sqlalchemy.exc import IntegrityError, InvalidRequestError, DataError
 from flask import Blueprint
 from app.tools.useful_functions import id_from_str_to_int
 from app.database.tables_declaration import *
@@ -38,7 +38,7 @@ def add_advance_payment(settlement_id):
             new_delegation = AdvancePayment.create(advance_payment_details)
             response.append(new_delegation.show())
         return {'response': response}, 201
-    except IntegrityError:
+    except DataError:
         sqlalchemy_session.rollback()
         return {'response': 'Fail.'}, 404
 
