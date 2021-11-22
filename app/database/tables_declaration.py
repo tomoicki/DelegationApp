@@ -162,7 +162,7 @@ class Settlement(Base, Mixin):
         """Calculates diet (D35 in excel) for delegation."""
         country = Country.get_by_id(self.country_id)
         meal_reduction = self.breakfast * 0.25 + self.lunch * 0.5 + self.supper * 0.25
-        time_delta = datetime.datetime.combine(self.arrival_date , self.arrival_time) - \
+        time_delta = datetime.datetime.combine(self.arrival_date, self.arrival_time) - \
                      datetime.datetime.combine(self.departure_date, self.departure_time)
         diet_from_days_hours = (time_delta.days + recalculate_hours(time_delta.seconds / (3600 * 24))) * country.diet
         diet_meal_reduced = diet_from_days_hours - meal_reduction * country.diet
@@ -175,9 +175,11 @@ class Settlement(Base, Mixin):
     def sum_of_expenses(self):
         expenses_list = self.expense
         all_expense_types = {expense.type.value for expense in expenses_list}
-        sum_of_expenses_by_type = {expense_type: str(sum([expense.convert_to_pln() for expense in expenses_list
-                                                          if expense.type.value == expense_type]))
+        sum_of_expenses_by_type = {expense_type: sum([expense.convert_to_pln() for expense in expenses_list
+                                                      if expense.type.value == expense_type])
                                    for expense_type in all_expense_types}
+        sum_of_expenses_by_type['total'] = sum(sum_of_expenses_by_type.values())
+        sum_of_expenses_by_type = {key: str(value) for key, value in sum_of_expenses_by_type.items()}
         return sum_of_expenses_by_type
 
     def sum_of_advanced_payments(self):
@@ -387,7 +389,8 @@ class Expense(Base, Mixin):
             return self.amount
         # else, get the factor
         factor = currency_factor(currency_name)
-        return self.amount / factor
+        print(currency_name, factor)
+        return self.amount * factor
 
     def show(self):
         expense_to_show = {'id': str(self.id),
