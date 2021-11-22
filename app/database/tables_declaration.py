@@ -11,7 +11,10 @@ from app.database.create_connection import sqlalchemy_session
 from app.tools.useful_functions import recalculate_hours, currency_factor, id_from_str_to_int
 
 
-class Base:
+class Mixin:
+    def __init__(self, *args, **kwargs):
+        pass
+
     id = Column(Integer)
 
     def delete(self):
@@ -64,10 +67,10 @@ class Base:
         return wrapper
 
 
-Base = declarative_base(cls=Base)
+Base = declarative_base()
 
 
-class Country(Base):
+class Country(Base, Mixin):
     __tablename__ = 'Country'
     __table_args__ = {'quote': False}
     # fields
@@ -81,7 +84,7 @@ class Country(Base):
     settlement = relationship("Settlement", backref='country')
 
 
-class Currency(Base):
+class Currency(Base, Mixin):
     __tablename__ = 'Currency'
     __table_args__ = {'quote': False}
     # fields
@@ -100,7 +103,7 @@ class SettlementStatusOptions(enum.Enum):
     closed = 'closed'
 
 
-class SettlementStatus(Base):
+class SettlementStatus(Base, Mixin):
     __tablename__ = 'SettlementStatus'
     __table_args__ = {'quote': False}
     # fields
@@ -112,7 +115,7 @@ class SettlementStatus(Base):
     settlement_id = Column(Integer, ForeignKey('Settlement.id', ondelete="CASCADE"))
 
 
-class Settlement(Base):
+class Settlement(Base, Mixin):
     __tablename__ = 'Settlement'
     __table_args__ = {'quote': False}
     # fields
@@ -283,7 +286,7 @@ class Settlement(Base):
 #     other = 'other'
 
 
-class Provision(Base):
+class Provision(Base, Mixin):
     __tablename__ = 'Provision'
     __table_args__ = {'quote': False}
     # fields
@@ -317,7 +320,7 @@ class Provision(Base):
         return wrapper
 
 
-class ProvisionAttachment(Base):
+class ProvisionAttachment(Base, Mixin):
     __tablename__ = 'ProvisionAttachment'
     __table_args__ = {'quote': False}
     # fields
@@ -374,7 +377,7 @@ class ProvisionAttachment(Base):
         return wrapper
 
 
-class AdvancePayment(Base):
+class AdvancePayment(Base, Mixin):
     __tablename__ = 'AdvancePayment'
     __table_args__ = {'quote': False}
     # fields
@@ -423,7 +426,7 @@ class ExpenseType(enum.Enum):
     other = 'other'
 
 
-class Expense(Base):
+class Expense(Base, Mixin):
     __tablename__ = 'Expense'
     __table_args__ = {'quote': False}
     # fields
@@ -471,7 +474,7 @@ class Expense(Base):
         return wrapper
 
 
-class ExpenseAttachment(Base):
+class ExpenseAttachment(Base, Mixin):
     __tablename__ = 'ExpenseAttachment'
     __table_args__ = {'quote': False}
     # fields
@@ -536,7 +539,7 @@ class Role(enum.Enum):
     admin = 'admin'
 
 
-class Users(Base):
+class Users(Base, Mixin):
     __tablename__ = 'Users'
     __table_args__ = {'quote': False}
     # fields

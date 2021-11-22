@@ -1,4 +1,4 @@
-from sqlalchemy.exc import IntegrityError, InvalidRequestError
+from sqlalchemy.exc import IntegrityError, InvalidRequestError, DataError
 from flask import Blueprint
 from app.tools.useful_functions import id_from_str_to_int
 from app.database.tables_declaration import *
@@ -49,7 +49,7 @@ def add_expense(settlement_id):
                 new_expense = Expense.create(expense_details)
                 response.append(new_expense.show())
             return {'response': response}, 201
-        except IntegrityError:
+        except DataError:
             sqlalchemy_session.rollback()
             return {'response': 'Fail.'}, 404
     return {'response': 'You dont have the rights to add this expense.'}, 403

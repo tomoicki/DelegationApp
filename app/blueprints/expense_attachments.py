@@ -1,4 +1,4 @@
-from sqlalchemy.exc import IntegrityError, InvalidRequestError
+from sqlalchemy.exc import IntegrityError, InvalidRequestError, DataError
 from flask import Blueprint, send_from_directory
 from app.tools.useful_functions import id_from_str_to_int
 from app.database.tables_declaration import *
@@ -32,7 +32,7 @@ def add_expense_attachment(expense_id):
         try:
             response = ExpenseAttachment.create(expense.id)
             return {'response': response}, 201
-        except IntegrityError:
+        except DataError:
             sqlalchemy_session.rollback()
             return {'response': 'Fail.'}, 404
     return {'response': 'You dont have the rights to create this attachment.'}, 403
