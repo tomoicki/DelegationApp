@@ -162,14 +162,15 @@ class Settlement(Base, Mixin):
         """Calculates diet (D35 in excel) for delegation."""
         country = Country.get_by_id(self.country_id)
         meal_reduction = self.breakfast * 0.25 + self.lunch * 0.5 + self.supper * 0.25
-        days_delta = (self.arrival_date - self.departure_date).days
-        hours_delta = (datetime.datetime.combine(datetime.date.min, self.arrival_time) -
-                       datetime.datetime.combine(datetime.date.min, self.departure_time)).total_seconds()
-        diet_from_days_hours = (days_delta + recalculate_hours(hours_delta)) * country.diet
+        time_delta = datetime.datetime.combine(self.arrival_date , self.arrival_time) - \
+                     datetime.datetime.combine(self.departure_date, self.departure_time)
+        diet_from_days_hours = (time_delta.days + recalculate_hours(time_delta.seconds / (3600 * 24))) * country.diet
         diet_meal_reduced = diet_from_days_hours - meal_reduction * country.diet
         return {'diet_from_days_hours': str(diet_from_days_hours),
                 'diet_meal_reduced': str(diet_meal_reduced),
-                'currency': Currency.get_by_id(country.currency_id).name}
+                'currency': Currency.get_by_id(country.currency_id).name,
+                'daily_amount': str(country.diet),
+                'daily_limit': str(country.accommodation_limit)}
 
     def sum_of_expenses(self):
         expenses_list = self.expense
@@ -235,6 +236,14 @@ class Settlement(Base, Mixin):
         return settlement_to_show
 
     def details(self):
+        country = Country.get_by_id(self.country_id)
+        time_delta = datetime.datetime.combine(self.arrival_date, self.arrival_time) - \
+                     datetime.datetime.combine(self.departure_date, self.departure_time)
+        residue_time = time_delta.seconds / 3600
+        hours = int(residue_time)
+        minutes = round((residue_time - hours) * 60)
+        trip_duration = f"{time_delta.days}d {hours}h {minutes}m"
+        exchange_rate = currency_factor(Currency.get_by_id(country.currency_id).name)
         settlement_with_details = {'id': str(self.id),
                                    'submit_date': self.submit_date,
                                    'departure_city': self.departure_city,
@@ -246,14 +255,16 @@ class Settlement(Base, Mixin):
                                    'breakfast': str(self.breakfast),
                                    'lunch': str(self.lunch),
                                    'supper': str(self.supper),
-                                   'country': Country.get_by_id(self.country_id).name,
+                                   'country': country.name,
                                    'delegate': str(Users.get_by_id(self.delegate_id)),
                                    'approver': str(Users.get_by_id(self.approver_id)),
                                    'creator': str(Users.get_by_id(self.creator_id)),
                                    'title': self.title,
                                    'reason': self.reason,
                                    'remarks': self.remarks,
-                                   'status': self.current_status()}
+                                   'status': self.current_status(),
+                                   'trip_duration': trip_duration,
+                                   'exchange_rate_for_diet_currency': str(exchange_rate)}
         settlement_with_details = {key: (value.isoformat() if '_time' in key and value is not None else value)
                                    for key, value in settlement_with_details.items()}
         return settlement_with_details
@@ -300,8 +311,8 @@ class Settlement(Base, Mixin):
                     return func(*args, **kwargs)
                 return {'response': "Cannot find settlement with provided ID."}, 404
             except ValueError:
-                return {
-                           'response': f"Wrong 'id' format. You gave '{kwargs['settlement_id']}', but needs to be an integer."}, 404
+                return {'response': f"Wrong 'id' format. You gave '{kwargs['settlement_id']}', "
+                                    f"but needs to be an integer."}, 404
 
         return wrapper
 
@@ -342,8 +353,8 @@ class AdvancePayment(Base, Mixin):
                     return func(*args, **kwargs)
                 return {'response': "Cannot find advance payment with provided ID."}, 404
             except ValueError:
-                return {
-                           'response': f"Wrong 'id' format. You gave '{kwargs['advance_payment_id']}', but needs to be an integer."}, 404
+                return {'response': f"Wrong 'id' format. You gave '{kwargs['advance_payment_id']}', "
+                                    f"but needs to be an integer."}, 404
 
         return wrapper
 
@@ -397,8 +408,8 @@ class Expense(Base, Mixin):
                     return func(*args, **kwargs)
                 return {'response': "Cannot find expense with provided ID."}, 404
             except ValueError:
-                return {
-                           'response': f"Wrong 'id' format. You gave '{kwargs['expense_id']}', but needs to be an integer."}, 404
+                return {'response': f"Wrong 'id' format. You gave '{kwargs['expense_id']}', "
+                                    f"but needs to be an integer."}, 404
 
         return wrapper
 
@@ -455,8 +466,8 @@ class Attachment(Base, Mixin):
                     return func(*args, **kwargs)
                 return {'response': "Cannot find attachment with provided ID."}, 404
             except ValueError:
-                return {
-                           'response': f"Wrong 'id' format. You gave '{kwargs['attachment_id']}', but needs to be an integer."}, 404
+                return {'response': f"Wrong 'id' format. You gave '{kwargs['attachment_id']}', "
+                                    f"but needs to be an integer."}, 404
 
         return wrapper
 
