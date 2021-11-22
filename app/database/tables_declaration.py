@@ -131,9 +131,9 @@ class Settlement(Base, Mixin):
     arrival_city = Column(String)
     submit_date = Column(DateTime)
     departure_date = Column(Date)
-    departure_time = Column(Time)
+    departure_time = Column(Time, default=datetime.time.fromisoformat("00:00:00"))
     arrival_date = Column(Date)
-    arrival_time = Column(Time)
+    arrival_time = Column(Time, default=datetime.time.fromisoformat("00:00:00"))
     reason = Column(String)
     remarks = Column(String)
     breakfast = Column(Integer, default=0)
@@ -167,13 +167,15 @@ class Settlement(Base, Mixin):
                        datetime.datetime.combine(datetime.date.min, self.departure_time)).total_seconds()
         diet_from_days_hours = (days_delta + recalculate_hours(hours_delta)) * country.diet
         diet_meal_reduced = diet_from_days_hours - meal_reduction * country.diet
-        return {'diet_from_days_hours': str(diet_from_days_hours), 'diet_meal_reduced': str(diet_meal_reduced)}
+        return {'diet_from_days_hours': str(diet_from_days_hours),
+                'diet_meal_reduced': str(diet_meal_reduced),
+                'currency': Currency.get_by_id(country.currency_id).name}
 
     def sum_of_expenses(self):
         expenses_list = self.expense
         all_expense_types = {expense.type.value for expense in expenses_list}
-        sum_of_expenses_by_type = {expense_type: sum([expense.convert_to_pln() for expense in expenses_list
-                                                      if expense.type.value == expense_type])
+        sum_of_expenses_by_type = {expense_type: str(sum([expense.convert_to_pln() for expense in expenses_list
+                                                          if expense.type.value == expense_type]))
                                    for expense_type in all_expense_types}
         return sum_of_expenses_by_type
 

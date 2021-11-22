@@ -43,7 +43,8 @@ def show_settlement(settlement_id):
     if user.is_authorized(settlement):
         calculations = request.args.get("calculations",'')
         if calculations.lower() == 'true':
-            return {"response": {'sum_of_advanced_payments_by_currency': settlement.sum_of_advanced_payments(),
+            return {"response": {'sum_of_expenses_in_PLN': settlement.sum_of_expenses(),
+                                 'sum_of_advanced_payments_by_currency': settlement.sum_of_advanced_payments(),
                                  'diets': settlement.calculate_diet()}}, 200
         return {'response': settlement.details()}, 200
     return {'response': 'You dont have the rights to see this settlement.'}, 403
