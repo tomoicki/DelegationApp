@@ -1,5 +1,5 @@
 from sqlalchemy.exc import IntegrityError, InvalidRequestError, DataError
-from flask import Blueprint
+from flask import Blueprint, send_from_directory
 from app.tools.useful_functions import id_from_str_to_int
 from app.database.tables_declaration import *
 
@@ -47,9 +47,10 @@ def show_attachment(attachment_id):
     settlement = Settlement.get_by_id(expense.settlement_id)
     user = Users.get_by_token(request.headers.get('token'))
     if user.is_authorized(settlement):
-        return {'response': attachment.show()}, 200
+        uploads_dir = os.path.join(os.getcwd(), 'uploads')
+        expense_path = os.path.join(uploads_dir, 'expense_' + str(attachment.expense_id))
+        return send_from_directory(expense_path, attachment.path.rsplit('\\', 1)[-1])
     return {'response': 'You dont have the rights to see this attachment.'}, 403
-
 
 @attachments_bp.route('/attachments/<attachment_id>', methods=['PUT'])
 @Users.is_logged_in

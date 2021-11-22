@@ -4,7 +4,7 @@ import datetime
 from flask import request
 from werkzeug.utils import secure_filename
 from functools import wraps
-from sqlalchemy import Column, Integer, String, ForeignKey, Date, Float, Time, Enum, Boolean, DateTime, update
+from sqlalchemy import Table, Column, Integer, String, ForeignKey, Date, Float, Time, Enum, Boolean, DateTime, update
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
 from app.database.create_connection import sqlalchemy_session
@@ -52,16 +52,23 @@ class Mixin:
             try:
                 if type(body) == dict:
                     try:
-                        id_from_str_to_int(body)
-                        cls(**body)
+                        body2 = body.copy()
+                        if 'transit_type_id' in body2.keys():
+                            del body2['transit_type_id']
+                        print(body2)
+                        id_from_str_to_int(body2)
+                        cls(**body2)
                     except ValueError:
                         return {"response": "id needs to be stringed integer or just integer, e.g. '3' or 3. "
                                             "Make sure all id and _id keys have proper values."}, 400
                 elif type(body) == list:
                     for item in body:
                         try:
-                            id_from_str_to_int(item)
-                            cls(**item)
+                            item2 = item.copy()
+                            if 'transit_type_id' in item2.keys():
+                                del item2['transit_type_id']
+                            id_from_str_to_int(item2)
+                            cls(**item2)
                         except ValueError:
                             return {"response": "id needs to be stringed integer or just integer, e.g. '3' or 3. "
                                                 "Make sure all id and _id keys have proper values."}, 400
@@ -258,7 +265,7 @@ class Settlement(Base, Mixin):
 
     def give_sorted_expenses(self):
         expenses_list = self.expense
-        expenses_list = [expense.show() for expense in expenses_list]
+        expenses_list = [expense.show() for expense in expenses_list if expense.refundable]
         currency_set = {expense['currency'] for expense in expenses_list}
         type_amount = {currency: {expense_type: str(sum([float(expense['amount']) for expense in expenses_list if
                                                          expense['currency'] == currency and expense[
@@ -298,8 +305,8 @@ class Settlement(Base, Mixin):
                     return func(*args, **kwargs)
                 return {'response': "Cannot find settlement with provided ID."}, 404
             except ValueError:
-                return {
-                           'response': f"Wrong 'id' format. You gave '{kwargs['settlement_id']}', but needs to be an integer."}, 404
+                return {'response': f"Wrong 'id' format. You gave '{kwargs['settlement_id']}', "
+                                    f"but needs to be an integer."}, 404
 
         return wrapper
 
@@ -340,8 +347,8 @@ class AdvancePayment(Base, Mixin):
                     return func(*args, **kwargs)
                 return {'response': "Cannot find advance payment with provided ID."}, 404
             except ValueError:
-                return {
-                           'response': f"Wrong 'id' format. You gave '{kwargs['advance_payment_id']}', but needs to be an integer."}, 404
+                return {'response': f"Wrong 'id' format. You gave '{kwargs['advance_payment_id']}', "
+                                    f"but needs to be an integer."}, 404
 
         return wrapper
 
@@ -353,6 +360,23 @@ class ExpenseType(enum.Enum):
     other = 'other'
 
 
+association_Expense_Transit_Type = Table('association_Expense_Transit_Type', Base.metadata,
+                                         Column('expense_id', ForeignKey('Expense.id'), primary_key=True),
+                                         Column('transit_id', ForeignKey('Transit.id'), primary_key=True))
+
+
+class Transit(Base, Mixin):
+    __tablename__ = 'Transit'
+    __table_args__ = {'quote': False}
+    # fields
+    id = Column(Integer, primary_key=True)
+    type = Column(String)
+    # many to many
+    expense = relationship("Expense",
+                           secondary=association_Expense_Transit_Type,
+                           back_populates='transit_type')
+
+
 class Expense(Base, Mixin):
     __tablename__ = 'Expense'
     __table_args__ = {'quote': False}
@@ -361,11 +385,16 @@ class Expense(Base, Mixin):
     type = Column(Enum(ExpenseType))
     amount = Column(Float)
     description = Column(String)
+    refundable = Column(Boolean, default=True)
     # one to many
     settlement_id = Column(Integer, ForeignKey('Settlement.id', ondelete="CASCADE"))
     currency_id = Column(Integer, ForeignKey('Currency.id'))
     # many to one
     attachment = relationship('Attachment', backref='expense', cascade="all,delete")
+    # many to many
+    transit_type = relationship("Transit",
+                                secondary=association_Expense_Transit_Type,
+                                back_populates='expense')
 
     def convert_to_pln(self):
         """Recalculates amount from XXX to PLN if needed."""
@@ -383,7 +412,24 @@ class Expense(Base, Mixin):
                            'currency': Currency.get_by_id(self.currency_id).name,
                            'type': self.type.value,
                            'description': self.description}
+        if self.transit_type:
+            expense_to_show['transit_type'] = self.transit_type[0].type
         return expense_to_show
+
+    @classmethod
+    def create(cls, object_details: dict):
+        if 'transit_type_id' in object_details.keys():
+            transit_type_id = object_details['transit_type_id']
+            del object_details['transit_type_id']
+            new_object = cls(**object_details)
+            new_object.transit_type = [Transit.get_by_id(transit_type_id)]
+            sqlalchemy_session.add(new_object)
+            sqlalchemy_session.commit()
+        else:
+            new_object = cls(**object_details)
+            sqlalchemy_session.add(new_object)
+            sqlalchemy_session.commit()
+        return new_object
 
     @classmethod
     def if_exists(cls, func):
@@ -395,8 +441,8 @@ class Expense(Base, Mixin):
                     return func(*args, **kwargs)
                 return {'response': "Cannot find expense with provided ID."}, 404
             except ValueError:
-                return {
-                           'response': f"Wrong 'id' format. You gave '{kwargs['expense_id']}', but needs to be an integer."}, 404
+                return {'response': f"Wrong 'id' format. You gave '{kwargs['expense_id']}', "
+                                    f"but needs to be an integer."}, 404
 
         return wrapper
 
@@ -453,8 +499,8 @@ class Attachment(Base, Mixin):
                     return func(*args, **kwargs)
                 return {'response': "Cannot find attachment with provided ID."}, 404
             except ValueError:
-                return {
-                           'response': f"Wrong 'id' format. You gave '{kwargs['attachment_id']}', but needs to be an integer."}, 404
+                return {'response': f"Wrong 'id' format. You gave '{kwargs['attachment_id']}', "
+                                    f"but needs to be an integer."}, 404
 
         return wrapper
 

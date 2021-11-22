@@ -23,6 +23,12 @@ with open('foreign_diet_rate.csv', mode='r', encoding='utf-8-sig') as f:
     sqlalchemy_session.bulk_save_objects(countries)
     sqlalchemy_session.commit()
 
+transit_types = ['moped', 'motorcycle', 'car_engine_less_900', 'car_engine_more_900',
+                 'airplane', 'train', 'bus', 'taxi', 'ship', 'company_Car', 'other']
+transit_records = [Transit(type=ttype) for ttype in transit_types]
+sqlalchemy_session.bulk_save_objects(transit_records)
+sqlalchemy_session.commit()
+
 country1 = sqlalchemy_session.query(Country).where(Country.name == 'Poland').first()
 currency1 = sqlalchemy_session.query(Currency).where(Currency.id == country1.currency_id).first()
 country2 = sqlalchemy_session.query(Country).where(Country.name == 'Germany').first()

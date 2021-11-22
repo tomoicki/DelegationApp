@@ -41,7 +41,7 @@ def show_settlement(settlement_id):
     settlement = Settlement.get_by_id(settlement_id)
     user = Users.get_by_token(request.headers.get('token'))
     if user.is_authorized(settlement):
-        calculations = request.args.get("calculations",'')
+        calculations = request.args.get("calculations", '')
         if calculations.lower() == 'true':
             return {"response": {'sum_of_advanced_payments_by_currency': settlement.sum_of_advanced_payments(),
                                  'diets': settlement.calculate_diet()}}, 200
