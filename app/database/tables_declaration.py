@@ -342,7 +342,8 @@ class AdvancePayment(Base, Mixin):
     def show(self):
         advance_payment_to_show = {'id': str(self.id),
                                    'amount': str(self.amount),
-                                   'currency_id': str(self.currency_id)}
+                                   'currency_id': str(self.currency_id),
+                                   'submit_date': self.submit_date}
         return advance_payment_to_show
 
     @classmethod

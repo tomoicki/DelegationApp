@@ -19,6 +19,38 @@ def advance_payments_list_view(settlement_id):
     return {'response': 'You dont have the rights to see this advance payment list.'}, 403
 
 
+@advance_payments_bp.route('/settlements/<settlement_id>/advance_payments', methods=['PUT'])
+@Users.is_logged_in
+@Settlement.if_exists
+@AdvancePayment.not_valid_dict
+def modify_multiple_advance_payment(settlement_id):
+    creator = Users.get_by_token(request.headers.get('token'))
+    settlement = Settlement.get_by_id(settlement_id)
+    advance_payment_details_list = request.get_json()
+    settlements_set = {AdvancePayment.get_by_id(child['id']).settlement_id for child in advance_payment_details_list if 'id' in child}
+    if len(settlements_set) > 1 or settlement.id not in settlements_set:
+        return {'response': 'Advance payments you provided belong to different settlement.'}, 403
+    if not creator.id == settlement.delegate_id and creator.role.value not in ['manager', 'hr', 'admin']:
+        return {'response': 'You dont have the rights to create this advance payments.'}, 403
+    try:
+        response = []
+        for advance_payment_details in advance_payment_details_list:
+            advance_payment_details['settlement_id'] = settlement.id
+            advance_payment_details['amount'] = amount_parser(advance_payment_details['amount'])
+            if 'id' in advance_payment_details:
+                advance_payment = AdvancePayment.get_by_id(advance_payment_details['id'])
+                modified_advance_payment = advance_payment.modify(advance_payment_details)
+                # advance_payment_details = id_from_str_to_int(advance_payment_details)
+                response.append(modified_advance_payment.show())
+            else:
+                new_advance_payment = AdvancePayment.create(advance_payment_details)
+                response.append(new_advance_payment.show())
+        return {'response': response}, 201
+    except DataError:
+        sqlalchemy_session.rollback()
+        return {'response': 'Fail.'}, 404
+
+
 @advance_payments_bp.route('/settlements/<settlement_id>/advance_payments', methods=['POST'])
 @Users.is_logged_in
 @Settlement.if_exists
@@ -36,8 +68,8 @@ def add_advance_payment(settlement_id):
             advance_payment_details['submit_date'] = datetime.datetime.now()
             advance_payment_details = id_from_str_to_int(advance_payment_details)
             advance_payment_details['amount'] = amount_parser(advance_payment_details['amount'])
-            new_delegation = AdvancePayment.create(advance_payment_details)
-            response.append(new_delegation.show())
+            new_advance_payment = AdvancePayment.create(advance_payment_details)
+            response.append(new_advance_payment.show())
         return {'response': response}, 201
     except DataError:
         sqlalchemy_session.rollback()

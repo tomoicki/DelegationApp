@@ -443,12 +443,77 @@ def swagger_details_provider():
                                 },
                                 "example": [
                                     {
-                                        "amount": 66,
-                                        "currency_id": 11,
+                                        "amount": "66",
+                                        "currency_id": "11",
                                     },
                                     {
-                                        "amount": 0,
-                                        "currency_id": 1,
+                                        "amount": "0",
+                                        "currency_id": "1",
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "produces": [
+                        "application/json"
+                    ],
+                    "responses": {
+                        "201": {
+                            "description": "OK",
+                        },
+                        "401": {
+                            "description": "You are not logged in.",
+                        },
+                        "403": {
+                            "description": "You dont have the rights to create this delegation.",
+                        },
+                        "404": {
+                            "description": "Fail.",
+                        },
+                        "404.2": {
+                            "description": "Cannot find settlement with provided ID.",
+                        },
+                    }
+                },
+                "put": {
+                    "tags": ["Advance payment"],
+                    "summary": "<odifies existing and adds new advance payment.",
+                    "parameters": [
+                        {
+                            "name": "token",
+                            "in": "header",
+                            "description": "Token of logged user.",
+                            "type": "string",
+                            "example": "e5k9ih78cEDjpqV5YQdxmf"
+                        },
+                        {
+                            "name": "settlement_id",
+                            "in": "path",
+                            "description": "ID of the settlement - parent of advance payment to add.",
+                            "type": "int"
+                        }
+                    ],
+                    "requestBody": {
+                        "description": "Takes advance payment details.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AdvancePayment"
+                                },
+                                "example": [
+                                    {
+                                        "amount": "66",
+                                        "currency_id": "11",
+                                    },
+                                    {
+                                        "id": "1",
+                                        "amount": "0",
+                                        "currency_id": "1",
+                                    },
+                                    {
+                                        "id": "6",
+                                        "amount": "0",
+                                        "currency_id": "1",
                                     }
                                 ]
                             }
