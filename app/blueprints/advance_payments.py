@@ -112,6 +112,7 @@ def modify_advance_payment(advance_payment_id):
     settlement = Settlement.get_by_id(advance_payment.settlement_id)
     user = Users.get_by_token(request.headers.get('token'))
     advance_payment_details = id_from_str_to_int(request.get_json())
+    advance_payment_details['amount'] = amount_parser(advance_payment_details['amount'])
     if user.is_authorized(settlement):
         try:
             modified_advance_payment = advance_payment.modify(advance_payment_details)

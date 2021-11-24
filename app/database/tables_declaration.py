@@ -341,7 +341,7 @@ class AdvancePayment(Base, Mixin):
 
     def show(self):
         advance_payment_to_show = {'id': str(self.id),
-                                   'amount': str(self.amount),
+                                   'amount': str(format(self.amount, '.2f')),
                                    'currency_id': str(self.currency_id),
                                    'submit_date': self.submit_date}
         return advance_payment_to_show
@@ -390,13 +390,12 @@ class Expense(Base, Mixin):
             return self.amount
         # else, get the factor
         factor = currency_factor(currency_name)
-        print(currency_name, factor)
         return self.amount * factor
 
     def show(self):
         expense_to_show = {'id': str(self.id),
                            'settlement_id': str(self.settlement_id),
-                           'amount': str(self.amount),
+                           'amount': str(format(self.amount, '.2f')),
                            'currency': Currency.get_by_id(self.currency_id).name,
                            'type': self.type.value,
                            'description': self.description}

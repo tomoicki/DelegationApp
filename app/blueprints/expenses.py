@@ -1,6 +1,6 @@
 from sqlalchemy.exc import IntegrityError, InvalidRequestError, DataError
 from flask import Blueprint
-from app.tools.useful_functions import id_from_str_to_int
+from app.tools.useful_functions import id_from_str_to_int, amount_parser
 from app.database.tables_declaration import *
 
 expenses_bp = Blueprint('expenses', __name__)
@@ -29,6 +29,7 @@ def add_expense(settlement_id):
     if user.is_authorized(settlement):
         try:
             expense_details['settlement_id'] = settlement.id
+            expense_details['amount'] = amount_parser(expense_details['amount'])
             expense_details = id_from_str_to_int(expense_details)
             new_expense = Expense.create(expense_details)
             response = settlement.give_sorted_expenses()
@@ -60,6 +61,7 @@ def modify_expense(expense_id):
     settlement = Settlement.get_by_id(expense.settlement_id)
     user = Users.get_by_token(request.headers.get('token'))
     expense_details = id_from_str_to_int(request.get_json())
+    expense_details['amount'] = amount_parser(expense_details['amount'])
     if user.is_authorized(settlement):
         try:
             modified_expense = expense.modify(expense_details)
