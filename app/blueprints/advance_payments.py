@@ -27,21 +27,36 @@ def modify_multiple_advance_payment(settlement_id):
     creator = Users.get_by_token(request.headers.get('token'))
     settlement = Settlement.get_by_id(settlement_id)
     advance_payment_details_list = request.get_json()
-    settlements_set = {AdvancePayment.get_by_id(child['id']).settlement_id for child in advance_payment_details_list if 'id' in child}
-    if len(settlements_set) > 1 or settlement.id not in settlements_set:
+    adv_payments = {AdvancePayment.get_by_id(child['id']) for child in advance_payment_details_list
+                    if child is not None and 'id' in child}
+    settlements_ids = {ap.settlement_id for ap in adv_payments if ap is not None}
+    if len(settlements_ids) > 1 or settlement.id not in settlements_ids:
         return {'response': 'Advance payments you provided belong to different settlement.'}, 403
     if not creator.id == settlement.delegate_id and creator.role.value not in ['manager', 'hr', 'admin']:
         return {'response': 'You dont have the rights to create this advance payments.'}, 403
     try:
         response = []
+        # delete all that are in DB but not present in body, i know i know /advance_payments/{advance_payment_id} DELETE xD
+        adv_payments = settlement.advance_payment
+        adv_payments_ids = [ap.id for ap in adv_payments]
+        new_ids = [int(d['id']) for d in advance_payment_details_list if 'id' in d]
+        for adv_p in adv_payments:
+            if adv_p.id not in new_ids:
+                try:
+                    adv_p.delete()
+                    response.append({'id': str(adv_p.id), 'deleted': 'Success.'})
+                except IntegrityError:
+                    sqlalchemy_session.rollback()
+                    return {'response': 'Fail.'}, 400
         for advance_payment_details in advance_payment_details_list:
             advance_payment_details['settlement_id'] = settlement.id
             advance_payment_details['amount'] = amount_parser(advance_payment_details['amount'])
             if 'id' in advance_payment_details:
                 advance_payment = AdvancePayment.get_by_id(advance_payment_details['id'])
-                modified_advance_payment = advance_payment.modify(advance_payment_details)
-                # advance_payment_details = id_from_str_to_int(advance_payment_details)
-                response.append(modified_advance_payment.show())
+                if advance_payment is not None:
+                    modified_advance_payment = advance_payment.modify(advance_payment_details)
+                    # advance_payment_details = id_from_str_to_int(advance_payment_details)
+                    response.append(modified_advance_payment.show())
             else:
                 new_advance_payment = AdvancePayment.create(advance_payment_details)
                 response.append(new_advance_payment.show())
