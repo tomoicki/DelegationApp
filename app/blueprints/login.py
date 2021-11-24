@@ -11,9 +11,6 @@ login = Blueprint('login', __name__)
 @login.route('/', methods=['GET'])
 def welcome():
     exp = Expense.get_by_id(2)
-    if exp.transit_type:
-        print("jest")
-    print(exp.transit_type)
     return str(Users.get_by_id(1)), 200
 
 

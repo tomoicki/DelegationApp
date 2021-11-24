@@ -206,10 +206,10 @@ def swagger_details_provider():
                                 },
                                 "example": {
                                     "title": "some title",
-                                    "delegate_id": 2,
-                                    "country_id": 11,
-                                    "approver_id": 3,
-                                    "lunch": 2,
+                                    "delegate_id": "2",
+                                    "country_id": "11",
+                                    "approver_id": "3",
+                                    "lunch": "2",
                                     "arrival_date": "2020-01-20",
                                     "departure_time": "10:10:10",
                                     "arrival_time": "20:10:10",
@@ -604,8 +604,8 @@ def swagger_details_provider():
                                     "$ref": "#/components/schemas/AdvancePayment"
                                 },
                                 "example": {
-                                    "amount": 0,
-                                    "currency_id": 1,
+                                    "amount": "0",
+                                    "currency_id": "1",
                                 }
                             }
                         }
@@ -734,9 +734,9 @@ def swagger_details_provider():
                                     "$ref": "#/components/schemas/Expense"
                                 },
                                 "example": {
-                                        "currency_id": 6,
+                                        "currency_id": "6",
                                         "type": 'accommodation',
-                                        'amount': 12.21
+                                        'amount': "12.21"
                                 }
                             }
                         }

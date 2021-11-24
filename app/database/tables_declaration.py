@@ -55,7 +55,6 @@ class Mixin:
                         body2 = body.copy()
                         if 'transit_type_id' in body2.keys():
                             del body2['transit_type_id']
-                        print(body2)
                         id_from_str_to_int(body2)
                         cls(**body2)
                     except ValueError:
@@ -305,7 +304,8 @@ class Settlement(Base, Mixin):
         sqlalchemy_session.commit()
         entry_status = SettlementStatus(settlement_id=settlement.id,
                                         status=SettlementStatusOptions.submitted.value,
-                                        reason='Settlement creation.')
+                                        reason='Settlement creation.',
+                                        date=datetime.datetime.now())
         sqlalchemy_session.add(entry_status)
         sqlalchemy_session.commit()
         return settlement
