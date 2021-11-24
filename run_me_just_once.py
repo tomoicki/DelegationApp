@@ -39,7 +39,7 @@ some_user = {'first_name': 'Admin',
              'email': 'adm@itechart.com',
              'password': 'right',
              'role': Role.admin,
-             'token': uuid()}
+             'token': 'a'}
 admin_user = Users.create(some_user)
 some_user = {'first_name': 'HR',
              'last_name': 'hrovitcz',

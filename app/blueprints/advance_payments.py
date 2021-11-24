@@ -33,7 +33,7 @@ def add_advance_payment(settlement_id):
         response = []
         for advance_payment_details in advance_payment_details_list:
             advance_payment_details['settlement_id'] = settlement.id
-            advance_payment_details['submit_date'] = datetime.datetime.now()
+            # advance_payment_details['submit_date'] = datetime.datetime.now()
             advance_payment_details = id_from_str_to_int(advance_payment_details)
             new_delegation = AdvancePayment.create(advance_payment_details)
             response.append(new_delegation.show())

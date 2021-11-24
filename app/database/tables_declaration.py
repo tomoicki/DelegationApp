@@ -452,6 +452,7 @@ class Attachment(Base, Mixin):
     __table_args__ = {'quote': False}
     # fields
     id = Column(Integer, primary_key=True)
+    name = Column(String)
     path = Column(String)
     # one to many
     expense_id = Column(Integer, ForeignKey('Expense.id', ondelete="CASCADE"))
@@ -476,7 +477,8 @@ class Attachment(Base, Mixin):
                 file_path = os.path.join(expense_path, file_name)
                 file.save(file_path)
                 attachment = Attachment(expense_id=expense_id,
-                                        path=file_path)
+                                        path=file_path,
+                                        name=file_name)
                 sqlalchemy_session.add(attachment)
                 sqlalchemy_session.commit()
                 response.append(attachment.show())
@@ -486,7 +488,8 @@ class Attachment(Base, Mixin):
 
     def show(self):
         attachment_to_show = {'id': str(self.id),
-                              'path': self.path}
+                              'path': self.path,
+                              'name': self.name}
         return attachment_to_show
 
     @classmethod
