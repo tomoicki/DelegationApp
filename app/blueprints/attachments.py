@@ -1,6 +1,7 @@
 from sqlalchemy.exc import IntegrityError, InvalidRequestError, DataError
-from flask import Blueprint
+from flask import Blueprint, send_from_directory
 from app.tools.useful_functions import id_from_str_to_int
+from werkzeug.exceptions import NotFound
 from app.database.tables_declaration import *
 
 attachments_bp = Blueprint('attachments', __name__)
@@ -47,7 +48,15 @@ def show_attachment(attachment_id):
     settlement = Settlement.get_by_id(expense.settlement_id)
     user = Users.get_by_token(request.headers.get('token'))
     if user.is_authorized(settlement):
-        return {'response': attachment.show()}, 200
+        if not os.path.exists(attachment.path):
+            return {'response': f"Cannot find attachment with name = '{attachment.name}' and id = '{attachment.id}' "
+                                f"under path = '{attachment.path}'."}
+        dir_and_file = attachment.path.rsplit('\\', 1)
+        # try:
+        return send_from_directory(dir_and_file[0], dir_and_file[1], as_attachment=True)
+        # except NotFound:
+        #     return {'response': f'Cannot find attachment with name = {attachment.name} and id = {attachment.id} '
+        #                         f'under path={attachment.path}.'}
     return {'response': 'You dont have the rights to see this attachment.'}, 403
 
 
@@ -79,7 +88,11 @@ def delete_expense(attachment_id):
     settlement = Settlement.get_by_id(expense.settlement_id)
     user = Users.get_by_token(request.headers.get('token'))
     if user.is_authorized(settlement):
+        if not os.path.exists(attachment.path):
+            return {'response': f"Cannot find attachment with name = '{attachment.name}' and id = '{attachment.id}' "
+                                f"under path = '{attachment.path}'."}
         try:
+            os.remove(attachment.path)
             attachment.delete()
             return {'response': 'Success.'}, 201
         except InvalidRequestError:

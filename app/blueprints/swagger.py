@@ -1186,6 +1186,29 @@ def swagger_details_provider():
                     }
                 },
             },
+            "/dictionary/transit_types": {
+                "get": {
+                    "tags": ["Dictionary"],
+                    "summary": "Shows dictionary of transit types.",
+                    "parameters": [
+                        {
+                            "name": "token",
+                            "in": "header",
+                            "description": "Token of logged user.",
+                            "type": "string",
+                            "example": "QDQ384QVf3Ciy7XJCK9xhq"
+                        }
+                    ],
+                    "produces": [
+                        "application/json"
+                    ],
+                    "responses": {
+                        "200": {
+                            "description": "OK",
+                        },
+                    }
+                },
+            },
             "/dictionary/settlement_status_options": {
                 "get": {
                     "tags": ["Dictionary"],

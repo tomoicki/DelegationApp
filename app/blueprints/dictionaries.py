@@ -4,6 +4,14 @@ from app.database.tables_declaration import *
 dictionaries_bp = Blueprint('dictionaries', __name__)
 
 
+@dictionaries_bp.route('/dictionary/transit_types', methods=['GET'])
+@Users.is_logged_in
+def get_transit_types():
+    transits = sqlalchemy_session.query(Transit).all()
+    transit_types = [{"id": transit.id,  "type": transit.type} for transit in transits]
+    return {'response': transit_types}, 200
+
+
 @dictionaries_bp.route('/dictionary/expense_types', methods=['GET'])
 @Users.is_logged_in
 def get_expense_types():
