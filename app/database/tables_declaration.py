@@ -194,23 +194,26 @@ class Settlement(Base, Mixin):
         sum_of_advanced_payments_by_currency = \
             {currency: str(sum([advance_payment.amount for advance_payment in advanced_payments_list if
                                 advance_payment.currency_id == currency])) for currency in currency_set}
-        sum_of_advanced_payments_by_currency = {Currency.get_by_id(key).name: value
-                                                for key, value in sum_of_advanced_payments_by_currency.items()}
+        sum_of_advanced_payments_by_currency = [{"currency_id": str(key),
+                                                 "currency_name": Currency.get_by_id(key).name,
+                                                 "amount": value}
+                                                for key, value in sum_of_advanced_payments_by_currency.items()]
         # sum_of_advanced_payments = [advance_payment.convert_to_pln() for advance_payment in advanced_payments_list]
         return sum_of_advanced_payments_by_currency
 
     def generate_pdf(self):
         import reportlab.lib.colors as pdf_colors
-        from reportlab.lib.pagesizes import LETTER
+        from reportlab.lib.pagesizes import A4
         from reportlab.lib.units import inch
         from reportlab.pdfgen.canvas import Canvas
-        canvas = Canvas("reimbursement.pdf", pagesize=LETTER)
+        canvas = Canvas(f"{self.title}.pdf", pagesize=A4)
         # Set font to Times New Roman with 12-point size
         canvas.setFont("Times-Roman", 12)
         # Draw blue text one inch from the left and ten
         # inches from the bottom
         canvas.setFillColor(pdf_colors.blue)
-        canvas.drawString(1 * inch, 10 * inch, self.title)
+        for i, tup in enumerate(self.details().items()):
+            canvas.drawString(text=f"{tup[0]}: {tup[1]}", x=10+10*i, y=10+10*i)
         # Save the PDF file
         canvas.save()
 
