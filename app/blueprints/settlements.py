@@ -43,9 +43,19 @@ def show_settlement(settlement_id):
     if user.is_authorized(settlement):
         calculations = request.args.get("calculations", '')
         if calculations.lower() == 'true':
-            return {"response": {'sum_of_expenses_in_PLN': settlement.sum_of_expenses(),
-                                 'sum_of_advanced_payments_by_currency': settlement.sum_of_advanced_payments(),
-                                 'diets': settlement.calculate_diet()}}, 200
+            sum_of_advanced_payments_by_currency = settlement.sum_of_advanced_payments()
+            adv_in_pln = [d['amount'] for d in sum_of_advanced_payments_by_currency if d['currency_name'] == 'PLN']
+            if not adv_in_pln:
+                adv_in_pln.append(0)
+            response_dict = {'sum_of_expenses_in_PLN': settlement.sum_of_expenses(),
+                             'sum_of_advanced_payments_by_currency': sum_of_advanced_payments_by_currency,
+                             'diets': settlement.calculate_diet()}
+            compensation = float(response_dict['diets']['diet_meal_reduced']) + \
+                           float(response_dict['sum_of_expenses_in_PLN']['total']) - \
+                           float(adv_in_pln[0])
+            response_dict['compensations'] = str(format(compensation, '.2f'))
+            response_dict['sum_of_expenses_in_PLN']['compensations'] = str(format(compensation, '.2f'))
+            return {"response": response_dict}, 200
         return {'response': settlement.details()}, 200
     return {'response': 'You dont have the rights to see this settlement.'}, 403
 

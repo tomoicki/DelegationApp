@@ -107,6 +107,11 @@ class Currency(Base, Mixin):
     advance_payment = relationship("AdvancePayment", backref='currency')
     expense = relationship("Expense", backref='currency')
 
+    @classmethod
+    def get_by_name(cls, name: str):
+        currency = sqlalchemy_session.query(cls).filter(cls.name == name).first()
+        return currency.id
+
 
 class SettlementStatusOptions(enum.Enum):
     submitted = 'submitted'
@@ -180,7 +185,8 @@ class Settlement(Base, Mixin):
 
     def sum_of_expenses(self):
         expenses_list = self.expense
-        all_expense_types = {expense.type.value for expense in expenses_list}
+        # all_expense_types = {expense.type.value for expense in expenses_list}
+        all_expense_types = [enum_option.value for enum_option in ExpenseType]
         sum_of_expenses_by_type = {expense_type: sum([expense.convert_to_pln() for expense in expenses_list
                                                       if expense.type.value == expense_type])
                                    for expense_type in all_expense_types}
@@ -201,21 +207,21 @@ class Settlement(Base, Mixin):
         # sum_of_advanced_payments = [advance_payment.convert_to_pln() for advance_payment in advanced_payments_list]
         return sum_of_advanced_payments_by_currency
 
-    def generate_pdf(self):
-        import reportlab.lib.colors as pdf_colors
-        from reportlab.lib.pagesizes import A4
-        from reportlab.lib.units import inch
-        from reportlab.pdfgen.canvas import Canvas
-        canvas = Canvas(f"{self.title}.pdf", pagesize=A4)
-        # Set font to Times New Roman with 12-point size
-        canvas.setFont("Times-Roman", 12)
-        # Draw blue text one inch from the left and ten
-        # inches from the bottom
-        canvas.setFillColor(pdf_colors.blue)
-        for i, tup in enumerate(self.details().items()):
-            canvas.drawString(text=f"{tup[0]}: {tup[1]}", x=10+10*i, y=10+10*i)
-        # Save the PDF file
-        canvas.save()
+    # def generate_pdf(self):
+    #     import reportlab.lib.colors as pdf_colors
+    #     from reportlab.lib.pagesizes import A4
+    #     from reportlab.lib.units import inch
+    #     from reportlab.pdfgen.canvas import Canvas
+    #     canvas = Canvas(f"{self.title}.pdf", pagesize=A4)
+    #     # Set font to Times New Roman with 12-point size
+    #     canvas.setFont("Times-Roman", 12)
+    #     # Draw blue text one inch from the left and ten
+    #     # inches from the bottom
+    #     canvas.setFillColor(pdf_colors.blue)
+    #     for i, tup in enumerate(self.details().items()):
+    #         canvas.drawString(text=f"{tup[0]}: {tup[1]}", x=10+10*i, y=10+10*i)
+    #     # Save the PDF file
+    #     canvas.save()
 
     def current_status(self):
         return self.status[-1].status.value
@@ -293,6 +299,7 @@ class Settlement(Base, Mixin):
                                                      expense['currency'] == currency])) for expense in expenses_list if
                                    expense['currency'] == currency} for currency in currency_set}
         expenses_by_currency = [{'currency': currency,
+                                 'currency_id': str(Currency.get_by_name(currency)),
                                  'total_amount': total_amount[currency]['total'],
                                  'type_amount': type_amount[currency],
                                  'expenses': [expense for expense in expenses_list if expense['currency'] == currency]}
