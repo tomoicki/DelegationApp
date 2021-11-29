@@ -51,10 +51,10 @@ def show_attachment(attachment_id):
         if not os.path.exists(attachment.path):
             return {'response': f"Cannot find attachment with name = '{attachment.name}' and id = '{attachment.id}' "
                                 f"under path = '{attachment.path}'."}
-        return {"response": f"{attachment.path}, {attachment.path.rsplit('/', 1)}"}
-        # dir_and_file = attachment.path.rsplit('\\', 1)
+        # return {"response": f"{attachment.path}, {attachment.path.rsplit('/', 1)}"}
+        dir_and_file = attachment.path.rsplit('/', 1)
         # try:
-        # return send_from_directory(dir_and_file[0], dir_and_file[1], as_attachment=True)
+        return send_from_directory(dir_and_file[0], dir_and_file[1], as_attachment=True)
         # except NotFound:
         #     return {'response': f'Cannot find attachment with name = {attachment.name} and id = {attachment.id} '
         #                         f'under path={attachment.path}.'}
