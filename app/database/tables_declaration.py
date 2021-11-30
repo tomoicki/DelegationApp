@@ -563,6 +563,13 @@ class Users(Base, Mixin):
         return f'{self.first_name} {self.last_name}'
 
     def show(self):
+        supervisor = Users.get_by_id(self.supervisor_id)
+        if supervisor is not None:
+            supervisor_names = str(supervisor)
+            supervisor_id = str(supervisor.id)
+        else:
+            supervisor_names = ""
+            supervisor_id = ""
         user_to_show = {'id': str(self.id),
                         'first_name': self.first_name,
                         'last_name': self.last_name,
@@ -570,8 +577,8 @@ class Users(Base, Mixin):
                         'default_city': self.default_city,
                         'role': self.role.value,
                         'is_active': self.is_active,
-                        'supervisor_id': str(self.supervisor_id),
-                        'supervisor': str(Users.get_by_id(self.supervisor_id))}
+                        'supervisor_id': supervisor_id,
+                        'supervisor': supervisor_names}
         return user_to_show
 
     def show_id_names(self):
