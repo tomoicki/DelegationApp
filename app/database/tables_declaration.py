@@ -432,12 +432,15 @@ class Expense(Base, Mixin):
         return self.amount * factor
 
     def show(self):
+        attachments = self.attachment
+        attachments = [attachment.show() for attachment in attachments]
         expense_to_show = {'id': str(self.id),
                            'settlement_id': str(self.settlement_id),
                            'amount': str(format(self.amount, '.2f')),
                            'currency': Currency.get_by_id(self.currency_id).name,
                            'type': self.type.value,
-                           'description': self.description}
+                           'description': self.description,
+                           'attachments': attachments}
         if self.transit_type:
             expense_to_show['transit_type'] = self.transit_type[0].type
         return expense_to_show
