@@ -566,7 +566,9 @@ class Users(Base, Mixin):
                         'email': self.email,
                         'default_city': self.default_city,
                         'role': self.role.value,
-                        'is_active': self.is_active}
+                        'is_active': self.is_active,
+                        'supervisor_id': str(self.supervisor_id),
+                        'supervisor': str(Users.get_by_id(self.supervisor_id))}
         return user_to_show
 
     def show_id_names(self):
