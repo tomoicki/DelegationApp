@@ -11,7 +11,7 @@ settlements_bp = Blueprint('settlements', __name__)
 def settlement_list_view():
     user = Users.get_by_token(request.headers.get('token'))
     settlements_list = user.settlement_his
-    settlements_list = [settlement.show() for settlement in settlements_list]
+    settlements_list = [settlement.details() for settlement in settlements_list]
     return {'response': settlements_list}, 200
 
 
@@ -71,7 +71,7 @@ def modify_settlement(settlement_id):
     if user.is_authorized(settlement):
         try:
             modified_settlement = settlement.modify(settlement_details)
-            return {'response': modified_settlement.show()}, 201
+            return {'response': modified_settlement.details()}, 201
         except InvalidRequestError:
             return {'response': 'Fail.'}, 400
     return {'response': 'You dont have the rights to modify this settlement.'}, 403

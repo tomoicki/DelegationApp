@@ -261,6 +261,9 @@ class Settlement(Base, Mixin):
         minutes = round((residue_time - hours) * 60)
         trip_duration = f"{time_delta.days}d {hours}h {minutes}m"
         exchange_rate = currency_factor(Currency.get_by_id(country.currency_id).name)
+        approver_names, approver_id = Users.name_and_id(self.approver_id)
+        delegate_names, delegate_id = Users.name_and_id(self.delegate_id)
+        creator_names, creator_id = Users.name_and_id(self.creator_id)
         settlement_with_details = {'id': str(self.id),
                                    'submit_date': self.submit_date,
                                    'departure_city': self.departure_city,
@@ -273,9 +276,12 @@ class Settlement(Base, Mixin):
                                    'lunch': str(self.lunch),
                                    'supper': str(self.supper),
                                    'country': country.name,
-                                   'delegate': str(Users.get_by_id(self.delegate_id)),
-                                   'approver': str(Users.get_by_id(self.approver_id)),
-                                   'creator': str(Users.get_by_id(self.creator_id)),
+                                   'delegate': delegate_names,
+                                   'approver': approver_names,
+                                   'creator': creator_names,
+                                   'delegate_id': delegate_id,
+                                   'approver_id': approver_id,
+                                   'creator_id': creator_id,
                                    'title': self.title,
                                    'reason': self.reason,
                                    'remarks': self.remarks,
@@ -562,14 +568,13 @@ class Users(Base, Mixin):
     def __str__(self):
         return f'{self.first_name} {self.last_name}'
 
+    @classmethod
+    def name_and_id(cls, provided_id):
+        user = cls.get_by_id(provided_id)
+        return [str(user), str(user.id)] if user is not None else ["", ""]
+
     def show(self):
-        supervisor = Users.get_by_id(self.supervisor_id)
-        if supervisor is not None:
-            supervisor_names = str(supervisor)
-            supervisor_id = str(supervisor.id)
-        else:
-            supervisor_names = ""
-            supervisor_id = ""
+        supervisor_names, supervisor_id = Users.name_and_id(self.supervisor_id)
         user_to_show = {'id': str(self.id),
                         'first_name': self.first_name,
                         'last_name': self.last_name,
