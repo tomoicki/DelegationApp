@@ -6,19 +6,13 @@ from werkzeug.utils import secure_filename
 from functools import wraps
 from sqlalchemy import Table, Column, Integer, String, ForeignKey, Date, Float, Time, Enum, Boolean, DateTime, update
 from sqlalchemy.orm import relationship, backref
-from sqlalchemy.ext.declarative import declarative_base
 from app.database.create_connection import sqlalchemy_session
 from app.tools.useful_functions import recalculate_hours, currency_factor, id_from_str_to_int
+from sqlalchemy.orm import as_declarative
 
 
-# class Base:
-class Mixin:
-    # when u comment __init__ then every Table that inherits from Mixin
-    # get false warnings "unexpected argument" when u try to construct an object Table()
-    # and when i dont use Mixin and inherit methods from Base,
-    # then PyCharm doesnt see the methods object.[list of all possible methods]
-    def __init__(self, *args, **kwargs):
-        pass
+@as_declarative()
+class Base:
 
     id = Column(Integer)
 
@@ -78,11 +72,7 @@ class Mixin:
         return wrapper
 
 
-# Base = declarative_base(cls=Base)
-Base = declarative_base()
-
-
-class Country(Base, Mixin):
+class Country(Base):
     __tablename__ = 'Country'
     __table_args__ = {'quote': False}
     # fields
@@ -96,7 +86,7 @@ class Country(Base, Mixin):
     settlement = relationship("Settlement", backref='country')
 
 
-class Currency(Base, Mixin):
+class Currency(Base):
     __tablename__ = 'Currency'
     __table_args__ = {'quote': False}
     # fields
@@ -120,7 +110,7 @@ class SettlementStatusOptions(enum.Enum):
     closed = 'closed'
 
 
-class SettlementStatus(Base, Mixin):
+class SettlementStatus(Base):
     __tablename__ = 'SettlementStatus'
     __table_args__ = {'quote': False}
     # fields
@@ -132,7 +122,7 @@ class SettlementStatus(Base, Mixin):
     settlement_id = Column(Integer, ForeignKey('Settlement.id', ondelete="CASCADE"))
 
 
-class Settlement(Base, Mixin):
+class Settlement(Base):
     __tablename__ = 'Settlement'
     __table_args__ = {'quote': False}
     # fields
@@ -342,7 +332,7 @@ class Settlement(Base, Mixin):
         return wrapper
 
 
-class AdvancePayment(Base, Mixin):
+class AdvancePayment(Base):
     __tablename__ = 'AdvancePayment'
     __table_args__ = {'quote': False}
     # fields
@@ -397,7 +387,7 @@ association_Expense_Transit_Type = Table('association_Expense_Transit_Type', Bas
                                          Column('transit_id', ForeignKey('Transit.id'), primary_key=True))
 
 
-class Transit(Base, Mixin):
+class Transit(Base):
     __tablename__ = 'Transit'
     __table_args__ = {'quote': False}
     # fields
@@ -409,7 +399,7 @@ class Transit(Base, Mixin):
                            back_populates='transit_type')
 
 
-class Expense(Base, Mixin):
+class Expense(Base):
     __tablename__ = 'Expense'
     __table_args__ = {'quote': False}
     # fields
@@ -482,7 +472,7 @@ class Expense(Base, Mixin):
         return wrapper
 
 
-class Attachment(Base, Mixin):
+class Attachment(Base):
     __tablename__ = 'Attachment'
     __table_args__ = {'quote': False}
     # fields
@@ -550,7 +540,7 @@ class Role(enum.Enum):
     admin = 'admin'
 
 
-class Users(Base, Mixin):
+class Users(Base):
     __tablename__ = 'Users'
     __table_args__ = {'quote': False}
     # fields
