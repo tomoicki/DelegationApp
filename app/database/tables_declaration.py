@@ -14,7 +14,46 @@ from sqlalchemy.orm import as_declarative
 @as_declarative()
 class Base:
 
-    id = Column(Integer)
+    # I'd recommend to use "base" class when 
+    # you wan to include some "state" (aka add some attributes, fields etc)
+    # Actually in python there are no "Mixin", only base classes
+    # But some other languages has such concept with strict separation.
+    # And I'd recommend to also use this semantical separation even for Python. 
+    # You wan to add some basic state (field id in our case) or methods to
+    # work with that state - use base class; you wan to add some "helper"
+    # functionality to your class - use mixins.
+
+    # In your case you class is aware about 'id' column - so it is better to use base class.
+    # And other rule of thumb - avoid multiple inheritance. It requires `super()`,
+    # makes your code more complex and hard to read. And many langs don't have it.
+    # Well, some modern language even don't have inheritance at all, only composition :D
+
+    id = Column(Integer, primary_key=True)
+
+    # FIXME:
+    # Here you are implementing "active record pattern"
+    # https://en.wikipedia.org/wiki/Active_record_pattern
+    # This looks like unnecessary abstraction on top of
+    # sql-alchemy - no need for this.
+    # Also nowadays it is often considered as an "anipattern"
+    # and... I agree :)
+    # Just use default/recommended way of a library which you are
+    # useing - create a session, write `sessino.add(User(...))` and so.
+    # Or switch to another ORM library, which actually use active record.
+
+    # Anyway there is another issue - you are doing manual commits 
+    # after all operations - created/delete/...
+    # So you don't have a possibility to rollback transactions
+    # in your views (as transactions are already commited).
+
+    # Popular approach - don't commit anything inside views/models.
+    # And wrap views with some middleware / decorator. And commit transaction
+    # when everything is ok or rollback when there is an exception.
+    #
+    # Sorry, but I'll not change your code, as it will require tons of small
+    # changes in the whole application.
+    #
+    # At the end I'd recommend to drop this base class completely.
 
     def delete(self):
         sqlalchemy_session.delete(self)
@@ -32,6 +71,21 @@ class Base:
         sqlalchemy_session.add(new_object)
         sqlalchemy_session.commit()
         return new_object
+
+    # FIXME:
+    # It is better to use SQLAlchemy `session.get` when you need it.
+    # There is an example how to use it in official documentaion
+    # https://docs.sqlalchemy.org/en/14/orm/session_api.html#sqlalchemy.orm.Session.get
+    # example is written with purpose - use it :)
+    # Instead of
+    #   MyModel.get_by_id(blabla)
+    # it is better to use
+    #   session.get(MyModel, blabla) if blabla else None
+
+    # A few chars more, but anyone who is familiar with SQLAlchemy will
+    # understand what is going on. Don't add a cheng `if blabla`
+    # if in that place id can't be `None` - just don't do a validation,
+    # and `session.get` will throw an exception - that is ok.
 
     @classmethod
     def get_by_id(cls, provided_id: int):
@@ -76,7 +130,6 @@ class Country(Base):
     __tablename__ = 'Country'
     __table_args__ = {'quote': False}
     # fields
-    id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
     diet = Column(Float)
     accommodation_limit = Column(Float)
@@ -90,7 +143,6 @@ class Currency(Base):
     __tablename__ = 'Currency'
     __table_args__ = {'quote': False}
     # fields
-    id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
     # many to one
     country = relationship("Country", backref='currency')
@@ -114,7 +166,6 @@ class SettlementStatus(Base):
     __tablename__ = 'SettlementStatus'
     __table_args__ = {'quote': False}
     # fields
-    id = Column(Integer, primary_key=True)
     status = Column(Enum(SettlementStatusOptions))
     reason = Column(String)
     date = Column(DateTime)
@@ -126,7 +177,6 @@ class Settlement(Base):
     __tablename__ = 'Settlement'
     __table_args__ = {'quote': False}
     # fields
-    id = Column(Integer, primary_key=True)
     title = Column(String)
     departure_city = Column(String)
     arrival_city = Column(String)
@@ -336,7 +386,6 @@ class AdvancePayment(Base):
     __tablename__ = 'AdvancePayment'
     __table_args__ = {'quote': False}
     # fields
-    id = Column(Integer, primary_key=True)
     amount = Column(Float)
     submit_date = Column(DateTime)
     nr_kw = Column(String)
@@ -391,7 +440,6 @@ class Transit(Base):
     __tablename__ = 'Transit'
     __table_args__ = {'quote': False}
     # fields
-    id = Column(Integer, primary_key=True)
     type = Column(String)
     # many to many
     expense = relationship("Expense",
@@ -403,7 +451,6 @@ class Expense(Base):
     __tablename__ = 'Expense'
     __table_args__ = {'quote': False}
     # fields
-    id = Column(Integer, primary_key=True)
     type = Column(Enum(ExpenseType))
     amount = Column(Float)
     description = Column(String)
@@ -476,7 +523,6 @@ class Attachment(Base):
     __tablename__ = 'Attachment'
     __table_args__ = {'quote': False}
     # fields
-    id = Column(Integer, primary_key=True)
     name = Column(String)
     path = Column(String)
     # one to many
@@ -544,10 +590,18 @@ class Users(Base):
     __tablename__ = 'Users'
     __table_args__ = {'quote': False}
     # fields
-    id = Column(Integer, primary_key=True)
     first_name = Column(String)
     last_name = Column(String)
     email = Column(String, unique=True)
+    
+    # FIXME
+    # It is bad idea to store passwords directly in a DB "as is"
+    # Most of users reuse same password for several systems
+    # And DB might leak - with all passwords inside it.
+    # Usually passwords a stored as "salted strings"
+    # https://en.wikipedia.org/wiki/Salt_(cryptography)
+    # Anyway it is better to use some existing solution (plugin for flask?)
+
     password = Column(String)
     default_city = Column(String)
     role = Column(Enum(Role))
