@@ -175,7 +175,7 @@ class Settlement(Base, Mixin):
         meal_reduction = self.breakfast * 0.25 + self.lunch * 0.5 + self.supper * 0.25
         time_delta = datetime.datetime.combine(self.arrival_date, self.arrival_time) - \
                      datetime.datetime.combine(self.departure_date, self.departure_time)
-        diet_from_days_hours = (time_delta.days + recalculate_hours(time_delta.seconds / (3600 * 24))) * country.diet
+        diet_from_days_hours = (time_delta.days + recalculate_hours(time_delta.seconds / (3600 * 24), days=time_delta.days)) * country.diet
         diet_meal_reduced = diet_from_days_hours - meal_reduction * country.diet
         return {'diet_from_days_hours': str(diet_from_days_hours),
                 'diet_meal_reduced': str(diet_meal_reduced),
@@ -324,7 +324,7 @@ class Settlement(Base, Mixin):
         sqlalchemy_session.flush()
         if transit_type_id:
             first_transit_expense = Expense(amount=0,
-                                            type="drive",
+                                            type="transit",
                                             settlement_id=settlement.id,
                                             currency_id=1)
             first_transit_expense.transit_type = [Transit.get_by_id(transit_type_id)]
