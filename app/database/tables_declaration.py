@@ -326,7 +326,8 @@ class Settlement(Base, Mixin):
             first_transit_expense = Expense(amount=0,
                                             type="transit",
                                             settlement_id=settlement.id,
-                                            currency_id=1)
+                                            currency_id=1,
+                                            description=Transit.get_by_id(transit_type_id).type)
             first_transit_expense.transit_type = [Transit.get_by_id(transit_type_id)]
             sqlalchemy_session.add(first_transit_expense)
             sqlalchemy_session.flush()
