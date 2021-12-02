@@ -62,10 +62,7 @@ def modify_expense(expense_id):
     expense = Expense.get_by_id(expense_id)
     settlement = Settlement.get_by_id(expense.settlement_id)
     user = Users.get_by_token(request.headers.get('token'))
-    expense_details = id_from_str_to_int(request.get_json())
-    expense_details['amount'] = amount_parser(expense_details['amount'])
-    if 'transit_type_id' in expense_details.keys() and expense_details['type'] != 'transit':
-        return {'response': "'transit_type_id' key can only be added if 'type' is 'transit'. "}, 404
+    expense_details = request.get_json()
     if user.is_authorized(settlement):
         try:
             modified_expense = expense.modify(expense_details)
@@ -81,9 +78,7 @@ def modify_expense(expense_id):
 def delete_expense(expense_id):
     expense = Expense.get_by_id(expense_id)
     settlement = Settlement.get_by_id(expense.settlement_id)
-    print(settlement)
     user = Users.get_by_token(request.headers.get('token'))
-    print(str(user))
     if user.is_authorized(settlement):
         try:
             expense.delete()

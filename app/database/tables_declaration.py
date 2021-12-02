@@ -462,7 +462,21 @@ class Expense(Base, Mixin):
                            'attachments': attachments}
         if self.transit_type:
             expense_to_show['transit_type'] = self.transit_type[0].type
+            expense_to_show['transit_type_id'] = self.transit_type[0].id
         return expense_to_show
+
+    def modify(self, modifications_dict: dict):
+        if 'transit_type_id' in modifications_dict.keys():
+            association_Expense_Transit_Type.update().where()
+            stmt = update(association_Expense_Transit_Type).where(association_Expense_Transit_Type.c.expense_id == self.id)\
+                .values({"transit_id": modifications_dict['transit_type_id']})
+            sqlalchemy_session.execute(stmt)
+            sqlalchemy_session.commit()
+            del modifications_dict['transit_type_id']
+        stmt = update(self.__class__).where(self.__class__.id == self.id).values(**modifications_dict)
+        sqlalchemy_session.execute(stmt)
+        sqlalchemy_session.commit()
+        return self
 
     @classmethod
     def create(cls, object_details: dict):
