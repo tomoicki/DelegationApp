@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from app.app import create_app
 from logging.handlers import RotatingFileHandler
 import logging
