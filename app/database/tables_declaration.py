@@ -314,10 +314,22 @@ class Settlement(Base, Mixin):
 
     @classmethod
     def create(cls, settlement_details: dict):
+        transit_type_id = None
+        if 'transit_type_id' in settlement_details:
+            transit_type_id = settlement_details['transit_type_id']
+            del settlement_details['transit_type_id']
         settlement_details['submit_date'] = datetime.datetime.now()
         settlement = Settlement(**settlement_details)
         sqlalchemy_session.add(settlement)
-        sqlalchemy_session.commit()
+        sqlalchemy_session.flush()
+        if transit_type_id:
+            first_transit_expense = Expense(amount=0,
+                                            type="drive",
+                                            settlement_id=settlement.id,
+                                            currency_id=1)
+            first_transit_expense.transit_type = [Transit.get_by_id(transit_type_id)]
+            sqlalchemy_session.add(first_transit_expense)
+            sqlalchemy_session.flush()
         entry_status = SettlementStatus(settlement_id=settlement.id,
                                         status=SettlementStatusOptions.submitted.value,
                                         reason='Settlement creation.',
@@ -393,7 +405,7 @@ class ExpenseType(enum.Enum):
 
 
 association_Expense_Transit_Type = Table('association_Expense_Transit_Type', Base.metadata,
-                                         Column('expense_id', ForeignKey('Expense.id'), primary_key=True),
+                                         Column('expense_id', ForeignKey('Expense.id', ondelete="CASCADE"), primary_key=True),
                                          Column('transit_id', ForeignKey('Transit.id'), primary_key=True))
 
 
