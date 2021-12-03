@@ -56,6 +56,8 @@ class Mixin:
                         body2 = body.copy()
                         if 'transit_type_id' in body2.keys():
                             del body2['transit_type_id']
+                        if 'kilometers' in body2.keys():
+                            del body2['kilometers']
                         id_from_str_to_int(body2)
                         cls(**body2)
                     except ValueError:
@@ -67,6 +69,8 @@ class Mixin:
                             item2 = item.copy()
                             if 'transit_type_id' in item2.keys():
                                 del item2['transit_type_id']
+                            if 'kilometers' in item2.keys():
+                                del item2['kilometers']
                             id_from_str_to_int(item2)
                             cls(**item2)
                         except ValueError:
@@ -408,7 +412,8 @@ class ExpenseType(enum.Enum):
 
 association_Expense_Transit_Type = Table('association_Expense_Transit_Type', Base.metadata,
                                          Column('expense_id', ForeignKey('Expense.id', ondelete="CASCADE"), primary_key=True),
-                                         Column('transit_id', ForeignKey('Transit.id'), primary_key=True))
+                                         Column('transit_id', ForeignKey('Transit.id'), primary_key=True),
+                                         Column('kilometers', Float))
 
 
 class Transit(Base, Mixin):
@@ -464,6 +469,9 @@ class Expense(Base, Mixin):
         if self.transit_type:
             expense_to_show['transit_type'] = self.transit_type[0].type
             expense_to_show['transit_type_id'] = self.transit_type[0].id
+            association = sqlalchemy_session.query(association_Expense_Transit_Type).where(
+                association_Expense_Transit_Type.c.expense_id == self.id).first()
+            expense_to_show['kilometers'] = association.kilometers
         return expense_to_show
 
     def modify(self, modifications_dict: dict):
@@ -482,14 +490,24 @@ class Expense(Base, Mixin):
     @classmethod
     def create(cls, object_details: dict):
         if 'transit_type_id' in object_details.keys():
+            kilometers = None
             transit_type_id = object_details['transit_type_id']
             del object_details['transit_type_id']
             if 'currency_id' not in object_details:
                 object_details['currency_id'] = 1
+            if 'kilometers' in object_details:
+                kilometers = object_details['kilometers']
+                del object_details['kilometers']
+            print(object_details)
             new_object = cls(**object_details)
             new_object.transit_type = [Transit.get_by_id(transit_type_id)]
             sqlalchemy_session.add(new_object)
             sqlalchemy_session.commit()
+            if kilometers:
+                stmt = update(association_Expense_Transit_Type).where(association_Expense_Transit_Type.c.expense_id == new_object.id)\
+                    .values({"kilometers": kilometers})
+                sqlalchemy_session.execute(stmt)
+                sqlalchemy_session.commit()
         else:
             new_object = cls(**object_details)
             sqlalchemy_session.add(new_object)
