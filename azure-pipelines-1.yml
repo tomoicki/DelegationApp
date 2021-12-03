@@ -1,0 +1,8 @@
+pool:
+  name: 'Linux VM'
+steps:
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: '3.8.10'
+- script: pip install sqlalchemy
+  displayName: 'Install sqlalchemy'
