@@ -484,6 +484,8 @@ class Expense(Base, Mixin):
         if 'transit_type_id' in object_details.keys():
             transit_type_id = object_details['transit_type_id']
             del object_details['transit_type_id']
+            if 'currency_id' not in object_details:
+                object_details['currency_id'] = 1
             new_object = cls(**object_details)
             new_object.transit_type = [Transit.get_by_id(transit_type_id)]
             sqlalchemy_session.add(new_object)
