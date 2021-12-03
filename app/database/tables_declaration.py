@@ -7,6 +7,7 @@ from functools import wraps
 from sqlalchemy import Table, Column, Integer, String, ForeignKey, Date, Float, Time, Enum, Boolean, DateTime, update
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.exc import IntegrityError, InvalidRequestError, DataError
 from app.database.create_connection import sqlalchemy_session
 from app.tools.useful_functions import recalculate_hours, currency_factor, id_from_str_to_int
 
@@ -530,23 +531,23 @@ class Attachment(Base, Mixin):
         expense_path = os.path.join(uploads_dir, 'expense_' + str(expense_id))
         if not os.path.exists(expense_path):
             os.makedirs(expense_path)
-        response = []
-        files = request.files.getlist('attachment')
-        for file in files:
-            if file and cls.allowed_file(file.filename) and file.filename.replace(' ', '_') not in os.listdir(
-                    expense_path):
-                file_name = secure_filename(file.filename)
-                file_path = os.path.join(expense_path, file_name)
-                file.save(file_path)
-                attachment = Attachment(expense_id=expense_id,
-                                        path=file_path,
-                                        name=file_name)
-                sqlalchemy_session.add(attachment)
-                sqlalchemy_session.commit()
-                response.append(attachment.show())
-            else:
-                response.append({"error": f"uploaded attachment '{file.filename}' already exists."})
-        return response
+        file = request.files.getlist('attachment')[0]
+        if not cls.allowed_file(file.filename):
+            return {'response': 'File not allowed.'}, 404
+        if file.filename.replace(' ', '_') in os.listdir(expense_path):
+            return {'response': f"uploaded attachment '{file.filename}' already exists."}, 404
+        if file:
+            file_name = secure_filename(file.filename)
+            file_path = os.path.join(expense_path, file_name)
+            file.save(file_path)
+            attachment = Attachment(expense_id=expense_id,
+                                    path=file_path,
+                                    name=file_name)
+            sqlalchemy_session.add(attachment)
+            sqlalchemy_session.commit()
+            return {'response': attachment.show()}, 201
+        else:
+            raise DataError
 
     def show(self):
         attachment_to_show = {'id': str(self.id),

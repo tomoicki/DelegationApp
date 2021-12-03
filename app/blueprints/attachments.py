@@ -32,7 +32,7 @@ def add_attachment(expense_id):
     if user.is_authorized(settlement):
         try:
             response = Attachment.create(expense.id)
-            return {'response': response}, 201
+            return response
         except DataError:
             sqlalchemy_session.rollback()
             return {'response': 'Fail.'}, 404
