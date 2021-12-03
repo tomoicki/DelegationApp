@@ -547,7 +547,7 @@ class Attachment(Base, Mixin):
                                     name=file_name)
             sqlalchemy_session.add(attachment)
             sqlalchemy_session.commit()
-            return {'response': attachment.show()}, 201
+            return {'response': [attachment.show()]}, 201
         else:
             raise DataError
 
