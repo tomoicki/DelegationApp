@@ -29,6 +29,9 @@ def add_attachment(expense_id):
     expense = Expense.get_by_id(expense_id)
     settlement = Settlement.get_by_id(expense.settlement_id)
     user = Users.get_by_token(request.headers.get('token'))
+    list_of_attachments = expense.attachment
+    if len(list_of_attachments) >= 3:
+        return {'response': 'Cannot upload more than 3 files for one expense.'}
     if user.is_authorized(settlement):
         try:
             response = Attachment.create(expense.id)
@@ -53,8 +56,10 @@ def show_attachment(attachment_id):
                                 f"under path = '{attachment.path}'."}
         # return {"response": f"{attachment.path}, {attachment.path.rsplit('/', 1)}"}
         dir_and_file = attachment.path.rsplit('/', 1)
+        print(dir_and_file)
         # try:
-        return send_from_directory(dir_and_file[0], dir_and_file[1], as_attachment=True)
+        return send_from_directory(path=attachment.path, directory=attachment.path, as_attachment=True)
+        # return send_from_directory(dir_and_file[0], dir_and_file[1], as_attachment=True)
         # except NotFound:
         #     return {'response': f'Cannot find attachment with name = {attachment.name} and id = {attachment.id} '
         #                         f'under path={attachment.path}.'}

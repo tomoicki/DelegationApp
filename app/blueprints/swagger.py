@@ -379,6 +379,44 @@ def swagger_details_provider():
                     }
                 }
             },
+            "/settlements/{settlement_id}/pdf": {
+                "get": {
+                    "tags": ["Settlement"],
+                    "summary": "Shows settlement pdf.",
+                    "parameters": [
+                        {
+                            "name": "token",
+                            "in": "header",
+                            "description": "Token of logged user.",
+                            "type": "string",
+                            "example": "QDQ384QVf3Ciy7XJCK9xhq"
+                        },
+                        {
+                            "name": "settlement_id",
+                            "in": "path",
+                            "description": "ID of the settlement to show.",
+                            "type": "int"
+                        }
+                    ],
+                    "produces": [
+                        "application/json"
+                    ],
+                    "responses": {
+                        "200": {
+                            "description": "OK",
+                        },
+                        "401": {
+                            "description": "You are not logged in.",
+                        },
+                        "403": {
+                            "description": "You dont have the rights to see this settlement.",
+                        },
+                        "404": {
+                            "description": "Cannot find settlement with provided ID.",
+                        },
+                    }
+                },
+            },
             "/settlements/{settlement_id}/advance_payments": {
                 "get": {
                     "tags": ["Advance payment"],

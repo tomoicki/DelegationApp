@@ -212,21 +212,20 @@ class Settlement(Base, Mixin):
         # sum_of_advanced_payments = [advance_payment.convert_to_pln() for advance_payment in advanced_payments_list]
         return sum_of_advanced_payments_by_currency
 
-    # def generate_pdf(self):
-    #     import reportlab.lib.colors as pdf_colors
-    #     from reportlab.lib.pagesizes import A4
-    #     from reportlab.lib.units import inch
-    #     from reportlab.pdfgen.canvas import Canvas
-    #     canvas = Canvas(f"{self.title}.pdf", pagesize=A4)
-    #     # Set font to Times New Roman with 12-point size
-    #     canvas.setFont("Times-Roman", 12)
-    #     # Draw blue text one inch from the left and ten
-    #     # inches from the bottom
-    #     canvas.setFillColor(pdf_colors.blue)
-    #     for i, tup in enumerate(self.details().items()):
-    #         canvas.drawString(text=f"{tup[0]}: {tup[1]}", x=10+10*i, y=10+10*i)
-    #     # Save the PDF file
-    #     canvas.save()
+    def generate_pdf(self):
+        import reportlab.lib.colors as pdf_colors
+        from reportlab.lib.pagesizes import A4
+        from reportlab.pdfgen.canvas import Canvas
+        from io import BytesIO
+        buffer = BytesIO()
+        canvas = Canvas(buffer, pagesize=A4)
+        canvas.setFont("Times-Roman", 12)
+        canvas.setFillColor(pdf_colors.blue)
+        for i, tup in enumerate(self.details().items()):
+            canvas.drawString(text=f"{tup[0]}: {tup[1]}", x=10+10*i, y=10+10*i)
+        canvas.showPage()
+        canvas.save()
+        return buffer
 
     def current_status(self):
         return self.status[-1].status.value
@@ -498,7 +497,6 @@ class Expense(Base, Mixin):
             if 'kilometers' in object_details:
                 kilometers = object_details['kilometers']
                 del object_details['kilometers']
-            print(object_details)
             new_object = cls(**object_details)
             new_object.transit_type = [Transit.get_by_id(transit_type_id)]
             sqlalchemy_session.add(new_object)
