@@ -3,6 +3,11 @@ from currency_converter import CurrencyConverter
 from app.database.tables_declaration import *
 
 
+def null_to_string(data):
+    data = {key: ("" if value is None else value) for key, value in data.items()}
+    return data
+
+
 def amount_parser(amount_as_string):
     "xD"
     delimiters = [',', '.']

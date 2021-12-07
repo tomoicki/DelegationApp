@@ -31,8 +31,8 @@ def add_expense(settlement_id):
     if user.is_authorized(settlement):
         try:
             expense_details['settlement_id'] = settlement.id
-            expense_details['amount'] = amount_parser(expense_details['amount'])
-            expense_details = id_from_str_to_int(expense_details)
+            # expense_details['amount'] = amount_parser(expense_details['amount'])
+            # expense_details = id_from_str_to_int(expense_details)
             new_expense = Expense.create(expense_details)
             response = settlement.give_sorted_expenses()
             return {'response': response}, 201

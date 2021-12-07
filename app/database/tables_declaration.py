@@ -9,7 +9,7 @@ from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.exc import IntegrityError, InvalidRequestError, DataError
 from app.database.create_connection import sqlalchemy_session
-from app.tools.useful_functions import recalculate_hours, currency_factor, id_from_str_to_int
+from app.tools.useful_functions import recalculate_hours, currency_factor, id_from_str_to_int, null_to_string
 
 
 # class Base:
@@ -254,7 +254,7 @@ class Settlement(Base, Mixin):
                               'reason': self.reason,
                               'remarks': self.remarks,
                               'status': self.current_status()}
-        return settlement_to_show
+        return null_to_string(settlement_to_show)
 
     def details(self):
         country = Country.get_by_id(self.country_id)
@@ -294,11 +294,10 @@ class Settlement(Base, Mixin):
                                    'exchange_rate_for_diet_currency': str(exchange_rate)}
         settlement_with_details = {key: (value.isoformat() if '_time' in key and value is not None else value)
                                    for key, value in settlement_with_details.items()}
-        return settlement_with_details
+        return null_to_string(settlement_with_details)
 
     def give_sorted_expenses(self):
-        expenses_list = self.expense
-        expenses_list = [expense.show() for expense in expenses_list if expense.refundable]
+        expenses_list = [expense.show() for expense in self.expense if expense.refundable and expense.amount is not None]
         currency_set = {expense['currency'] for expense in expenses_list if 'currency' in expense}
         type_amount = {currency: {expense_type: str(sum([float(expense['amount']) for expense in expenses_list if
                                                          expense['currency'] == currency and expense[
@@ -314,6 +313,10 @@ class Settlement(Base, Mixin):
                                  'type_amount': type_amount[currency],
                                  'expenses': [expense for expense in expenses_list if expense['currency'] == currency]}
                                 for currency in currency_set]
+        kilometered_expenses = [expense.show() for expense in self.expense if expense.refundable]
+        kilometered_expenses = [expense for expense in kilometered_expenses if 'kilometers' in expense]
+        expenses_by_currency.append({'kilometers': True,
+                                     'expenses': kilometered_expenses})
         return expenses_by_currency
 
     @classmethod
@@ -383,7 +386,7 @@ class AdvancePayment(Base, Mixin):
                                    'amount': str(format(self.amount, '.2f')),
                                    'currency_id': str(self.currency_id),
                                    'submit_date': self.submit_date}
-        return advance_payment_to_show
+        return null_to_string(advance_payment_to_show)
 
     @classmethod
     def if_exists(cls, func):
@@ -411,7 +414,7 @@ class ExpenseType(enum.Enum):
 association_Expense_Transit_Type = Table('association_Expense_Transit_Type', Base.metadata,
                                          Column('expense_id', ForeignKey('Expense.id', ondelete="CASCADE"), primary_key=True),
                                          Column('transit_id', ForeignKey('Transit.id'), primary_key=True),
-                                         Column('kilometers', Float))
+                                         Column('kilometers', Integer))
 
 
 class Transit(Base, Mixin):
@@ -459,10 +462,11 @@ class Expense(Base, Mixin):
         attachments = [attachment.show() for attachment in attachments]
         expense_to_show = {'id': str(self.id),
                            'settlement_id': str(self.settlement_id),
-                           'amount': str(format(self.amount, '.2f')),
                            'type': self.type.value,
                            'description': self.description,
                            'attachments': attachments}
+        if self.amount is not None:
+            expense_to_show['amount'] = str(format(self.amount, '.2f'))
         currency = Currency.get_by_id(self.currency_id)
         if currency:
             expense_to_show['currency'] = currency.name
@@ -472,13 +476,14 @@ class Expense(Base, Mixin):
             association = sqlalchemy_session.query(association_Expense_Transit_Type).where(
                 association_Expense_Transit_Type.c.expense_id == self.id).first()
             expense_to_show['kilometers'] = association.kilometers
-        return expense_to_show
+        return null_to_string(expense_to_show)
 
     def modify(self, modifications_dict: dict):
         if 'transit_type_id' in modifications_dict.keys():
             association_Expense_Transit_Type.update().where()
             stmt = update(association_Expense_Transit_Type).where(association_Expense_Transit_Type.c.expense_id == self.id)\
-                .values({"transit_id": modifications_dict['transit_type_id']})
+                .values({"transit_id": modifications_dict['transit_type_id'],
+                         "kilometers": modifications_dict['kilometers']})
             sqlalchemy_session.execute(stmt)
             sqlalchemy_session.commit()
             del modifications_dict['transit_type_id']
@@ -493,8 +498,6 @@ class Expense(Base, Mixin):
             kilometers = None
             transit_type_id = object_details['transit_type_id']
             del object_details['transit_type_id']
-            if 'currency_id' not in object_details:
-                object_details['currency_id'] = 1
             if 'kilometers' in object_details:
                 kilometers = object_details['kilometers']
                 del object_details['kilometers']
@@ -572,7 +575,7 @@ class Attachment(Base, Mixin):
         attachment_to_show = {'id': str(self.id),
                               'path': self.path,
                               'name': self.name}
-        return attachment_to_show
+        return null_to_string(attachment_to_show)
 
     @classmethod
     def if_exists(cls, func):
@@ -631,13 +634,13 @@ class Users(Base, Mixin):
                         'is_active': self.is_active,
                         'supervisor_id': supervisor_id,
                         'supervisor': supervisor_names}
-        return user_to_show
+        return null_to_string(user_to_show)
 
     def show_id_names(self):
         stuff_to_show = {'id': str(self.id),
                          'first_name': self.first_name,
                          'last_name': self.last_name}
-        return stuff_to_show
+        return null_to_string(stuff_to_show)
 
     def is_authorized(self, settlement: Settlement):
         if self.id == settlement.delegate_id or self.role.value in ['manager', 'hr', 'admin']:
