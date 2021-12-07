@@ -297,7 +297,7 @@ class Settlement(Base, Mixin):
         return null_to_string(settlement_with_details)
 
     def give_sorted_expenses(self):
-        expenses_list = [expense.show() for expense in self.expense if expense.refundable and expense.amount is not None]
+        expenses_list = [expense.show() for expense in self.expense if expense.refundable and expense.currency_id is not None]
         currency_set = {expense['currency'] for expense in expenses_list if 'currency' in expense}
         type_amount = {currency: {expense_type: str(sum([float(expense['amount']) for expense in expenses_list if
                                                          expense['currency'] == currency and expense[
@@ -479,14 +479,21 @@ class Expense(Base, Mixin):
         return null_to_string(expense_to_show)
 
     def modify(self, modifications_dict: dict):
+        print(modifications_dict)
         if 'transit_type_id' in modifications_dict.keys():
             association_Expense_Transit_Type.update().where()
             stmt = update(association_Expense_Transit_Type).where(association_Expense_Transit_Type.c.expense_id == self.id)\
-                .values({"transit_id": modifications_dict['transit_type_id'],
-                         "kilometers": modifications_dict['kilometers']})
+                .values({"transit_id": modifications_dict['transit_type_id']})
             sqlalchemy_session.execute(stmt)
             sqlalchemy_session.commit()
             del modifications_dict['transit_type_id']
+        if 'kilometers' in modifications_dict.keys():
+            association_Expense_Transit_Type.update().where()
+            stmt = update(association_Expense_Transit_Type).where(association_Expense_Transit_Type.c.expense_id == self.id) \
+                .values({"kilometers": modifications_dict['kilometers']})
+            sqlalchemy_session.execute(stmt)
+            sqlalchemy_session.commit()
+            del modifications_dict['kilometers']
         stmt = update(self.__class__).where(self.__class__.id == self.id).values(**modifications_dict)
         sqlalchemy_session.execute(stmt)
         sqlalchemy_session.commit()
