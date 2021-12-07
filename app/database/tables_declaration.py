@@ -330,9 +330,13 @@ class Settlement(Base, Mixin):
         sqlalchemy_session.add(settlement)
         sqlalchemy_session.flush()
         if transit_type_id:
+            currency_id = None
+            if transit_type_id not in ['moped', 'motorcycle', 'car_engine_less_900', 'car_engine_more_900']:
+                currency_id = Country.get_by_id(settlement_details['country_id']).currency_id
             first_transit_expense = Expense(amount=0,
                                             type="transit",
                                             settlement_id=settlement.id,
+                                            currency_id=currency_id,
                                             description=Transit.get_by_id(transit_type_id).type)
             first_transit_expense.transit_type = [Transit.get_by_id(transit_type_id)]
             sqlalchemy_session.add(first_transit_expense)
@@ -479,7 +483,6 @@ class Expense(Base, Mixin):
         return null_to_string(expense_to_show)
 
     def modify(self, modifications_dict: dict):
-        print(modifications_dict)
         if 'transit_type_id' in modifications_dict.keys():
             association_Expense_Transit_Type.update().where()
             stmt = update(association_Expense_Transit_Type).where(association_Expense_Transit_Type.c.expense_id == self.id)\
