@@ -299,7 +299,7 @@ class Settlement(Base, Mixin):
     def give_sorted_expenses(self):
         expenses_list = self.expense
         expenses_list = [expense.show() for expense in expenses_list if expense.refundable]
-        currency_set = {expense['currency'] for expense in expenses_list}
+        currency_set = {expense['currency'] for expense in expenses_list if 'currency' in expense}
         type_amount = {currency: {expense_type: str(sum([float(expense['amount']) for expense in expenses_list if
                                                          expense['currency'] == currency and expense[
                                                              'type'] == expense_type]))
@@ -330,7 +330,6 @@ class Settlement(Base, Mixin):
             first_transit_expense = Expense(amount=0,
                                             type="transit",
                                             settlement_id=settlement.id,
-                                            currency_id=1,
                                             description=Transit.get_by_id(transit_type_id).type)
             first_transit_expense.transit_type = [Transit.get_by_id(transit_type_id)]
             sqlalchemy_session.add(first_transit_expense)
@@ -461,10 +460,12 @@ class Expense(Base, Mixin):
         expense_to_show = {'id': str(self.id),
                            'settlement_id': str(self.settlement_id),
                            'amount': str(format(self.amount, '.2f')),
-                           'currency': Currency.get_by_id(self.currency_id).name,
                            'type': self.type.value,
                            'description': self.description,
                            'attachments': attachments}
+        currency = Currency.get_by_id(self.currency_id)
+        if currency:
+            expense_to_show['currency'] = currency.name
         if self.transit_type:
             expense_to_show['transit_type'] = self.transit_type[0].type
             expense_to_show['transit_type_id'] = self.transit_type[0].id
