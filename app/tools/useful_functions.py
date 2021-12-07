@@ -4,8 +4,7 @@ from app.database.tables_declaration import *
 
 
 def null_to_string(data):
-    data = {key: ("" if value is None else value) for key, value in data.items()}
-    return data
+    return {key: ("" if value is None else value) for key, value in data.items()}
 
 
 def amount_parser(amount_as_string):

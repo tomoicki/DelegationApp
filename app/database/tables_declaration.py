@@ -193,7 +193,7 @@ class Settlement(Base, Mixin):
         # all_expense_types = {expense.type.value for expense in expenses_list}
         all_expense_types = [enum_option.value for enum_option in ExpenseType]
         sum_of_expenses_by_type = {expense_type: sum([expense.convert_to_pln() for expense in expenses_list
-                                                      if expense.type.value == expense_type])
+                                                      if expense.type.value == expense_type and expense.currency_id is not None])
                                    for expense_type in all_expense_types}
         sum_of_expenses_by_type['total'] = sum(sum_of_expenses_by_type.values())
         sum_of_expenses_by_type = {key: str(value) for key, value in sum_of_expenses_by_type.items()}
