@@ -20,6 +20,37 @@ def swagger_details_provider():
             },
         ],
         "paths": {
+            "/admin/all_settlements": {
+                "get": {
+                    "tags": ["Admin"],
+                    "summary": "Shows all settlements with or without filter by country.",
+                    "parameters": [
+                        {
+                            "name": "country_filter",
+                            "in": "query",
+                            "description": "Filters by country.",
+                            "type": "string"
+                        }
+                    ],
+                    "produces": [
+                        "application/json"
+                    ],
+                    "responses": {
+                        "200": {
+                            "description": "OK",
+                        },
+                        "401": {
+                            "description": "You are not logged in.",
+                        },
+                        "403": {
+                            "description": "You dont have the rights to see this settlement.",
+                        },
+                        "404": {
+                            "description": "Cannot find settlement with provided ID.",
+                        },
+                    }
+                },
+            },
             "/register": {
                 "post": {
                     "tags": ["User"],

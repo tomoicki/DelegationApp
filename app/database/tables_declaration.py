@@ -241,6 +241,13 @@ class Settlement(Base, Mixin):
                 sqlalchemy_session.add(new_status)
                 sqlalchemy_session.commit()
 
+    def admin_show(self):
+        delegate = Users.get_by_id(self.delegate_id)
+        admin_settlement_to_show = {'settlement_id': self.id,
+                                    'country': Country.get_by_id(self.country_id).name,
+                                    'delegate_email': delegate.email}
+        return admin_settlement_to_show
+
     def show(self):
         settlement_to_show = {'id': str(self.id),
                               'approver': str(Users.get_by_id(self.approver_id)),
