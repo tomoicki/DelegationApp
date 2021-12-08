@@ -31,7 +31,7 @@ def add_attachment(expense_id):
     user = Users.get_by_token(request.headers.get('token'))
     list_of_attachments = expense.attachment
     if len(list_of_attachments) >= 3:
-        return {'response': 'Cannot upload more than 3 files for one expense.'}
+        return {'response': 'Cannot upload more than 3 files for one expense.'}, 404
     if user.is_authorized(settlement):
         try:
             response = Attachment.create(expense.id)

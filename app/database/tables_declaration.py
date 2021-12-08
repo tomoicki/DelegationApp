@@ -189,6 +189,7 @@ class Settlement(Base, Mixin):
                 'daily_limit': str(country.accommodation_limit)}
 
     def sum_of_expenses(self):
+        [expense.recalculate_kilometers_to_amount() for expense in self.expense if expense.type.value == 'transit']
         expenses_list = self.expense
         # all_expense_types = {expense.type.value for expense in expenses_list}
         all_expense_types = [enum_option.value for enum_option in ExpenseType]
@@ -297,6 +298,7 @@ class Settlement(Base, Mixin):
         return null_to_string(settlement_with_details)
 
     def give_sorted_expenses(self):
+        [expense.recalculate_kilometers_to_amount() for expense in self.expense if expense.type.value == 'transit']
         expenses_list = [expense.show() for expense in self.expense if expense.refundable and expense.currency_id is not None]
         currency_set = {expense['currency'] for expense in expenses_list if 'currency' in expense}
         type_amount = {currency: {expense_type: str(sum([float(expense['amount']) for expense in expenses_list if
@@ -313,7 +315,7 @@ class Settlement(Base, Mixin):
                                  'type_amount': type_amount[currency],
                                  'expenses': [expense for expense in expenses_list if expense['currency'] == currency]}
                                 for currency in currency_set]
-        kilometered_expenses = [expense.show() for expense in self.expense if expense.refundable]
+        kilometered_expenses = [expense.show() for expense in self.expense if expense.refundable and expense.currency_id is None]
         kilometered_expenses = [expense for expense in kilometered_expenses if 'kilometers' in expense]
         expenses_by_currency.append({'kilometers': True,
                                      'expenses': kilometered_expenses})
@@ -331,7 +333,7 @@ class Settlement(Base, Mixin):
         sqlalchemy_session.flush()
         if transit_type_id:
             currency_id = None
-            if transit_type_id not in ['moped', 'motorcycle', 'car_engine_less_900', 'car_engine_more_900']:
+            if Transit.get_by_id(transit_type_id).type not in ['moped', 'motorcycle', 'car_engine_less_900', 'car_engine_more_900']:
                 currency_id = Country.get_by_id(settlement_details['country_id']).currency_id
             first_transit_expense = Expense(amount=0,
                                             type="transit",
@@ -461,6 +463,13 @@ class Expense(Base, Mixin):
         factor = currency_factor(currency_name)
         return self.amount * factor
 
+    def recalculate_kilometers_to_amount(self):
+        ratios = {'moped': 0.1382, 'motorcycle': 0.2320, 'car_engine_less_900': 0.5214, 'car_engine_more_900': 0.8358}
+        if self.transit_type[0].type in ratios:
+            association = sqlalchemy_session.query(association_Expense_Transit_Type).where(
+                association_Expense_Transit_Type.c.expense_id == self.id).first()
+            self.amount = ratios[self.transit_type[0].type] * association.kilometers
+
     def show(self):
         attachments = self.attachment
         attachments = [attachment.show() for attachment in attachments]
@@ -477,9 +486,10 @@ class Expense(Base, Mixin):
         if self.transit_type:
             expense_to_show['transit_type'] = self.transit_type[0].type
             expense_to_show['transit_type_id'] = self.transit_type[0].id
-            association = sqlalchemy_session.query(association_Expense_Transit_Type).where(
-                association_Expense_Transit_Type.c.expense_id == self.id).first()
-            expense_to_show['kilometers'] = association.kilometers
+            if expense_to_show['transit_type'] in ['moped', 'motorcycle', 'car_engine_less_900', 'car_engine_more_900']:
+                association = sqlalchemy_session.query(association_Expense_Transit_Type).where(
+                    association_Expense_Transit_Type.c.expense_id == self.id).first()
+                expense_to_show['kilometers'] = association.kilometers
         return null_to_string(expense_to_show)
 
     def modify(self, modifications_dict: dict):
