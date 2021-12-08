@@ -254,6 +254,7 @@ class Settlement(Base, Mixin):
                               'arrival_date': self.arrival_date,
                               'country': Country.get_by_id(self.country_id).name,
                               'delegate': str(Users.get_by_id(self.delegate_id)),
+                              'delegate_email': str(Users.get_by_id(self.delegate_id).show()["email"]),
                               'title': self.title,
                               'reason': self.reason,
                               'remarks': self.remarks,
