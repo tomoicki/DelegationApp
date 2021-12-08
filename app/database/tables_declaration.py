@@ -194,8 +194,11 @@ class Settlement(Base, Mixin):
         # all_expense_types = {expense.type.value for expense in expenses_list}
         all_expense_types = [enum_option.value for enum_option in ExpenseType]
         sum_of_expenses_by_type = {expense_type: sum([expense.convert_to_pln() for expense in expenses_list
-                                                      if expense.type.value == expense_type and expense.currency_id is not None])
+                                                      if expense.type.value == expense_type])
                                    for expense_type in all_expense_types}
+        print({expense_type: [expense for expense in expenses_list
+                                                      if expense.type.value == expense_type]
+                                   for expense_type in all_expense_types})
         sum_of_expenses_by_type['total'] = sum(sum_of_expenses_by_type.values())
         sum_of_expenses_by_type = {key: str(value) for key, value in sum_of_expenses_by_type.items()}
         return sum_of_expenses_by_type
@@ -317,7 +320,11 @@ class Settlement(Base, Mixin):
                                 for currency in currency_set]
         kilometered_expenses = [expense.show() for expense in self.expense if expense.refundable and expense.currency_id is None]
         kilometered_expenses = [expense for expense in kilometered_expenses if 'kilometers' in expense]
+        total_kilometers = sum([expense['kilometers'] for expense in kilometered_expenses if expense['kilometers'] != ""])
+        total_amount = sum([float(expense['amount']) for expense in kilometered_expenses])
         expenses_by_currency.append({'kilometers': True,
+                                     'total_kilometers': total_kilometers,
+                                     'total_amount': total_amount,
                                      'expenses': kilometered_expenses})
         return expenses_by_currency
 
@@ -456,12 +463,17 @@ class Expense(Base, Mixin):
 
     def convert_to_pln(self):
         """Recalculates amount from XXX to PLN if needed."""
-        currency_name = Currency.get_by_id(self.currency_id).name
+        currency_name = ""
+        currency = Currency.get_by_id(self.currency_id)
+        if currency:
+            currency_name = currency.name
         if currency_name == 'PLN':
             return self.amount
-        # else, get the factor
-        factor = currency_factor(currency_name)
-        return self.amount * factor
+        elif currency_name == "":
+            return self.amount
+        else:
+            factor = currency_factor(currency_name)
+            return self.amount * factor
 
     def recalculate_kilometers_to_amount(self):
         ratios = {'moped': 0.1382, 'motorcycle': 0.2320, 'car_engine_less_900': 0.5214, 'car_engine_more_900': 0.8358}
@@ -495,22 +507,21 @@ class Expense(Base, Mixin):
 
     def modify(self, modifications_dict: dict):
         if 'transit_type_id' in modifications_dict.keys():
-            association_Expense_Transit_Type.update().where()
             stmt = update(association_Expense_Transit_Type).where(association_Expense_Transit_Type.c.expense_id == self.id)\
                 .values({"transit_id": modifications_dict['transit_type_id']})
             sqlalchemy_session.execute(stmt)
             sqlalchemy_session.commit()
             del modifications_dict['transit_type_id']
         if 'kilometers' in modifications_dict.keys():
-            association_Expense_Transit_Type.update().where()
             stmt = update(association_Expense_Transit_Type).where(association_Expense_Transit_Type.c.expense_id == self.id) \
                 .values({"kilometers": modifications_dict['kilometers']})
             sqlalchemy_session.execute(stmt)
             sqlalchemy_session.commit()
             del modifications_dict['kilometers']
-        stmt = update(self.__class__).where(self.__class__.id == self.id).values(**modifications_dict)
-        sqlalchemy_session.execute(stmt)
-        sqlalchemy_session.commit()
+        if modifications_dict:
+            stmt = update(self.__class__).where(self.__class__.id == self.id).values(**modifications_dict)
+            sqlalchemy_session.execute(stmt)
+            sqlalchemy_session.commit()
         return self
 
     @classmethod
