@@ -468,7 +468,8 @@ class Expense(Base, Mixin):
         if self.transit_type[0].type in ratios:
             association = sqlalchemy_session.query(association_Expense_Transit_Type).where(
                 association_Expense_Transit_Type.c.expense_id == self.id).first()
-            self.amount = ratios[self.transit_type[0].type] * association.kilometers
+            if association.kilometers is not None:
+                self.amount = ratios[self.transit_type[0].type] * association.kilometers
 
     def show(self):
         attachments = self.attachment
