@@ -54,7 +54,8 @@ def show_attachment(attachment_id):
         if not os.path.exists(attachment.path):
             return {'response': f"Cannot find attachment with name = '{attachment.name}' and id = '{attachment.id}' "
                                 f"under path = '{attachment.path}'."}
-        dir_and_file = attachment.path.rsplit('\\', 1)
+        # dir_and_file = attachment.path.rsplit('\\', 1)
+        dir_and_file = attachment.path.rsplit('/', 1)
         if len(dir_and_file) == 2:
             return send_from_directory(path=dir_and_file[1], directory=dir_and_file[0], as_attachment=True)
         return {'response': 'Something is wrong with attachment path.'}, 404
