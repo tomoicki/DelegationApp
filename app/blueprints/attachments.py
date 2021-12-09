@@ -53,7 +53,7 @@ def show_attachment(attachment_id):
     if user.is_authorized(settlement):
         if not os.path.exists(attachment.path):
             return {'response': f"Cannot find attachment with name = '{attachment.name}' and id = '{attachment.id}' "
-                                f"under path = '{attachment.path}'."}
+                                f"under path = '{attachment.path}'."}, 404
         # dir_and_file = attachment.path.rsplit('\\', 1)
         dir_and_file = attachment.path.rsplit('/', 1)
         if len(dir_and_file) == 2:
@@ -92,7 +92,7 @@ def delete_expense(attachment_id):
     if user.is_authorized(settlement):
         if not os.path.exists(attachment.path):
             return {'response': f"Cannot find attachment with name = '{attachment.name}' and id = '{attachment.id}' "
-                                f"under path = '{attachment.path}'."}
+                                f"under path = '{attachment.path}'."}, 404
         try:
             os.remove(attachment.path)
             attachment.delete()

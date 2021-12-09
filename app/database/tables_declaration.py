@@ -61,7 +61,7 @@ class Mixin:
                         id_from_str_to_int(body2)
                         cls(**body2)
                     except ValueError:
-                        return {"response": "id needs to be stringed integer or just integer, e.g. '3' or 3. "
+                        return {"response": "ID needs to be stringed integer or just integer, e.g. '3' or 3. "
                                             "Make sure all id and _id keys have proper values."}, 400
                 elif type(body) == list:
                     for item in body:
@@ -74,7 +74,7 @@ class Mixin:
                             id_from_str_to_int(item2)
                             cls(**item2)
                         except ValueError:
-                            return {"response": "id needs to be stringed integer or just integer, e.g. '3' or 3. "
+                            return {"response": "ID needs to be stringed integer or just integer, e.g. '3' or 3. "
                                                 "Make sure all id and _id keys have proper values."}, 400
                 return func(*args, **kwargs)
             except (KeyError, TypeError) as e:
@@ -589,7 +589,7 @@ class Attachment(Base, Mixin):
         if not cls.allowed_file(file.filename):
             return {'response': 'File not allowed.'}, 404
         if file.filename.replace(' ', '_') in os.listdir(expense_path):
-            return {'response': f"uploaded attachment '{file.filename}' already exists."}, 404
+            return {'response': f"Uploaded attachment '{file.filename}' already exists."}, 404
         if file:
             file_name = secure_filename(file.filename)
             file_path = os.path.join(expense_path, file_name)

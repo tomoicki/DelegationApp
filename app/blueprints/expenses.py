@@ -27,7 +27,7 @@ def add_expense(settlement_id):
     user = Users.get_by_token(request.headers.get('token'))
     expense_details = request.get_json()
     if 'transit_type_id' in expense_details.keys() and expense_details['type'] != 'transit':
-        return {'response': "'transit_type_id' key can only be added if 'type' is 'transit'. "}, 404
+        return {'response': "Key 'transit_type_id' can only be added if 'type' is 'transit'. "}, 404
     if user.is_authorized(settlement):
         try:
             expense_details['settlement_id'] = settlement.id
