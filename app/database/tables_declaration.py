@@ -60,7 +60,7 @@ class Mixin:
                             try:
                                 int(body2['kilometers'])
                             except (KeyError, TypeError, ValueError):
-                                return {'response': "Invalid kilometers value, needs to be an integer."}
+                                return {'response': "Invalid kilometers value, needs to be an integer."}, 400
                             del body2['kilometers']
                         id_from_str_to_int(body2)
                         cls(**body2)
@@ -77,7 +77,7 @@ class Mixin:
                                 try:
                                     int(item2['kilometers'])
                                 except (KeyError, TypeError, ValueError):
-                                    return {'response': "Invalid kilometers value, needs to be an integer."}
+                                    return {'response': "Invalid kilometers value, needs to be an integer."}, 400
                                 del item2['kilometers']
                             id_from_str_to_int(item2)
                             cls(**item2)
