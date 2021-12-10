@@ -57,6 +57,10 @@ class Mixin:
                         if 'transit_type_id' in body2.keys():
                             del body2['transit_type_id']
                         if 'kilometers' in body2.keys():
+                            try:
+                                int(body2['kilometers'])
+                            except (KeyError, TypeError, ValueError):
+                                return {'response': "Invalid kilometers value, needs to be an integer."}
                             del body2['kilometers']
                         id_from_str_to_int(body2)
                         cls(**body2)
@@ -70,6 +74,10 @@ class Mixin:
                             if 'transit_type_id' in item2.keys():
                                 del item2['transit_type_id']
                             if 'kilometers' in item2.keys():
+                                try:
+                                    int(item2['kilometers'])
+                                except (KeyError, TypeError, ValueError):
+                                    return {'response': "Invalid kilometers value, needs to be an integer."}
                                 del item2['kilometers']
                             id_from_str_to_int(item2)
                             cls(**item2)
