@@ -39,15 +39,30 @@ def currency_factor(currency_from: str, currency_to: str = 'PLN') -> float:
 
 def recalculate_hours(residue_hours_as_day_fraction: float, days: int):
     """Provides rate for remaining hours (Data!H1:I5 in excel)."""
+    # old version
+    # if days > 0:
+    #     if residue_hours_as_day_fraction <= 8:
+    #         hour_rate = 0.5
+    #     else:
+    #         hour_rate = 1
+    # else:
+    #     if residue_hours_as_day_fraction <= 0:
+    #         hour_rate = 0
+    #     elif residue_hours_as_day_fraction <= 1/3:
+    #         hour_rate = 0.5
+    #     else:
+    #         hour_rate = 1
+    # return hour_rate
+    # BTA-101
     if days > 0:
         if residue_hours_as_day_fraction <= 8:
             hour_rate = 0.5
         else:
             hour_rate = 1
     else:
-        if residue_hours_as_day_fraction <= 0:
+        if residue_hours_as_day_fraction <= 1/3:
             hour_rate = 0
-        elif residue_hours_as_day_fraction <= 1/3:
+        elif residue_hours_as_day_fraction <= 1/2:
             hour_rate = 0.5
         else:
             hour_rate = 1
